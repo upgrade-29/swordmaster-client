@@ -42,15 +42,15 @@
     { "grade": "LEGENDARY", "level": 4, "materialCount": 4, "gold": 6400 }
   ],
   "enemies": [
-    { "enemyCode": "SLIME", "name": "슬라임", "appearanceCode": "SLIME", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-    { "enemyCode": "GOBLIN", "name": "고블린", "appearanceCode": "GOBLIN", "boss": false, "attack": 12, "attackSpeed": 1.0, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
-    { "enemyCode": "SLIME_KING", "name": "슬라임 왕", "appearanceCode": "SLIME_KING", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
-    { "enemyCode": "GOBLIN_CHIEF", "name": "고블린 족장", "appearanceCode": "GOBLIN_CHIEF", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
+    { "enemyCode": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+    { "enemyCode": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1.0, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
+    { "enemyCode": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
+    { "enemyCode": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
   ],
   "stages": [
-    { "stage": 1, "enemyCode": "SLIME", "enemyCount": 3, "bossCode": "SLIME_KING", "statMultiplier": 1.0, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1.0, "recommendedPower": 500, "imageCode": "STAGE_01" },
-    { "stage": 2, "enemyCode": "GOBLIN", "enemyCount": 4, "bossCode": "GOBLIN_CHIEF", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
-    { "stage": 3, "enemyCode": "GOBLIN", "enemyCount": 5, "bossCode": "GOBLIN_CHIEF", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
+    { "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1.0, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1.0, "recommendedPower": 500, "imageCode": "STAGE_01" },
+    { "stage": 2, "enemyCode": "BANDIT_SABER", "enemyCount": 4, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
+    { "stage": 3, "enemyCode": "BANDIT_SABER", "enemyCount": 5, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
   ],
   "dropRates": [
     { "grade": "COMMON", "rate": 0.6 },
