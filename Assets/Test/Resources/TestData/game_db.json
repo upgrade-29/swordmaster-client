@@ -1,0 +1,78 @@
+{
+  "version": "test-1",
+  "swords": [
+    { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attack": 10, "attackSpeed": 1.0, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
+    { "level": 1, "successRate": 0.9, "enhanceCost": 200, "sellPrice": 150, "attack": 14, "attackSpeed": 1.02, "maxHp": 330, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
+    { "level": 2, "successRate": 0.85, "enhanceCost": 400, "sellPrice": 400, "attack": 19, "attackSpeed": 1.04, "maxHp": 365, "name": "철 검", "appearanceCode": "SWORD_01" },
+    { "level": 3, "successRate": 0.8, "enhanceCost": 700, "sellPrice": 900, "attack": 25, "attackSpeed": 1.06, "maxHp": 405, "name": "강철 검", "appearanceCode": "SWORD_02" },
+    { "level": 4, "successRate": 0.7, "enhanceCost": 1100, "sellPrice": 1800, "attack": 32, "attackSpeed": 1.08, "maxHp": 450, "name": "기사의 검", "appearanceCode": "SWORD_02" },
+    { "level": 5, "successRate": 0.6, "enhanceCost": 1600, "sellPrice": 3500, "attack": 40, "attackSpeed": 1.1, "maxHp": 500, "name": "명검", "appearanceCode": "SWORD_02" },
+    { "level": 6, "successRate": 0.5, "enhanceCost": 2300, "sellPrice": 6500, "attack": 50, "attackSpeed": 1.12, "maxHp": 560, "name": "마검", "appearanceCode": "SWORD_03" },
+    { "level": 7, "successRate": 0.4, "enhanceCost": 3200, "sellPrice": 12000, "attack": 62, "attackSpeed": 1.14, "maxHp": 630, "name": "성검", "appearanceCode": "SWORD_03" },
+    { "level": 8, "successRate": 0.3, "enhanceCost": 4500, "sellPrice": 22000, "attack": 76, "attackSpeed": 1.16, "maxHp": 710, "name": "용살검", "appearanceCode": "SWORD_03" },
+    { "level": 9, "successRate": 0.2, "enhanceCost": 6500, "sellPrice": 40000, "attack": 92, "attackSpeed": 1.18, "maxHp": 800, "name": "신검", "appearanceCode": "SWORD_04" },
+    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attack": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검", "appearanceCode": "SWORD_04" }
+  ],
+  "artifacts": [
+    { "artifactCode": "CRIT_01", "name": "날카로운 숫돌", "grade": "COMMON", "iconCode": "ICON_CRIT_01", "statType": "CRIT_RATE", "baseValue": 0.03, "valuePerLevel": 0.01 },
+    { "artifactCode": "CRIT_02", "name": "매의 눈", "grade": "EPIC", "iconCode": "ICON_CRIT_02", "statType": "CRIT_RATE", "baseValue": 0.06, "valuePerLevel": 0.02 },
+    { "artifactCode": "LIFE_01", "name": "흡혈 반지", "grade": "RARE", "iconCode": "ICON_LIFE_01", "statType": "LIFESTEAL", "baseValue": 0.02, "valuePerLevel": 0.005 },
+    { "artifactCode": "LIFE_02", "name": "피의 성배", "grade": "LEGENDARY", "iconCode": "ICON_LIFE_02", "statType": "LIFESTEAL", "baseValue": 0.05, "valuePerLevel": 0.01 },
+    { "artifactCode": "HP_01", "name": "가죽 방패", "grade": "COMMON", "iconCode": "ICON_HP_01", "statType": "MAX_HP", "baseValue": 50, "valuePerLevel": 20 },
+    { "artifactCode": "HP_02", "name": "거인의 심장", "grade": "EPIC", "iconCode": "ICON_HP_02", "statType": "MAX_HP", "baseValue": 150, "valuePerLevel": 50 },
+    { "artifactCode": "SPEED_01", "name": "바람의 깃털", "grade": "RARE", "iconCode": "ICON_SPEED_01", "statType": "ATTACK_SPEED", "baseValue": 0.05, "valuePerLevel": 0.02 },
+    { "artifactCode": "SPEED_02", "name": "시간의 모래시계", "grade": "LEGENDARY", "iconCode": "ICON_SPEED_02", "statType": "ATTACK_SPEED", "baseValue": 0.1, "valuePerLevel": 0.03 }
+  ],
+  "artifactEnhance": [
+    { "grade": "COMMON", "level": 1, "materialCount": 2, "gold": 100 },
+    { "grade": "COMMON", "level": 2, "materialCount": 4, "gold": 200 },
+    { "grade": "COMMON", "level": 3, "materialCount": 6, "gold": 400 },
+    { "grade": "COMMON", "level": 4, "materialCount": 8, "gold": 800 },
+    { "grade": "RARE", "level": 1, "materialCount": 2, "gold": 200 },
+    { "grade": "RARE", "level": 2, "materialCount": 3, "gold": 400 },
+    { "grade": "RARE", "level": 3, "materialCount": 5, "gold": 800 },
+    { "grade": "RARE", "level": 4, "materialCount": 7, "gold": 1600 },
+    { "grade": "EPIC", "level": 1, "materialCount": 1, "gold": 400 },
+    { "grade": "EPIC", "level": 2, "materialCount": 2, "gold": 800 },
+    { "grade": "EPIC", "level": 3, "materialCount": 4, "gold": 1600 },
+    { "grade": "EPIC", "level": 4, "materialCount": 6, "gold": 3200 },
+    { "grade": "LEGENDARY", "level": 1, "materialCount": 1, "gold": 800 },
+    { "grade": "LEGENDARY", "level": 2, "materialCount": 2, "gold": 1600 },
+    { "grade": "LEGENDARY", "level": 3, "materialCount": 3, "gold": 3200 },
+    { "grade": "LEGENDARY", "level": 4, "materialCount": 4, "gold": 6400 }
+  ],
+  "enemies": [
+    { "enemyCode": "SLIME", "name": "슬라임", "appearanceCode": "SLIME", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+    { "enemyCode": "GOBLIN", "name": "고블린", "appearanceCode": "GOBLIN", "boss": false, "attack": 12, "attackSpeed": 1.0, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
+    { "enemyCode": "SLIME_KING", "name": "슬라임 왕", "appearanceCode": "SLIME_KING", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
+    { "enemyCode": "GOBLIN_CHIEF", "name": "고블린 족장", "appearanceCode": "GOBLIN_CHIEF", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
+  ],
+  "stages": [
+    { "stage": 1, "enemyCode": "SLIME", "enemyCount": 3, "bossCode": "SLIME_KING", "statMultiplier": 1.0, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1.0, "recommendedPower": 500, "imageCode": "STAGE_01" },
+    { "stage": 2, "enemyCode": "GOBLIN", "enemyCount": 4, "bossCode": "GOBLIN_CHIEF", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
+    { "stage": 3, "enemyCode": "GOBLIN", "enemyCount": 5, "bossCode": "GOBLIN_CHIEF", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
+  ],
+  "dropRates": [
+    { "grade": "COMMON", "rate": 0.6 },
+    { "grade": "RARE", "rate": 0.28 },
+    { "grade": "EPIC", "rate": 0.1 },
+    { "grade": "LEGENDARY", "rate": 0.02 }
+  ],
+  "shopProducts": [
+    { "productCode": "GOLD_SMALL", "name": "골드 주머니", "category": "GOLD", "iconCode": "ICON_GOLD_SMALL", "priceType": "DIAMOND", "price": 100 },
+    { "productCode": "GOLD_LARGE", "name": "골드 상자", "category": "GOLD", "iconCode": "ICON_GOLD_LARGE", "priceType": "DIAMOND", "price": 500 }
+  ],
+  "shopProductRewards": [
+    { "productCode": "GOLD_SMALL", "rewardType": "GOLD", "rewardCode": null, "amount": 10000 },
+    { "productCode": "GOLD_LARGE", "rewardType": "GOLD", "rewardCode": null, "amount": 60000 }
+  ],
+  "config": [
+    { "key": "CRIT_MULTIPLIER", "value": "1.5", "description": "치명타 배율" },
+    { "key": "BASE_BATTLE_TIME", "value": "10", "description": "전투력 계산식의 기준 전투 시간(초), 테스트용 임시 값" },
+    { "key": "HEAL_RATE", "value": "0.1", "description": "적을 처치했을 때 회복하는 최대 체력의 비율" },
+    { "key": "INITIAL_GOLD", "value": "5000", "description": "회원가입할 때 지급하는 골드" },
+    { "key": "STARTER_ARTIFACTS", "value": "CRIT_01,HP_01", "description": "회원가입할 때 지급하는 아티팩트 코드" },
+    { "key": "NOTICE_SWORD_LEVEL", "value": "7", "description": "강화 달성 공지를 보내는 단계" },
+    { "key": "NOTICE_DESTROY_LEVEL", "value": "5", "description": "파괴 공지를 보내는 최소 단계" }
+  ]
+}
