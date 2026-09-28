@@ -6,11 +6,7 @@ public class EnemyData
     public readonly string name;
     public readonly string appearanceCode;
     public readonly bool boss;
-    public readonly double attack;
-    public readonly double attackSpeed;
-    public readonly double maxHp;
-    public readonly double critRate;
-    public readonly double lifesteal;
+    public readonly CombatStat stat;
 
     [JsonConstructor]
     public EnemyData(string enemyCode, string name, string appearanceCode, bool boss,
@@ -20,10 +16,6 @@ public class EnemyData
         this.name = name;
         this.appearanceCode = appearanceCode;
         this.boss = boss;
-        this.attack = attack;
-        this.attackSpeed = attackSpeed;
-        this.maxHp = maxHp;
-        this.critRate = critRate;
-        this.lifesteal = lifesteal;
+        this.stat = new CombatStat(attack, attackSpeed, maxHp, critRate, lifesteal);
     }
 }
