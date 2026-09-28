@@ -1,0 +1,17 @@
+{
+  "userId": 1,
+  "nickname": "테스트유저",
+  "currencies": { "gold": 200000, "diamond": 1000 },
+  "sword": { "level": 5 },
+  "artifacts": [
+    { "artifactCode": "CRIT_01", "level": 5, "materialCount": 3, "equippedSlot": null },
+    { "artifactCode": "CRIT_02", "level": 3, "materialCount": 4, "equippedSlot": 1 },
+    { "artifactCode": "LIFE_01", "level": 1, "materialCount": 3, "equippedSlot": null },
+    { "artifactCode": "LIFE_02", "level": 2, "materialCount": 2, "equippedSlot": 2 },
+    { "artifactCode": "HP_01", "level": 2, "materialCount": 4, "equippedSlot": null },
+    { "artifactCode": "HP_02", "level": 1, "materialCount": 0, "equippedSlot": null },
+    { "artifactCode": "SPEED_01", "level": 1, "materialCount": 1, "equippedSlot": null },
+    { "artifactCode": "SPEED_02", "level": 4, "materialCount": 4, "equippedSlot": 3 }
+  ],
+  "stageProgress": { "clearedStage": 2, "nextBattleAvailableAt": "2026-01-01T00:00:00Z" }
+}

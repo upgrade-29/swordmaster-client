@@ -1,0 +1,11 @@
+{
+  "userId": 1,
+  "nickname": "테스트유저",
+  "currencies": { "gold": 1000000, "diamond": 10000 },
+  "sword": { "level": 3 },
+  "artifacts": [
+    { "artifactCode": "CRIT_01", "level": 1, "materialCount": 0, "equippedSlot": 1 },
+    { "artifactCode": "HP_01", "level": 1, "materialCount": 0, "equippedSlot": 2 }
+  ],
+  "stageProgress": { "clearedStage": 0, "nextBattleAvailableAt": "2026-01-01T00:00:00Z" }
+}
