@@ -16,6 +16,7 @@
         { "time": 2.5, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 187, "enemyHp": 15 },
         { "time": 3.2, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 188.5, "enemyHp": 0 }
       ],
+      "timeLimit": 30,
       "duration": 3.2,
       "outcome": "ENEMY_DEAD",
       "healOnKill": 11.5,
@@ -30,6 +31,7 @@
         { "time": 0.8, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 0, "playerHp": 200, "enemyHp": 90 },
         { "time": 1.25, "attacker": "ENEMY", "damage": 12, "isCrit": true, "lifesteal": 0, "playerHp": 188, "enemyHp": 90 }
       ],
+      "timeLimit": 30,
       "duration": 30,
       "outcome": "TIME_OVER",
       "healOnKill": 0,

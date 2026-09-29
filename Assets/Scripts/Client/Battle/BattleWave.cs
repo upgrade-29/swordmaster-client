@@ -9,6 +9,7 @@ public class BattleWave
     public readonly CombatStat enemyStat; // 스테이지 배율이 적용된 능력치
     public readonly double playerStartHp;
     public readonly IReadOnlyList<BattleEvent> events;
+    public readonly double timeLimit; // 제한 시간(초). 클라이언트는 남은 시간 표시에 쓴다
     public readonly double duration; // 웨이브가 끝난 시간(초). 시간 초과면 제한 시간
     public readonly WaveOutcome outcome;
     public readonly double healOnKill; // 처치 후 회복량. 처치하지 못했으면 0
@@ -16,13 +17,15 @@ public class BattleWave
 
     [JsonConstructor]
     public BattleWave(string enemyCode, bool isBoss, CombatStat enemyStat, double playerStartHp,
-        IReadOnlyList<BattleEvent> events, double duration, WaveOutcome outcome, double healOnKill, long gold)
+        IReadOnlyList<BattleEvent> events, double timeLimit, double duration, WaveOutcome outcome, double healOnKill,
+        long gold)
     {
         this.enemyCode = enemyCode;
         this.isBoss = isBoss;
         this.enemyStat = enemyStat;
         this.playerStartHp = playerStartHp;
         this.events = events ?? new List<BattleEvent>();
+        this.timeLimit = timeLimit;
         this.duration = duration;
         this.outcome = outcome;
         this.healOnKill = healOnKill;
