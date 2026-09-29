@@ -11,17 +11,23 @@ public class BattleTestBootstrap : MonoBehaviour
 
     private BattleDirector director;
     private BattleLogView logView;
+    private BattleUnitView playerView;
+    private BattleUnitView enemyView;
     private BattleLogger battleLogger;
+    private BattleEffectPresenter effectPresenter;
 
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref director);
-        logView = GameUtil.Bind<BattleLogView>(GameObject.Find("BattleCanvas"), "BattleLogPanel");
+        logView = GameUtil.Bind<BattleLogView>(GameObject.Find("BattleCanvas"), "Hud/BattleLogPanel");
+        playerView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Player"));
+        enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
     }
 
     private void OnDestroy()
     {
         battleLogger?.Dispose();
+        effectPresenter?.Dispose();
     }
 
     private void Start()
@@ -33,6 +39,7 @@ public class BattleTestBootstrap : MonoBehaviour
         var battleService = new LocalBattleService(gameDB, user, random);
         director.Init(battleService, user.StageProgress.NextStage);
         battleLogger = new BattleLogger(director, logView, user.Nickname, gameDB, logToConsole);
+        effectPresenter = new BattleEffectPresenter(director, playerView, enemyView);
 
         Debug.Log($"[Battle] Test user '{userFile}' loaded. Next stage {user.StageProgress.NextStage}");
     }

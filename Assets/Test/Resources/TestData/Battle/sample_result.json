@@ -1,46 +1,102 @@
 {
   "stage": 1,
-  "isVictory": false,
-  "playerStat": { "attack": 30, "attackSpeed": 1.25, "maxHp": 200, "critRate": 0.1, "lifesteal": 0.05 },
+  "isVictory": true,
+  "playerStat": { "attack": 40, "attackSpeed": 1.29, "maxHp": 500, "critRate": 0.1, "lifesteal": 0.060000000000000005 },
   "waves": [
     {
       "enemyCode": "RUSTY_DAGGER",
       "isBoss": false,
       "enemyStat": { "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-      "playerStartHp": 200,
+      "playerStartHp": 500,
       "events": [
-        { "time": 0.8, "attacker": "PLAYER", "damage": 45, "isCrit": true, "lifesteal": 0, "playerHp": 200, "enemyHp": 75 },
-        { "time": 1.25, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 192, "enemyHp": 75 },
-        { "time": 1.6, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 193.5, "enemyHp": 45 },
-        { "time": 2.4, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 195, "enemyHp": 15 },
-        { "time": 2.5, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 187, "enemyHp": 15 },
-        { "time": 3.2, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 188.5, "enemyHp": 0 }
+        { "time": 0.7751937984496123, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 0, "playerHp": 500, "enemyHp": 80 },
+        { "time": 1.25, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 492, "enemyHp": 80 },
+        { "time": 1.5503875968992247, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 494.4, "enemyHp": 40 },
+        { "time": 2.325581395348837, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 496.79999999999995, "enemyHp": 0 }
       ],
       "timeLimit": 30,
-      "duration": 3.2,
+      "duration": 2.325581395348837,
       "outcome": "ENEMY_DEAD",
-      "healOnKill": 11.5,
+      "healOnKill": 3.2000000000000455,
       "gold": 100
     },
     {
       "enemyCode": "RUSTY_DAGGER",
       "isBoss": false,
       "enemyStat": { "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-      "playerStartHp": 200,
+      "playerStartHp": 500,
       "events": [
-        { "time": 0.8, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 0, "playerHp": 200, "enemyHp": 90 },
-        { "time": 1.25, "attacker": "ENEMY", "damage": 12, "isCrit": true, "lifesteal": 0, "playerHp": 188, "enemyHp": 90 }
+        { "time": 0.7751937984496123, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 0, "playerHp": 500, "enemyHp": 80 },
+        { "time": 1.25, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 492, "enemyHp": 80 },
+        { "time": 1.5503875968992247, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 494.4, "enemyHp": 40 },
+        { "time": 2.325581395348837, "attacker": "PLAYER", "damage": 60, "isCrit": true, "lifesteal": 3.6, "playerHp": 498, "enemyHp": 0 }
       ],
       "timeLimit": 30,
-      "duration": 30,
-      "outcome": "TIME_OVER",
-      "healOnKill": 0,
-      "gold": 0
+      "duration": 2.325581395348837,
+      "outcome": "ENEMY_DEAD",
+      "healOnKill": 2,
+      "gold": 100
+    },
+    {
+      "enemyCode": "RUSTY_DAGGER",
+      "isBoss": false,
+      "enemyStat": { "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+      "playerStartHp": 500,
+      "events": [
+        { "time": 0.7751937984496123, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 0, "playerHp": 500, "enemyHp": 80 },
+        { "time": 1.25, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 492, "enemyHp": 80 },
+        { "time": 1.5503875968992247, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 494.4, "enemyHp": 40 },
+        { "time": 2.325581395348837, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 496.79999999999995, "enemyHp": 0 }
+      ],
+      "timeLimit": 30,
+      "duration": 2.325581395348837,
+      "outcome": "ENEMY_DEAD",
+      "healOnKill": 3.2000000000000455,
+      "gold": 100
+    },
+    {
+      "enemyCode": "CURSED_GREATSWORD",
+      "isBoss": true,
+      "enemyStat": { "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
+      "playerStartHp": 500,
+      "events": [
+        { "time": 0.7751937984496123, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 0, "playerHp": 500, "enemyHp": 560 },
+        { "time": 1.4285714285714286, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 485, "enemyHp": 560.75 },
+        { "time": 1.5503875968992247, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 487.4, "enemyHp": 520.75 },
+        { "time": 2.325581395348837, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 489.79999999999995, "enemyHp": 480.75 },
+        { "time": 2.857142857142857, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 474.79999999999995, "enemyHp": 481.5 },
+        { "time": 3.1007751937984493, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 477.19999999999993, "enemyHp": 441.5 },
+        { "time": 3.875968992248062, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 479.5999999999999, "enemyHp": 401.5 },
+        { "time": 4.285714285714286, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 464.5999999999999, "enemyHp": 402.25 },
+        { "time": 4.651162790697674, "attacker": "PLAYER", "damage": 60, "isCrit": true, "lifesteal": 3.6, "playerHp": 468.19999999999993, "enemyHp": 342.25 },
+        { "time": 5.426356589147287, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 470.5999999999999, "enemyHp": 302.25 },
+        { "time": 5.714285714285714, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 455.5999999999999, "enemyHp": 303 },
+        { "time": 6.201550387596899, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 457.9999999999999, "enemyHp": 263 },
+        { "time": 6.976744186046511, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 460.39999999999986, "enemyHp": 223 },
+        { "time": 7.142857142857143, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 445.39999999999986, "enemyHp": 223.75 },
+        { "time": 7.751937984496124, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 447.79999999999984, "enemyHp": 183.75 },
+        { "time": 8.527131782945736, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 450.1999999999998, "enemyHp": 143.75 },
+        { "time": 8.571428571428571, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 435.1999999999998, "enemyHp": 144.5 },
+        { "time": 9.302325581395348, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 437.5999999999998, "enemyHp": 104.5 },
+        { "time": 10, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 422.5999999999998, "enemyHp": 105.25 },
+        { "time": 10.07751937984496, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 424.9999999999998, "enemyHp": 65.25 },
+        { "time": 10.852713178294573, "attacker": "PLAYER", "damage": 40, "isCrit": false, "lifesteal": 2.4000000000000004, "playerHp": 427.39999999999975, "enemyHp": 25.25 },
+        { "time": 11.428571428571429, "attacker": "ENEMY", "damage": 15, "isCrit": false, "lifesteal": 0.75, "playerHp": 412.39999999999975, "enemyHp": 26 },
+        { "time": 11.627906976744185, "attacker": "PLAYER", "damage": 60, "isCrit": true, "lifesteal": 3.6, "playerHp": 415.9999999999998, "enemyHp": 0 }
+      ],
+      "timeLimit": 60,
+      "duration": 11.627906976744185,
+      "outcome": "ENEMY_DEAD",
+      "healOnKill": 50,
+      "gold": 500
     }
   ],
-  "rewards": { "gold": 100, "artifactCodes": [] },
-  "currencies": { "gold": 5100, "diamond": 0 },
-  "stageProgress": { "clearedStage": 0, "nextBattleAvailableAt": "2026-09-29T00:00:35.2Z" },
+  "rewards": {
+    "gold": 800,
+    "artifactCodes": []
+  },
+  "currencies": { "gold": 200800, "diamond": 1000 },
+  "stageProgress": { "clearedStage": 2, "nextBattleAvailableAt": "2026-09-29T00:00:20.605Z" },
   "changedArtifacts": [],
   "serverTime": "2026-09-29T00:00:00Z"
 }
