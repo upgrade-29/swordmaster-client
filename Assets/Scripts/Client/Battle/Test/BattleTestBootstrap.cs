@@ -7,12 +7,21 @@ public class BattleTestBootstrap : MonoBehaviour
 {
     [ReadOnly(true)] [SerializeField] private string userFile = "rich"; // rich, high_sword, full_artifacts, poor
     [ReadOnly(true)] [SerializeField] private int randomSeed = -1; // 0 이상이면 매번 같은 전투가 나온다
+    [ReadOnly(true)] [SerializeField] private bool logToConsole = true; // 로그 창 문장을 Console에도 찍는다
 
     private BattleDirector director;
+    private BattleLogView logView;
+    private BattleLogger battleLogger;
 
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref director);
+        logView = GameUtil.Bind<BattleLogView>(GameObject.Find("BattleCanvas"), "BattleLogPanel");
+    }
+
+    private void OnDestroy()
+    {
+        battleLogger?.Dispose();
     }
 
     private void Start()
@@ -23,6 +32,7 @@ public class BattleTestBootstrap : MonoBehaviour
 
         var battleService = new LocalBattleService(gameDB, user, random);
         director.Init(battleService, user.StageProgress.NextStage);
+        battleLogger = new BattleLogger(director, logView, user.Nickname, gameDB, logToConsole);
 
         Debug.Log($"[Battle] Test user '{userFile}' loaded. Next stage {user.StageProgress.NextStage}");
     }

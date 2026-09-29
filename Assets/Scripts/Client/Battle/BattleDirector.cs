@@ -3,10 +3,15 @@ using System.Collections;
 using UnityEngine;
 
 // 서버가 준 BattleResult를 시간 순서대로 재생한다. 계산은 하지 않고 받은 값만 보여준다
+// 재생 중에 일어난 일은 이벤트로만 알린다. 로그 같은 부가 기능은 이 이벤트를 구독해서 만든다
 public class BattleDirector : MonoBehaviour
 {
-    // 화면의 HP 변화와 비교할 수 있게 이벤트를 Console에 찍는다
-    [SerializeField] private bool logEvents = true;
+    public event Action<BattleResult> BattleStarted;
+    public event Action<BattleResult, BattleWave, int> WaveStarted; // int는 1부터 세는 웨이브 번호
+    public event Action<BattleWave, BattleEvent> AttackApplied;
+    public event Action<BattleWave> WaveEnded;
+    public event Action<BattleResult> BattleEnded;
+    public event Action<string> RequestRejected; // 쿨타임, 잠긴 스테이지 같은 거절 사유
 
     private BattleUnitView enemyView;
     private BattleHudView hud;
@@ -53,7 +58,7 @@ public class BattleDirector : MonoBehaviour
         }
         catch (BattleRequestException e)
         {
-            Debug.LogWarning($"[Battle] Request rejected: {e.Message}");
+            RequestRejected?.Invoke(e.Message);
             SetPlaying(false);
             return;
         }
@@ -73,7 +78,7 @@ public class BattleDirector : MonoBehaviour
 
     private IEnumerator PlayBattle(BattleResult result)
     {
-        Debug.Log($"[Battle] Stage {result.stage} start. Waves: {result.waves.Count}");
+        BattleStarted?.Invoke(result);
 
         for (var i = 0; i < result.waves.Count; i++)
         {
@@ -86,8 +91,7 @@ public class BattleDirector : MonoBehaviour
             enemyView.SetVisible(false);
         }
 
-        Debug.Log($"[Battle] Stage {result.stage} {(result.isVictory ? "VICTORY" : "DEFEAT")}. " +
-                  $"Gold +{result.rewards.gold}, total {result.currencies.Gold}");
+        BattleEnded?.Invoke(result);
 
         // 다음에 도전할 스테이지도 서버가 준 값을 따른다. 이기면 다음 스테이지, 지면 같은 스테이지다
         stage = result.stageProgress.NextStage;
@@ -101,9 +105,7 @@ public class BattleDirector : MonoBehaviour
         hud.PlayerHpBar.SetHp(wave.playerStartHp, result.playerStat.maxHp);
         hud.EnemyHpBar.SetHp(wave.enemyStat.maxHp, wave.enemyStat.maxHp);
 
-        if (logEvents)
-            Debug.Log($"[Battle] {result.stage}-{waveNumber} {wave.enemyCode} start. " +
-                      $"Player HP {wave.playerStartHp:0.##}, Enemy HP {wave.enemyStat.maxHp:0.##}");
+        WaveStarted?.Invoke(result, wave, waveNumber);
 
         double elapsed = 0;
         var nextEventIndex = 0;
@@ -127,9 +129,7 @@ public class BattleDirector : MonoBehaviour
             yield return null;
         }
 
-        if (logEvents)
-            Debug.Log($"[Battle] {result.stage}-{waveNumber} end: {wave.outcome} at {wave.duration:0.00}s, " +
-                      $"heal {wave.healOnKill:0.##}, gold {wave.gold}");
+        WaveEnded?.Invoke(wave);
     }
 
     private void ApplyEvent(BattleResult result, BattleWave wave, BattleEvent battleEvent)
@@ -137,10 +137,7 @@ public class BattleDirector : MonoBehaviour
         hud.PlayerHpBar.SetHp(battleEvent.playerHp, result.playerStat.maxHp);
         hud.EnemyHpBar.SetHp(battleEvent.enemyHp, wave.enemyStat.maxHp);
 
-        if (logEvents)
-            Debug.Log($"[Battle] t={battleEvent.time:0.00} {battleEvent.attacker} " +
-                      $"dmg {battleEvent.damage:0.##}{(battleEvent.isCrit ? " CRIT" : "")} " +
-                      $"-> Player {battleEvent.playerHp:0.##} / Enemy {battleEvent.enemyHp:0.##}");
+        AttackApplied?.Invoke(wave, battleEvent);
     }
 
     private void SetPlaying(bool playing)
