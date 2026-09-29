@@ -1,0 +1,44 @@
+{
+  "stage": 1,
+  "isVictory": false,
+  "playerStat": { "attack": 30, "attackSpeed": 1.25, "maxHp": 200, "critRate": 0.1, "lifesteal": 0.05 },
+  "waves": [
+    {
+      "enemyCode": "RUSTY_DAGGER",
+      "isBoss": false,
+      "enemyStat": { "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+      "playerStartHp": 200,
+      "events": [
+        { "time": 0.8, "attacker": "PLAYER", "damage": 45, "isCrit": true, "lifesteal": 0, "playerHp": 200, "enemyHp": 75 },
+        { "time": 1.25, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 192, "enemyHp": 75 },
+        { "time": 1.6, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 193.5, "enemyHp": 45 },
+        { "time": 2.4, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 195, "enemyHp": 15 },
+        { "time": 2.5, "attacker": "ENEMY", "damage": 8, "isCrit": false, "lifesteal": 0, "playerHp": 187, "enemyHp": 15 },
+        { "time": 3.2, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 1.5, "playerHp": 188.5, "enemyHp": 0 }
+      ],
+      "duration": 3.2,
+      "outcome": "ENEMY_DEAD",
+      "healOnKill": 11.5,
+      "gold": 100
+    },
+    {
+      "enemyCode": "RUSTY_DAGGER",
+      "isBoss": false,
+      "enemyStat": { "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+      "playerStartHp": 200,
+      "events": [
+        { "time": 0.8, "attacker": "PLAYER", "damage": 30, "isCrit": false, "lifesteal": 0, "playerHp": 200, "enemyHp": 90 },
+        { "time": 1.25, "attacker": "ENEMY", "damage": 12, "isCrit": true, "lifesteal": 0, "playerHp": 188, "enemyHp": 90 }
+      ],
+      "duration": 30,
+      "outcome": "TIME_OVER",
+      "healOnKill": 0,
+      "gold": 0
+    }
+  ],
+  "rewards": { "gold": 100, "artifactCodes": [] },
+  "currencies": { "gold": 5100, "diamond": 0 },
+  "stageProgress": { "clearedStage": 0, "nextBattleAvailableAt": "2026-09-29T00:00:35.2Z" },
+  "changedArtifacts": [],
+  "serverTime": "2026-09-29T00:00:00Z"
+}
