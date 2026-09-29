@@ -13,6 +13,7 @@ public class BattleSimulator
     // 부동소수점 오차 때문에 같은 시각의 공격이 미세하게 어긋나는 것을 같은 시각으로 본다
     private const double TimeEpsilon = 1e-9;
 
+    private readonly GameDB gameDB;
     private readonly Random random;
     private readonly double critMultiplier;
     private readonly double healRate;
@@ -22,11 +23,41 @@ public class BattleSimulator
     // 테스트할 때는 시드를 고정한 Random을 넣으면 같은 전투가 나온다
     public BattleSimulator(GameDB gameDB, Random random)
     {
+        this.gameDB = gameDB;
         this.random = random;
         critMultiplier = GetConfig(gameDB, "CRIT_MULTIPLIER", 1.5);
         healRate = GetConfig(gameDB, "HEAL_RATE", 0);
         normalTimeLimit = GetConfig(gameDB, "MAX_BATTLE_TIME_NORMAL", DefaultNormalTimeLimit);
         bossTimeLimit = GetConfig(gameDB, "MAX_BATTLE_TIME_BOSS", DefaultBossTimeLimit);
+    }
+
+    // 일반 적 enemyCount마리 다음에 보스와 싸운다. 체력은 다음 적으로 이어지고, 지면 그 자리에서 끝난다
+    public (IReadOnlyList<BattleWave> waves, bool isVictory) SimulateStage(CombatStat player, StageData stage)
+    {
+        EnemyData normalEnemy = GetEnemy(stage.enemyCode);
+        CombatStat normalStat = StatCalculator.CalculateEnemy(normalEnemy, stage);
+        EnemyData boss = GetEnemy(stage.bossCode);
+        CombatStat bossStat = StatCalculator.CalculateEnemy(boss, stage);
+
+        var waves = new List<BattleWave>();
+        var playerHp = player.maxHp;
+
+        for (var i = 0; i <= stage.enemyCount; i++)
+        {
+            var isBossWave = i == stage.enemyCount;
+            BattleWave wave = isBossWave
+                ? SimulateWave(player, playerHp, boss, bossStat, stage.bossGold)
+                : SimulateWave(player, playerHp, normalEnemy, normalStat, stage.goldPerEnemy);
+            waves.Add(wave);
+
+            if (wave.outcome != WaveOutcome.EnemyDead)
+                return (waves, false);
+
+            // 처치했으면 적어도 한 번은 공격했으므로 마지막 이벤트가 있다
+            playerHp = wave.events[wave.events.Count - 1].playerHp + wave.healOnKill;
+        }
+
+        return (waves, true);
     }
 
     // 적 한 마리와 싸운다. 공격 간격은 1 / 공격 속도이고, 같은 시각이면 플레이어가 먼저 공격한다
@@ -56,18 +87,18 @@ public class BattleSimulator
             if (isPlayerTurn)
             {
                 playerAttackCount++;
-                var attack = Attack(player, playerHp, enemyHp);
-                playerHp += attack.lifesteal;
-                enemyHp = attack.targetHp;
-                events.Add(new BattleEvent(time, BattleSide.Player, attack.damage, attack.isCrit, attack.lifesteal, playerHp, enemyHp));
+                (double damage, bool isCrit, double lifesteal, double targetHp) = Attack(player, playerHp, enemyHp);
+                playerHp += lifesteal;
+                enemyHp = targetHp;
+                events.Add(new BattleEvent(time, BattleSide.Player, damage, isCrit, lifesteal, playerHp, enemyHp));
             }
             else
             {
                 enemyAttackCount++;
-                var attack = Attack(enemyStat, enemyHp, playerHp);
-                enemyHp += attack.lifesteal;
-                playerHp = attack.targetHp;
-                events.Add(new BattleEvent(time, BattleSide.Enemy, attack.damage, attack.isCrit, attack.lifesteal, playerHp, enemyHp));
+                (double damage, bool isCrit, double lifesteal, double targetHp) = Attack(enemyStat, enemyHp, playerHp);
+                enemyHp += lifesteal;
+                playerHp = targetHp;
+                events.Add(new BattleEvent(time, BattleSide.Enemy, damage, isCrit, lifesteal, playerHp, enemyHp));
             }
 
             if (enemyHp <= 0)
@@ -96,9 +127,18 @@ public class BattleSimulator
         return new BattleWave(enemy.enemyCode, enemy.boss, enemyStat, playerStartHp, events, duration, outcome, healOnKill, gold);
     }
 
+    private EnemyData GetEnemy(string enemyCode)
+    {
+        EnemyData enemy = gameDB.enemies.FirstOrDefault(data => data.enemyCode == enemyCode);
+        if (enemy == null)
+            throw new ArgumentException($"Enemy not found: {enemyCode}", nameof(enemyCode));
+
+        return enemy;
+    }
+
     private static double GetConfig(GameDB gameDB, string key, double defaultValue)
     {
-        var config = gameDB.config.FirstOrDefault(data => data.key == key);
+        ConfigData config = gameDB.config.FirstOrDefault(data => data.key == key);
         return config == null ? defaultValue : double.Parse(config.value, CultureInfo.InvariantCulture);
     }
 }
