@@ -27,8 +27,8 @@ public class BattleSimulator
         this.random = random;
         critMultiplier = GetConfig(gameDB, "CRIT_MULTIPLIER", 1.5);
         healRate = GetConfig(gameDB, "HEAL_RATE", 0);
-        normalTimeLimit = GetConfig(gameDB, "MAX_BATTLE_TIME_NORMAL", DefaultNormalTimeLimit);
-        bossTimeLimit = GetConfig(gameDB, "MAX_BATTLE_TIME_BOSS", DefaultBossTimeLimit);
+        normalTimeLimit = GetConfig(gameDB, "NORMAL_BATTLE_TIME_LIMIT", DefaultNormalTimeLimit);
+        bossTimeLimit = GetConfig(gameDB, "BOSS_BATTLE_TIME_LIMIT", DefaultBossTimeLimit);
     }
 
     // 일반 적 enemyCount마리 다음에 보스와 싸운다. 체력은 다음 적으로 이어지고, 지면 그 자리에서 끝난다
@@ -84,7 +84,7 @@ public class BattleSimulator
             if (time > timeLimit + TimeEpsilon)
                 return CreateWave(enemy, enemyStat, playerStartHp, events, timeLimit, WaveOutcome.TimeOver, 0, 0);
 
-            if (isPlayerTurn)
+            if (isPlayerTurn == true)
             {
                 playerAttackCount++;
                 (double damage, bool isCrit, double lifesteal, double targetHp) = Attack(player, playerHp, enemyHp);
