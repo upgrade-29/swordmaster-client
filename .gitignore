@@ -112,3 +112,6 @@ InitTestScene*.unity*
 
 # VS Code
 .vscode/
+
+# Claude Code skills installed by `unity skill install --local`
+/.claude/skills/
