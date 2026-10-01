@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using UnityEngine;
 
-// 테스트/디버그 전용: 실제 Network Layer 없이 ShopScreenController를 Play Mode에서 수동으로 구동하기 위한 부트스트랩.
+// 테스트/디버그 전용: 실제 Network Layer 없이 ShopTab을 Play Mode에서 수동으로 구동하기 위한 부트스트랩.
 // 프로덕션 LobbyScene.unity에는 추가하지 않는다.
 public class ShopPlayModeBootstrap : MonoBehaviour
 {
@@ -13,7 +13,7 @@ public class ShopPlayModeBootstrap : MonoBehaviour
         Poor,           // 골드 50/다이아 0, 검 레벨 0. 재화가 거의 없어 구매 실패(재화 부족) 흐름을 확인하기 위한 상황.
     }
 
-    [SerializeField] private ShopScreenController shopScreenController;
+    [SerializeField] private ShopTab shopTab;
     [SerializeField] private UserScenario userScenario = UserScenario.Rich;
     [SerializeField] private FakeShopPurchaseService.Scenario nextPurchaseScenario = FakeShopPurchaseService.Scenario.Success;
 
@@ -32,12 +32,12 @@ public class ShopPlayModeBootstrap : MonoBehaviour
             NextScenario = nextPurchaseScenario,
         };
 
-        if (shopScreenController == null)
+        if (shopTab == null)
         {
-            shopScreenController = FindFirstObjectByType<ShopScreenController>();
+            shopTab = FindFirstObjectByType<ShopTab>();
         }
 
-        shopScreenController.Initialize(gameDB, user, purchaseService);
+        shopTab.Initialize(gameDB, user, purchaseService);
     }
 
     private void Update()

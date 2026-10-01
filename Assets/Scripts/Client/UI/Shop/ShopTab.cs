@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 상점 탭 진입, 상품 목록 바인딩, 구매 시작, 결과 반영, View 상태 전환을 조정한다.
-// 탭 안쪽 세로 스크롤과 바깥쪽 가로 탭 스와이프의 라우팅은 ShopTab의 NestedScrollRect/LobbyTab이 담당한다.
+// 탭 안쪽 세로 스크롤과 바깥쪽 가로 탭 스와이프의 라우팅은 기반 클래스 LobbyTab이 담당한다.
 // 서버 응답을 최종값으로 사용하며, 클라이언트가 구매 성공/가격/보상을 독자적으로 확정하지 않는다.
-public class ShopScreenController : MonoBehaviour
+public class ShopTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private ShopScreenView view;
 
@@ -19,8 +19,10 @@ public class ShopScreenController : MonoBehaviour
     private string pendingPurchaseProductCode;
     private string pendingReconcileProductCode;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         GameUtil.Bind(gameObject, ref view);
         // 같은 GameObject의 두 컴포넌트 간 Awake/OnEnable 호출 순서를 Unity가 보장하지 않으므로,
         // view를 사용하기 전에 View 자신의 바인딩을 직접 보장한다.
@@ -42,8 +44,10 @@ public class ShopScreenController : MonoBehaviour
         isViewActive = false;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
+
         if (view != null)
         {
             view.OnPurchaseRequestedEvent -= OnPurchaseRequested;
