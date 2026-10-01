@@ -38,6 +38,12 @@ public class LoginView : MonoBehaviour
         resultText.text = message;
     }
 
+    public void SetMessage(string message)
+    {
+        resultText.color = Color.white;
+        resultText.text = message;
+    }
+
     public void SetInteractable(bool interactable)
     {
         idInput.interactable = interactable;
