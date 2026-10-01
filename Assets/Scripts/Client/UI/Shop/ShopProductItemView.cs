@@ -10,7 +10,7 @@ public class ShopProductItemView : MonoBehaviour
     [ReadOnly] [SerializeField] private Image productVisual;
     [ReadOnly] [SerializeField] private TextMeshProUGUI productName;
     [ReadOnly] [SerializeField] private ShopRewardItemView rewardItem;
-    [ReadOnly] [SerializeField] private ActionButtonView actionButton;
+    [ReadOnly] [SerializeField] private ShopButtonView actionButton;
 
     private string productCode;
     private string priceText;
@@ -24,7 +24,7 @@ public class ShopProductItemView : MonoBehaviour
         productVisual = GameUtil.Bind<Image>(transform, "ProductVisual");
         productName = GameUtil.Bind<TextMeshProUGUI>(transform, "Info/ProductName");
         rewardItem = GameUtil.Bind<ShopRewardItemView>(transform, "Info/ShopRewardItem");
-        actionButton = GameUtil.Bind<ActionButtonView>(transform, "ActionButton");
+        actionButton = GameUtil.Bind<ShopButtonView>(transform, "ActionButton");
 
         actionButton.OnClickEvent += OnClickActionButton;
     }

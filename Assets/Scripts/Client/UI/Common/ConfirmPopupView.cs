@@ -8,8 +8,8 @@ public class ConfirmPopupView : MonoBehaviour
     [ReadOnly] [SerializeField] private GameObject objRoot;
     [ReadOnly] [SerializeField] private TextMeshProUGUI titleText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI messageText;
-    [ReadOnly] [SerializeField] private ActionButtonView confirmButton;
-    [ReadOnly] [SerializeField] private ActionButtonView cancelButton;
+    [ReadOnly] [SerializeField] private ShopButtonView confirmButton;
+    [ReadOnly] [SerializeField] private ShopButtonView cancelButton;
 
     public event Action OnConfirmEvent = delegate { };
     public event Action OnCancelEvent = delegate { };
@@ -19,8 +19,8 @@ public class ConfirmPopupView : MonoBehaviour
         objRoot = GameUtil.Bind<RectTransform>(transform, "Root").gameObject;
         titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/Dimmer/Title");
         messageText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/Message");
-        confirmButton = GameUtil.Bind<ActionButtonView>(transform, "Root/Buttons/ConfirmButton");
-        cancelButton = GameUtil.Bind<ActionButtonView>(transform, "Root/Buttons/CancelButton");
+        confirmButton = GameUtil.Bind<ShopButtonView>(transform, "Root/Buttons/ConfirmButton");
+        cancelButton = GameUtil.Bind<ShopButtonView>(transform, "Root/Buttons/CancelButton");
 
         confirmButton.OnClickEvent += OnClickConfirm;
         cancelButton.OnClickEvent += OnClickCancel;

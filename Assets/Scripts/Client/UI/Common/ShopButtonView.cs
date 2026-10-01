@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // 공통 버튼 표현. Label/Icon/Interactable/Loading 상태만 다루며 상점 등 특정 기능 로직을 갖지 않는다.
-public class ActionButtonView : MonoBehaviour
+public class ShopButtonView : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private Button button;
     [ReadOnly] [SerializeField] private Image icon;
