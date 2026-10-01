@@ -32,15 +32,23 @@ public class BattleTestBootstrap : MonoBehaviour
 
     private void Start()
     {
-        GameDB gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>("TestData/game_db").text);
-        User user = JsonConvert.DeserializeObject<User>(Resources.Load<TextAsset>($"TestData/User/{userFile}").text);
-        var random = randomSeed >= 0 ? new System.Random(randomSeed) : new System.Random();
+        // 스테이지 선택 화면에서 넘어왔으면 받은 유저와 고른 스테이지를 쓰고, 아니면 테스트 파일과 다음에 도전할 스테이지를 쓴다
+        if (BattleEntry.TryConsume(out GameDB gameDB, out User user, out int stage))
+        {
+            Debug.Log($"[Battle] Entered from stage select. Start stage {stage} (next stage {user.StageProgress.NextStage})");
+        }
+        else
+        {
+            gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>("TestData/game_db").text);
+            user = JsonConvert.DeserializeObject<User>(Resources.Load<TextAsset>($"TestData/User/{userFile}").text);
+            stage = user.StageProgress.NextStage;
+            Debug.Log($"[Battle] Test user '{userFile}' loaded. Next stage {stage}");
+        }
 
+        var random = randomSeed >= 0 ? new System.Random(randomSeed) : new System.Random();
         var battleService = new LocalBattleService(gameDB, user, random);
-        director.Init(battleService, user.StageProgress.NextStage);
+        director.Init(battleService, stage);
         battleLogger = new BattleLogger(director, logView, user.Nickname, gameDB, logToConsole);
         effectPresenter = new BattleEffectPresenter(director, playerView, enemyView);
-
-        Debug.Log($"[Battle] Test user '{userFile}' loaded. Next stage {user.StageProgress.NextStage}");
     }
 }
