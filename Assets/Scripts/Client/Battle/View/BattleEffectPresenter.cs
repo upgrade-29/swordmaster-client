@@ -32,6 +32,8 @@ public class BattleEffectPresenter : IDisposable
 
         director.AttackApplied += OnAttackApplied;
         director.BattleEnded += OnBattleEnded;
+        director.BattleStarted += OnBattleStarted;
+        director.RequestRejected += OnRequestRejected;
         director.BossWarningStarted += OnBossWarningStarted;
     }
 
@@ -39,14 +41,29 @@ public class BattleEffectPresenter : IDisposable
     {
         director.AttackApplied -= OnAttackApplied;
         director.BattleEnded -= OnBattleEnded;
+        director.BattleStarted -= OnBattleStarted;
+        director.RequestRejected -= OnRequestRejected;
         director.BossWarningStarted -= OnBossWarningStarted;
         damageFloaters.Dispose();
+    }
+
+    // 재도전 요청이 받아들여져 전투가 시작되면 팝업을 닫는다
+    private void OnBattleStarted(BattleResult result)
+    {
+        resultView.Hide();
+    }
+
+    private void OnRequestRejected(string reason)
+    {
+        resultView.ShowMessage(reason);
     }
 
     private void OnBattleEnded(BattleResult result)
     {
         var artifactNames = result.rewards.artifactCodes.Select(code => artifactNamesByCode[code]).ToList();
-        resultView.Show(result, artifactNames);
+        // 서버가 정한 쿨타임은 응답을 받은 시점부터 흐르므로, 재생하는 동안 지난 시간은 뺀다
+        double cooldown = (result.stageProgress.NextBattleAvailableAt - result.serverTime).TotalSeconds - director.SecondsSinceResult;
+        resultView.Show(result, artifactNames, Math.Max(0, cooldown));
     }
 
     private void OnBossWarningStarted(BattleWave wave)

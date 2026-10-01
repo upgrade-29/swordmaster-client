@@ -23,6 +23,10 @@ public class BattleDirector : MonoBehaviour
     private IBattleService battleService;
     private int stage;
     private bool isPlaying;
+    private float resultReceivedTime;
+
+    // 서버 응답을 받은 뒤 지난 시간. 쿨타임은 응답을 받은 시점부터 흐르므로 재생이 끝난 뒤 남은 시간을 구할 때 뺀다
+    public float SecondsSinceResult => Time.unscaledTime - resultReceivedTime;
 
     private void Awake()
     {
@@ -48,6 +52,12 @@ public class BattleDirector : MonoBehaviour
             yield return null;
         }
 
+        RequestAndPlay();
+    }
+
+    // 결과 팝업의 재도전. 전투 중이거나 서버가 거절하면 아무 일도 일어나지 않는다(거절 사유는 RequestRejected로 알린다)
+    public void Retry()
+    {
         RequestAndPlay();
     }
 
@@ -80,6 +90,7 @@ public class BattleDirector : MonoBehaviour
         if (this == null)
             return;
 
+        resultReceivedTime = Time.unscaledTime;
         StartCoroutine(PlayBattle(result));
     }
 
@@ -100,8 +111,7 @@ public class BattleDirector : MonoBehaviour
 
         BattleEnded?.Invoke(result);
 
-        // 다음에 도전할 스테이지도 서버가 준 값을 따른다. 이기면 다음 스테이지, 지면 같은 스테이지다
-        stage = result.stageProgress.NextStage;
+        // 재도전은 이기든 지든 방금 한 스테이지를 다시 한다
         isPlaying = false;
     }
 
