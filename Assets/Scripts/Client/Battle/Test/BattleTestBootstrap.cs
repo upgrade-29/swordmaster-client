@@ -13,6 +13,8 @@ public class BattleTestBootstrap : MonoBehaviour
     private BattleLogView logView;
     private BattleUnitView playerView;
     private BattleUnitView enemyView;
+    private BossWarningView bossWarningView;
+    private BattleResultView resultView;
     private BattleLogger battleLogger;
     private BattleEffectPresenter effectPresenter;
 
@@ -22,6 +24,8 @@ public class BattleTestBootstrap : MonoBehaviour
         logView = GameUtil.Bind<BattleLogView>(GameObject.Find("BattleCanvas"), "Hud/BattleLogPanel");
         playerView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Player"));
         enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
+        bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
+        resultView = GameUtil.Bind<BattleResultView>(GameObject.Find("BattleCanvas"), "ResultPopup");
     }
 
     private void OnDestroy()
@@ -49,6 +53,6 @@ public class BattleTestBootstrap : MonoBehaviour
         var battleService = new LocalBattleService(gameDB, user, random);
         director.Init(battleService, stage);
         battleLogger = new BattleLogger(director, logView, user.Nickname, gameDB, logToConsole);
-        effectPresenter = new BattleEffectPresenter(director, playerView, enemyView);
+        effectPresenter = new BattleEffectPresenter(director, playerView, enemyView, bossWarningView, resultView, gameDB);
     }
 }

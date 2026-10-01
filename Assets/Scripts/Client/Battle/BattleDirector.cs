@@ -6,9 +6,13 @@ using UnityEngine;
 // 재생 중에 일어난 일은 이벤트로만 알린다. 로그 같은 부가 기능은 이 이벤트를 구독해서 만든다
 public class BattleDirector : MonoBehaviour
 {
+    public const float BossWarningDuration = 1.8f;
+    private const float StartDelay = 2f;
+
     public event Action<BattleResult> BattleStarted;
     public event Action<BattleResult, BattleWave, int> WaveStarted; // int는 1부터 세는 웨이브 번호
     public event Action<BattleWave, BattleEvent> AttackApplied;
+    public event Action<BattleWave> BossWarningStarted; // 보스전 시작 전 경고 연출. 끝날 때까지 공격은 시작하지 않는다
     public event Action<BattleWave> WaveEnded;
     public event Action<BattleResult> BattleEnded;
     public event Action<string> RequestRejected; // 쿨타임, 잠긴 스테이지 같은 거절 사유
@@ -26,30 +30,33 @@ public class BattleDirector : MonoBehaviour
         hud = GameUtil.Bind<BattleHudView>(GameObject.Find("BattleCanvas"), "Hud");
     }
 
-    // 다른 오브젝트의 Bind는 각자의 Awake에서 끝나므로, 그 결과는 Start부터 쓴다
-    private void Start()
-    {
-        hud.StartButton.onClick.AddListener(OnClickStart);
-    }
-
-    private void OnDestroy()
-    {
-        hud.StartButton.onClick.RemoveListener(OnClickStart);
-    }
-
+    // 들어오면 StartDelay 뒤에 전투를 시작한다
     public void Init(IBattleService battleService, int stage)
     {
         this.battleService = battleService;
         this.stage = stage;
         hud.SetStage(stage, 1, false);
+
+        StartCoroutine(StartAfterDelay());
     }
 
-    private async void OnClickStart()
+    private IEnumerator StartAfterDelay()
+    {
+        for (float remaining = StartDelay; remaining > 0f; remaining -= Time.deltaTime)
+        {
+            hud.SetStartCountdown(remaining);
+            yield return null;
+        }
+
+        RequestAndPlay();
+    }
+
+    private async void RequestAndPlay()
     {
         if (isPlaying || battleService == null)
             return;
 
-        SetPlaying(true);
+        isPlaying = true;
 
         BattleResult result;
         try
@@ -59,13 +66,13 @@ public class BattleDirector : MonoBehaviour
         catch (BattleRequestException e)
         {
             RequestRejected?.Invoke(e.Message);
-            SetPlaying(false);
+            isPlaying = false;
             return;
         }
         catch (Exception e)
         {
             Debug.LogException(e);
-            SetPlaying(false);
+            isPlaying = false;
             return;
         }
 
@@ -95,7 +102,7 @@ public class BattleDirector : MonoBehaviour
 
         // 다음에 도전할 스테이지도 서버가 준 값을 따른다. 이기면 다음 스테이지, 지면 같은 스테이지다
         stage = result.stageProgress.NextStage;
-        SetPlaying(false);
+        isPlaying = false;
     }
 
     private IEnumerator PlayWave(BattleResult result, BattleWave wave, int waveNumber)
@@ -106,6 +113,12 @@ public class BattleDirector : MonoBehaviour
         hud.EnemyHpBar.SetHp(wave.enemyStat.maxHp, wave.enemyStat.maxHp);
 
         WaveStarted?.Invoke(result, wave, waveNumber);
+
+        if (wave.isBoss)
+        {
+            BossWarningStarted?.Invoke(wave);
+            yield return new WaitForSeconds(BossWarningDuration);
+        }
 
         double elapsed = 0;
         var nextEventIndex = 0;
@@ -138,11 +151,5 @@ public class BattleDirector : MonoBehaviour
         hud.EnemyHpBar.SetHp(battleEvent.enemyHp, wave.enemyStat.maxHp);
 
         AttackApplied?.Invoke(wave, battleEvent);
-    }
-
-    private void SetPlaying(bool playing)
-    {
-        isPlaying = playing;
-        hud.StartButton.interactable = playing == false;
     }
 }

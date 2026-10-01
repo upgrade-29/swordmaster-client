@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // BattleDirector가 알려주는 공격마다 공격/피격 모션과 데미지 숫자를 보여준다. 재생 타이밍이나 HP는 모른다
@@ -11,21 +13,45 @@ public class BattleEffectPresenter : IDisposable
     private readonly BattleDirector director;
     private readonly BattleUnitView playerView;
     private readonly BattleUnitView enemyView;
+    private readonly BossWarningView bossWarningView;
+    private readonly BattleResultView resultView;
+    private readonly Dictionary<string, string> enemyNamesByCode;
+    private readonly Dictionary<string, string> artifactNamesByCode;
     private readonly DamageFloaterPool damageFloaters = new DamageFloaterPool();
 
-    public BattleEffectPresenter(BattleDirector director, BattleUnitView playerView, BattleUnitView enemyView)
+    public BattleEffectPresenter(BattleDirector director, BattleUnitView playerView, BattleUnitView enemyView,
+        BossWarningView bossWarningView, BattleResultView resultView, GameDB gameDB)
     {
         this.director = director;
         this.playerView = playerView;
         this.enemyView = enemyView;
+        this.bossWarningView = bossWarningView;
+        this.resultView = resultView;
+        enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.enemyCode, data => data.name);
+        artifactNamesByCode = gameDB.artifacts.ToDictionary(data => data.artifactCode, data => data.name);
 
         director.AttackApplied += OnAttackApplied;
+        director.BattleEnded += OnBattleEnded;
+        director.BossWarningStarted += OnBossWarningStarted;
     }
 
     public void Dispose()
     {
         director.AttackApplied -= OnAttackApplied;
+        director.BattleEnded -= OnBattleEnded;
+        director.BossWarningStarted -= OnBossWarningStarted;
         damageFloaters.Dispose();
+    }
+
+    private void OnBattleEnded(BattleResult result)
+    {
+        var artifactNames = result.rewards.artifactCodes.Select(code => artifactNamesByCode[code]).ToList();
+        resultView.Show(result, artifactNames);
+    }
+
+    private void OnBossWarningStarted(BattleWave wave)
+    {
+        bossWarningView.Play(enemyNamesByCode[wave.enemyCode], BattleDirector.BossWarningDuration);
     }
 
     private void OnAttackApplied(BattleWave wave, BattleEvent battleEvent)
