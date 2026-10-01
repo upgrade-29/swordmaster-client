@@ -701,7 +701,6 @@ GameObject:
   - component: {fileID: 57747065436475750}
   - component: {fileID: 7384262693940166541}
   - component: {fileID: 1808601228945224152}
-  - component: {fileID: 616467115301221272}
   - component: {fileID: 7890084249204197908}
   - component: {fileID: 4630744994158013546}
   m_Layer: 5
@@ -823,20 +822,6 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
---- !u!114 &616467115301221272
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7407927596636221935}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e2a3d51d9607d941b0b9e30a4ecb58a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LobbyTab
-  nestedScrollRect: {fileID: 0}
-  layoutElement: {fileID: 0}
 --- !u!114 &7890084249204197908
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -871,6 +856,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c8a67f5d79023d41ac088cd476c9734, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopScreenController
+  nestedScrollRect: {fileID: 0}
+  layoutElement: {fileID: 0}
   view: {fileID: 0}
   visualCatalog: {fileID: 11400000, guid: 809010dd32571184c80f0ceaeee25c48, type: 2}
   confirmPopup: {fileID: 564609514490704557}

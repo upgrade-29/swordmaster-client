@@ -33,7 +33,7 @@ public class ShopScreenView : MonoBehaviour
         EnsureBound();
     }
 
-    // ShopScreenController 등 같은 GameObject의 다른 컴포넌트가 Awake 호출 순서에 의존하지 않고
+    // ShopTab 등 같은 GameObject의 다른 컴포넌트가 Awake 호출 순서에 의존하지 않고
     // View를 안전하게 사용할 수 있도록, 바인딩이 끝나지 않았으면 즉시 바인딩한다.
     public void EnsureBound()
     {
