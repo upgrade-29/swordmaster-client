@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// 서버가 없기 때문에 임시 코드. 테스트 데이터로 유저와 GameDB를 만들어 StageSelectController에 넘긴다
+// 서버가 없기 때문에 임시 코드. 테스트 데이터를 읽는 곳은 여기 하나다. 유저와 GameDB를 만들어 StageSelectController에 넘긴다
 // 전투 씬에서 돌아오면 StageSelectEntry로 받은 유저를 쓴다
-// 입장 이벤트를 받아 유저 정보와 함께 BattleScene을 여는 것도 임시로 여기서 한다. 로비와 합치면 이 구독처만 바뀐다
-public class StageSelectTestBootstrap : MonoBehaviour
+// 입장 이벤트를 받아 유저 정보와 함께 BattleScene을 여는 것도 임시로 여기서 한다
+public class LobbyTestDataLoader : MonoBehaviour
 {
     private const string BattleSceneName = "BattleScene";
 

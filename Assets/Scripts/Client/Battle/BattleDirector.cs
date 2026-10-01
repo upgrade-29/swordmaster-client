@@ -9,6 +9,7 @@ public class BattleDirector : MonoBehaviour
     public const float BossWarningDuration = 1.8f;
     private const float StartDelay = 2f;
 
+    public event Action CountdownStarted; // 서버가 전투를 받아들여 StartDelay 대기를 시작할 때. 처음 입장과 재도전 모두
     public event Action<BattleResult> BattleStarted;
     public event Action<BattleResult, BattleWave, int> WaveStarted; // int는 1부터 세는 웨이브 번호
     public event Action<BattleWave, BattleEvent> AttackApplied;
@@ -34,28 +35,17 @@ public class BattleDirector : MonoBehaviour
         hud = GameUtil.Bind<BattleHudView>(GameObject.Find("BattleCanvas"), "Hud");
     }
 
-    // 들어오면 StartDelay 뒤에 전투를 시작한다
+    // 들어오면 전투를 요청하고, 받아들여지면 StartDelay 뒤에 재생한다
     public void Init(IBattleService battleService, int stage)
     {
         this.battleService = battleService;
         this.stage = stage;
-        hud.SetStage(stage, 1, false);
-
-        StartCoroutine(StartAfterDelay());
-    }
-
-    private IEnumerator StartAfterDelay()
-    {
-        for (float remaining = StartDelay; remaining > 0f; remaining -= Time.deltaTime)
-        {
-            hud.SetStartCountdown(remaining);
-            yield return null;
-        }
 
         RequestAndPlay();
     }
 
-    // 결과 팝업의 재도전. 전투 중이거나 서버가 거절하면 아무 일도 일어나지 않는다(거절 사유는 RequestRejected로 알린다)
+    // 결과 팝업의 재도전. 처음 입장과 같이 StartDelay를 기다린 뒤 재생한다
+    // 대기 중이거나 전투 중이거나 서버가 거절하면 아무 일도 일어나지 않는다(거절 사유는 RequestRejected로 알린다)
     public void Retry()
     {
         RequestAndPlay();
@@ -96,6 +86,8 @@ public class BattleDirector : MonoBehaviour
 
     private IEnumerator PlayBattle(BattleResult result)
     {
+        yield return CountDown(result);
+
         BattleStarted?.Invoke(result);
 
         for (var i = 0; i < result.waves.Count; i++)
@@ -115,12 +107,32 @@ public class BattleDirector : MonoBehaviour
         isPlaying = false;
     }
 
-    private IEnumerator PlayWave(BattleResult result, BattleWave wave, int waveNumber)
+    // 첫 웨이브 직전 상태로 화면을 되돌리고, 남은 시간 자리에 시작 안내를 보여주며 StartDelay만큼 기다린다
+    // 재도전이면 지난 전투에서 쓰러진 적과 줄어든 HP가 여기서 다시 세팅된다
+    private IEnumerator CountDown(BattleResult result)
+    {
+        CountdownStarted?.Invoke();
+        SetUpWave(result, result.waves[0], 1);
+
+        for (float remaining = StartDelay; remaining > 0f; remaining -= Time.deltaTime)
+        {
+            hud.SetStartCountdown(remaining);
+            yield return null;
+        }
+    }
+
+    // 웨이브 시작 상태로 스테이지 표시, 적, HP바를 세팅한다
+    private void SetUpWave(BattleResult result, BattleWave wave, int waveNumber)
     {
         hud.SetStage(result.stage, waveNumber, wave.isBoss);
         enemyView.SetVisible(true);
         hud.PlayerHpBar.SetHp(wave.playerStartHp, result.playerStat.maxHp);
         hud.EnemyHpBar.SetHp(wave.enemyStat.maxHp, wave.enemyStat.maxHp);
+    }
+
+    private IEnumerator PlayWave(BattleResult result, BattleWave wave, int waveNumber)
+    {
+        SetUpWave(result, wave, waveNumber);
 
         WaveStarted?.Invoke(result, wave, waveNumber);
 

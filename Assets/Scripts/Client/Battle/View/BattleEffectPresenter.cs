@@ -32,7 +32,7 @@ public class BattleEffectPresenter : IDisposable
 
         director.AttackApplied += OnAttackApplied;
         director.BattleEnded += OnBattleEnded;
-        director.BattleStarted += OnBattleStarted;
+        director.CountdownStarted += OnCountdownStarted;
         director.RequestRejected += OnRequestRejected;
         director.BossWarningStarted += OnBossWarningStarted;
     }
@@ -41,14 +41,14 @@ public class BattleEffectPresenter : IDisposable
     {
         director.AttackApplied -= OnAttackApplied;
         director.BattleEnded -= OnBattleEnded;
-        director.BattleStarted -= OnBattleStarted;
+        director.CountdownStarted -= OnCountdownStarted;
         director.RequestRejected -= OnRequestRejected;
         director.BossWarningStarted -= OnBossWarningStarted;
         damageFloaters.Dispose();
     }
 
-    // 재도전 요청이 받아들여져 전투가 시작되면 팝업을 닫는다
-    private void OnBattleStarted(BattleResult result)
+    // 재도전 요청이 받아들여져 시작 대기에 들어가면 팝업을 닫는다. 거절되면 팝업에 사유를 보여준다
+    private void OnCountdownStarted()
     {
         resultView.Hide();
     }

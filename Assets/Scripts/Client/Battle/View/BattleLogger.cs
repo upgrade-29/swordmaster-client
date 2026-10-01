@@ -20,6 +20,7 @@ public class BattleLogger : IDisposable
         enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.enemyCode, data => data.name);
         this.logToConsole = logToConsole;
 
+        director.CountdownStarted += OnCountdownStarted;
         director.BattleStarted += OnBattleStarted;
         director.WaveStarted += OnWaveStarted;
         director.AttackApplied += OnAttackApplied;
@@ -30,6 +31,7 @@ public class BattleLogger : IDisposable
 
     public void Dispose()
     {
+        director.CountdownStarted -= OnCountdownStarted;
         director.BattleStarted -= OnBattleStarted;
         director.WaveStarted -= OnWaveStarted;
         director.AttackApplied -= OnAttackApplied;
@@ -38,10 +40,14 @@ public class BattleLogger : IDisposable
         director.RequestRejected -= OnRequestRejected;
     }
 
+    // 로그 창에는 이번 전투 내용만 남긴다. 재도전하면 시작 대기에 들어갈 때 지난 전투 로그를 지운다
+    private void OnCountdownStarted()
+    {
+        view.Clear();
+    }
+
     private void OnBattleStarted(BattleResult result)
     {
-        // 로그 창에는 이번 전투 내용만 남긴다
-        view.Clear();
         Log($"스테이지 {result.stage} 전투 시작!", $" (waves {result.waves.Count})");
     }
 
