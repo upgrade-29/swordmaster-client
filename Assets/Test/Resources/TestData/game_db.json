@@ -1,7 +1,7 @@
 {
-  "version": "test-1",
+  "version": "20261002103349",
   "swords": [
-    { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attack": 10, "attackSpeed": 1.0, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
+    { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attack": 10, "attackSpeed": 1, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
     { "level": 1, "successRate": 0.9, "enhanceCost": 200, "sellPrice": 150, "attack": 14, "attackSpeed": 1.02, "maxHp": 330, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
     { "level": 2, "successRate": 0.85, "enhanceCost": 400, "sellPrice": 400, "attack": 19, "attackSpeed": 1.04, "maxHp": 365, "name": "철 검", "appearanceCode": "SWORD_01" },
     { "level": 3, "successRate": 0.8, "enhanceCost": 700, "sellPrice": 900, "attack": 25, "attackSpeed": 1.06, "maxHp": 405, "name": "강철 검", "appearanceCode": "SWORD_02" },
@@ -11,7 +11,7 @@
     { "level": 7, "successRate": 0.4, "enhanceCost": 3200, "sellPrice": 12000, "attack": 62, "attackSpeed": 1.14, "maxHp": 630, "name": "성검", "appearanceCode": "SWORD_03" },
     { "level": 8, "successRate": 0.3, "enhanceCost": 4500, "sellPrice": 22000, "attack": 76, "attackSpeed": 1.16, "maxHp": 710, "name": "용살검", "appearanceCode": "SWORD_03" },
     { "level": 9, "successRate": 0.2, "enhanceCost": 6500, "sellPrice": 40000, "attack": 92, "attackSpeed": 1.18, "maxHp": 800, "name": "신검", "appearanceCode": "SWORD_04" },
-    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attack": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검", "appearanceCode": "SWORD_04" }
+    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attack": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검 아님", "appearanceCode": "SWORD_04" }
   ],
   "artifacts": [
     { "artifactCode": "CRIT_01", "name": "날카로운 숫돌", "grade": "COMMON", "iconCode": "ICON_CRIT_01", "statType": "CRIT_RATE", "baseValue": 0.03, "valuePerLevel": 0.01 },
@@ -43,12 +43,12 @@
   ],
   "enemies": [
     { "enemyCode": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-    { "enemyCode": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1.0, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
+    { "enemyCode": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
     { "enemyCode": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
     { "enemyCode": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
   ],
   "stages": [
-    { "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1.0, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1.0, "recommendedPower": 500, "imageCode": "STAGE_01" },
+    { "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1, "recommendedPower": 500, "imageCode": "STAGE_01" },
     { "stage": 2, "enemyCode": "BANDIT_SABER", "enemyCount": 4, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
     { "stage": 3, "enemyCode": "BANDIT_SABER", "enemyCount": 5, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
   ],
