@@ -28,7 +28,7 @@ public class EnhanceLocalService : IEnhanceService
             throw new EnhanceRequestException(EnhanceRequestException.LevelMismatch, "검 강화 단계가 다릅니다.");
         }
 
-        SwordData sword = gameDB.swords.First(data => data.level == user.Sword.Level);
+        SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
         if (sword.successRate.HasValue == false || sword.enhanceCost.HasValue == false)
         {
             throw new EnhanceRequestException(EnhanceRequestException.SwordMaxLevel, "최대 강화 단계입니다.");
@@ -60,7 +60,7 @@ public class EnhanceLocalService : IEnhanceService
             throw new EnhanceRequestException(EnhanceRequestException.SwordNotSellable, "+0 검은 판매할 수 없습니다.");
         }
 
-        long sellPrice = gameDB.swords.First(data => data.level == user.Sword.Level).sellPrice;
+        long sellPrice = gameDB.swords.First(x => x.level == user.Sword.Level).sellPrice;
         user.Currencies.Add(CurrencyType.Gold, sellPrice);
         user.Sword.SetLevel(0);
 
@@ -80,8 +80,8 @@ public class EnhanceLocalService : IEnhanceService
             throw new EnhanceRequestException(EnhanceRequestException.ArtifactNotOwned, "보유하지 않은 아티팩트입니다.");
         }
 
-        ArtifactGrade grade = gameDB.artifacts.First(data => data.artifactCode == artifactCode).grade;
-        ArtifactEnhanceData enhance = gameDB.artifactEnhance.FirstOrDefault(data => data.grade == grade && data.level == artifact.Level);
+        ArtifactGrade grade = gameDB.artifacts.First(x => x.artifactCode == artifactCode).grade;
+        ArtifactEnhanceData enhance = gameDB.artifactEnhance.FirstOrDefault(x => x.grade == grade && x.level == artifact.Level);
         if (enhance == null)
         {
             throw new EnhanceRequestException(EnhanceRequestException.ArtifactMaxLevel, "아티팩트가 최대 레벨입니다.");
@@ -112,9 +112,9 @@ public class EnhanceLocalService : IEnhanceService
 
     private CombatStat CalculateStats()
     {
-        SwordData sword = gameDB.swords.First(data => data.level == user.Sword.Level);
+        SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
         var equippedArtifacts = user.EquippedArtifacts
-            .Select(artifact => (gameDB.artifacts.First(data => data.artifactCode == artifact.ArtifactCode), artifact.Level));
+            .Select(x => (gameDB.artifacts.First(y => y.artifactCode == x.ArtifactCode), x.Level));
         return StatCalculator.CalculatePlayer(sword, equippedArtifacts);
     }
 
@@ -125,7 +125,7 @@ public class EnhanceLocalService : IEnhanceService
 
     private double GetConfigValue(string key)
     {
-        return double.Parse(gameDB.config.First(data => data.key == key).value, CultureInfo.InvariantCulture);
+        return double.Parse(gameDB.config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
     }
 
     // 서버 응답처럼 JSON을 거쳐서 넘긴다. 서버 역할의 user와 객체를 공유하지 않게 된다

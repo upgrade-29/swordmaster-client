@@ -9,6 +9,8 @@ public class EnhanceTab : LobbyTab
 {
     private const string EmptySlotName = "빈 슬롯";
     private const string EmptyValue = "-";
+    private const int SwordStatRowCount = 3;
+    private const int ArtifactStatRowCount = 1;
 
     [ReadOnly] [SerializeField] private EnhanceTitle enhanceTitle;
     [ReadOnly] [SerializeField] private EnhanceEquipmentSelect enhanceEquipmentSelect;
@@ -93,12 +95,12 @@ public class EnhanceTab : LobbyTab
 
     private IEnumerable<(ArtifactData data, int level)> GetEquippedArtifactLevels()
     {
-        return User.EquippedArtifacts.Select(artifact => (GetArtifactData(artifact.ArtifactCode), artifact.Level));
+        return User.EquippedArtifacts.Select(x => (GetArtifactData(x.ArtifactCode), x.Level));
     }
 
     private double GetConfigValue(string key)
     {
-        return double.Parse(GameDB.config.First(data => data.key == key).value, CultureInfo.InvariantCulture);
+        return double.Parse(GameDB.config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
     }
 
     private void RefreshEquipmentNames()
@@ -135,13 +137,21 @@ public class EnhanceTab : LobbyTab
     {
         SwordData current = GetSwordData(User.Sword.Level);
         SwordData next = GetSwordData(User.Sword.Level + 1);
-        bool isMaxLevel = next == null;
 
         enhanceEquipmentInfo.SetEquipment($"+{current.level.ToString()}", current.name);
+        enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
+        SetStatRow(0, "공격력", current.attack, next?.attack, FormatInteger);
+        SetStatRow(1, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
+        SetStatRow(2, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
+    }
 
-        enhanceEquipmentInfo.SetStatRow(0, "공격력", FormatInteger(current.attack), isMaxLevel ? EmptyValue : FormatInteger(next.attack));
-        enhanceEquipmentInfo.SetStatRow(1, "공격 속도", FormatAttackSpeed(current.attackSpeed), isMaxLevel ? EmptyValue : FormatAttackSpeed(next.attackSpeed));
-        enhanceEquipmentInfo.SetStatRow(2, "최대 체력", FormatInteger(current.maxHp), isMaxLevel ? EmptyValue : FormatInteger(next.maxHp));
+    private void SetStatRow(int index, string name, double current, double? next, Func<double, string> format)
+    {
+        string nextText = next.HasValue
+            ? format(next.Value)
+            : EmptyValue;
+
+        enhanceEquipmentInfo.SetStatRow(index, name, format(current), nextText);
     }
 
     private void RefreshSwordAction()
@@ -166,10 +176,20 @@ public class EnhanceTab : LobbyTab
         if (artifact == null)
         {
             enhanceEquipmentInfo.SetEquipment(string.Empty, EmptySlotName);
+            enhanceEquipmentInfo.ShowEmptyGuide();
             return;
         }
 
-        enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", GetArtifactData(artifact.ArtifactCode).name);
+        ArtifactData data = GetArtifactData(artifact.ArtifactCode);
+        double? nextValue = null;
+        if (GetArtifactEnhanceData(artifact) != null)
+        {
+            nextValue = StatCalculator.GetArtifactValue(data, artifact.Level + 1);
+        }
+
+        enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", data.name);
+        enhanceEquipmentInfo.ShowStatRows(ArtifactStatRowCount);
+        SetStatRow(0, GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue, GetStatFormat(data.statType));
     }
 
     private void RefreshArtifactAction(int slotIndex)
@@ -193,12 +213,12 @@ public class EnhanceTab : LobbyTab
 
     private SwordData GetSwordData(int level)
     {
-        return GameDB.swords.FirstOrDefault(data => data.level == level);
+        return GameDB.swords.FirstOrDefault(x => x.level == level);
     }
 
     private ArtifactData GetArtifactData(string artifactCode)
     {
-        return GameDB.artifacts.First(data => data.artifactCode == artifactCode);
+        return GameDB.artifacts.First(x => x.artifactCode == artifactCode);
     }
 
     private UserArtifact GetEquippedArtifact(int slotIndex)
@@ -209,7 +229,38 @@ public class EnhanceTab : LobbyTab
     private ArtifactEnhanceData GetArtifactEnhanceData(UserArtifact artifact)
     {
         ArtifactGrade grade = GetArtifactData(artifact.ArtifactCode).grade;
-        return GameDB.artifactEnhance.FirstOrDefault(data => data.grade == grade && data.level == artifact.Level);
+        return GameDB.artifactEnhance.FirstOrDefault(x => x.grade == grade && x.level == artifact.Level);
+    }
+
+    private static string GetStatName(StatType statType)
+    {
+        switch (statType)
+        {
+            case StatType.AttackSpeed:
+                return "공격 속도";
+            case StatType.MaxHp:
+                return "최대 체력";
+            case StatType.CritRate:
+                return "치명타 확률";
+            case StatType.Lifesteal:
+                return "생명력 흡수";
+        }
+        return string.Empty;
+    }
+
+    private static Func<double, string> GetStatFormat(StatType statType)
+    {
+        switch (statType)
+        {
+            case StatType.AttackSpeed:
+                return FormatAttackSpeed;
+            case StatType.MaxHp:
+                return FormatInteger;
+            case StatType.CritRate:
+            case StatType.Lifesteal:
+                return FormatPercentage;
+        }
+        return FormatInteger;
     }
 
     private static string FormatInteger(double value)
@@ -252,10 +303,7 @@ public class EnhanceTab : LobbyTab
 
     private async Task EnhanceSwordAsync()
     {
-        EnhanceSwordResult result = await enhanceService.EnhanceSwordAsync(User.Sword.Level);
-        Debug.Log(result.result == EnhanceSwordOutcome.Success
-            ? $"[Enhance] 강화 성공 +{result.sword.Level.ToString()}"
-            : "[Enhance] 검이 파괴되었습니다. +0으로 돌아갑니다.");
+        await enhanceService.EnhanceSwordAsync(User.Sword.Level);
     }
 
     private async Task EnhanceArtifactAsync()
@@ -266,15 +314,12 @@ public class EnhanceTab : LobbyTab
             return;
         }
 
-        EnhanceArtifactResult result = await enhanceService.EnhanceArtifactAsync(artifact.ArtifactCode);
-        Debug.Log($"[Enhance] 아티팩트 강화 성공 Lv. {result.artifacts[0].Level.ToString()}");
+        await enhanceService.EnhanceArtifactAsync(artifact.ArtifactCode);
     }
 
     private async Task SellSwordAsync()
     {
-        EnhanceSwordSellResult result = await enhanceService.SellSwordAsync(User.Sword.Level);
-        long gold = result.rewards.Where(reward => reward.rewardType == RewardType.Gold).Sum(reward => reward.amount);
-        Debug.Log($"[Enhance] 판매 완료 +{FormatInteger(gold)} 골드");
+        await enhanceService.SellSwordAsync(User.Sword.Level);
     }
 
     private async Task RequestAsync(Func<Task> request)
