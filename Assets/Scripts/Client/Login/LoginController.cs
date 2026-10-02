@@ -1,22 +1,32 @@
 using UnityEngine;
 
-// 로그인 요청을 처리하고 결과를 뷰에 전달한다. 서버 통신은 ILoginService에 맡긴다.
+// 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
 public class LoginController : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private LoginView view;
+    [ReadOnly] [SerializeField] private SignupView signupView;
 
     [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:5000"; // 서버 주소 확정 전 가정값
     [ReadOnly(true)] [SerializeField] private int timeoutSeconds = 10;
 
-    private ILoginService loginService;
+    private IAuthService authService;
     private bool isRequesting;
 
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref view);
-        loginService = new HttpLoginService(baseUrl, timeoutSeconds);
+        GameUtil.Bind(gameObject, ref signupView);
+        authService = new HttpAuthService(baseUrl, timeoutSeconds);
 
         view.OnClickLoginEvent += OnClickLogin;
+        view.OnClickSignupEvent += OnClickOpenSignup;
+        signupView.OnClickBackEvent += OnClickSignupBack;
+    }
+
+    private void Start()
+    {
+        view.Show();
+        signupView.Hide();
     }
 
     private void OnDestroy()
@@ -24,7 +34,25 @@ public class LoginController : MonoBehaviour
         if (view != null)
         {
             view.OnClickLoginEvent -= OnClickLogin;
+            view.OnClickSignupEvent -= OnClickOpenSignup;
         }
+
+        if (signupView != null)
+        {
+            signupView.OnClickBackEvent -= OnClickSignupBack;
+        }
+    }
+
+    private void OnClickOpenSignup()
+    {
+        view.Hide();
+        signupView.Show();
+    }
+
+    private void OnClickSignupBack()
+    {
+        signupView.Hide();
+        view.Show();
     }
 
     private async void OnClickLogin(string id, string password)
@@ -44,10 +72,18 @@ public class LoginController : MonoBehaviour
         view.SetInteractable(false);
         view.SetMessage("로그인 중...");
 
-        LoginResult result;
+        bool isSuccess;
+        string message;
         try
         {
-            result = await loginService.LoginAsync(id, password);
+            await authService.LoginAsync(id, password);
+            isSuccess = true;
+            message = "로그인 성공";
+        }
+        catch (AuthFailureException e)
+        {
+            isSuccess = false;
+            message = $"로그인 실패: {e.Message}";
         }
         finally
         {
@@ -61,6 +97,6 @@ public class LoginController : MonoBehaviour
         }
 
         view.SetInteractable(true);
-        view.SetResult(result.IsSuccess, result.IsSuccess ? "로그인 성공" : $"로그인 실패: {result.Message}");
+        view.SetResult(isSuccess, message);
     }
 }
