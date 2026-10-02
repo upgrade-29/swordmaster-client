@@ -37,6 +37,7 @@ public class EnhanceLocalService : IEnhanceService
 
         bool isSuccess = random.NextDouble() < sword.successRate.Value;
         User.Sword.SetLevel(isSuccess ? sword.level + 1 : 0);
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
         CombatStat stats = CalculateStats();
         var result = new EnhanceSwordResult(
@@ -62,6 +63,7 @@ public class EnhanceLocalService : IEnhanceService
         long sellPrice = GameDB.swords.First(x => x.level == User.Sword.Level).sellPrice;
         User.Currencies.Add(CurrencyType.Gold, sellPrice);
         User.Sword.SetLevel(0);
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
         CombatStat stats = CalculateStats();
         var rewards = new List<PurchaseRewardResult> { new PurchaseRewardResult(RewardType.Gold, null, sellPrice) };
@@ -93,6 +95,7 @@ public class EnhanceLocalService : IEnhanceService
 
         SpendGold(enhance.gold);
         artifact.LevelUp(enhance.materialCount);
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
         CombatStat stats = CalculateStats();
         var result = new EnhanceArtifactResult(new List<UserArtifact> { artifact }, User.Currencies, stats, CalculateCombatPower(stats));

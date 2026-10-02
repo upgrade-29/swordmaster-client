@@ -45,6 +45,8 @@ public class ShopLocalService : IShopPurchaseService
             rewards.Add(new PurchaseRewardResult(reward.rewardType, reward.rewardCode, reward.amount));
         }
 
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
+
         var result = new PurchaseResult(productCode, purchaseRequestId, rewards, User.Currencies);
         succeededRequests[purchaseRequestId] = CopyAsResponse(result);
         onSuccess(CopyAsResponse(result));
