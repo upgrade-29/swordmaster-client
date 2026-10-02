@@ -49,7 +49,7 @@ public class EnhanceTab : LobbyTab
 
     private void Start()
     {
-        enhanceService = new EnhanceLocalService(GameDB, User, new System.Random());
+        enhanceService = new EnhanceLocalService(new System.Random());
 
         RefreshCombatStats();
         RefreshEquipmentNames();

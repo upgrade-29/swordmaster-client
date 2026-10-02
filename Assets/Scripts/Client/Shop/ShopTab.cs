@@ -38,7 +38,7 @@ public class ShopTab : LobbyTab
     {
         catalog = new ShopCatalog(GameDB);
 
-        purchaseCoordinator = new ShopPurchaseCoordinator(new FakeShopPurchaseService());
+        purchaseCoordinator = new ShopPurchaseCoordinator(new ShopLocalService());
         purchaseCoordinator.OnPurchaseSucceededEvent += OnPurchaseSucceeded;
         purchaseCoordinator.OnPurchaseFailedEvent += OnPurchaseFailed;
         purchaseCoordinator.OnPurchaseResultUnknownEvent += OnPurchaseResultUnknown;
