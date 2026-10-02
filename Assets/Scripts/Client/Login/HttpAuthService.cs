@@ -44,10 +44,10 @@ public class HttpAuthService : IAuthService
         return response;
     }
 
-    public async Task SignupAsync(string loginId, string password, string nickname)
+    public async Task SignupAsync(string loginId, string password)
     {
         // 성공 응답은 200만 오므로 본문은 읽지 않는다
-        await PostAsync(SignupPath, new SignupRequest(loginId, password, nickname));
+        await PostAsync(SignupPath, new SignupRequest(loginId, password));
     }
 
     // 성공하면 응답 본문을 돌려주고, 실패하면 AuthFailureException을 던진다

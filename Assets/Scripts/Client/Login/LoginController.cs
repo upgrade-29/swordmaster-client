@@ -20,6 +20,7 @@ public class LoginController : MonoBehaviour
 
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
+        signupView.OnClickSignupEvent += OnClickSignup;
         signupView.OnClickBackEvent += OnClickSignupBack;
     }
 
@@ -39,6 +40,7 @@ public class LoginController : MonoBehaviour
 
         if (signupView != null)
         {
+            signupView.OnClickSignupEvent -= OnClickSignup;
             signupView.OnClickBackEvent -= OnClickSignupBack;
         }
     }
@@ -53,6 +55,68 @@ public class LoginController : MonoBehaviour
     {
         signupView.Hide();
         view.Show();
+    }
+
+    private async void OnClickSignup(string id, string password, string passwordConfirm)
+    {
+        if (isRequesting)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(passwordConfirm))
+        {
+            signupView.SetResult(false, "모든 항목을 입력하세요.");
+            return;
+        }
+
+        if (password != passwordConfirm)
+        {
+            signupView.SetResult(false, "비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        isRequesting = true;
+        signupView.SetInteractable(false);
+        signupView.SetMessage("회원가입 중...");
+
+        bool isSuccess;
+        string message;
+        try
+        {
+            await authService.SignupAsync(id, password);
+            isSuccess = true;
+            message = string.Empty;
+        }
+        catch (AuthFailureException e)
+        {
+            isSuccess = false;
+            message = $"회원가입 실패: {e.Message}";
+        }
+        finally
+        {
+            isRequesting = false;
+        }
+
+        // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
+        if (this == null)
+        {
+            return;
+        }
+
+        signupView.SetInteractable(true);
+
+        if (isSuccess == false)
+        {
+            signupView.SetResult(false, message);
+            return;
+        }
+
+        // 가입한 아이디를 채운 채로 로그인 화면으로 돌아간다
+        signupView.Hide();
+        view.Show();
+        view.SetLoginId(id);
+        view.SetResult(true, "회원가입 완료. 로그인해 주세요.");
     }
 
     private async void OnClickLogin(string id, string password)

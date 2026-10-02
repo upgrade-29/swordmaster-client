@@ -7,5 +7,5 @@ public interface IAuthService
     Task<LoginResponse> LoginAsync(string loginId, string password);
 
     // 성공하면 응답 본문 없이 끝난다. 실패하면 AuthFailureException을 던진다
-    Task SignupAsync(string loginId, string password, string nickname);
+    Task SignupAsync(string loginId, string password);
 }
