@@ -13,4 +13,11 @@ public class EnhanceStatRow : MonoBehaviour
         txtCurrent = GameUtil.Bind<TextMeshProUGUI>(transform, "Current");
         txtNext = GameUtil.Bind<TextMeshProUGUI>(transform, "Next");
     }
+
+    public void Set(string name, string current, string next)
+    {
+        txtName.text = name;
+        txtCurrent.text = current;
+        txtNext.text = next;
+    }
 }

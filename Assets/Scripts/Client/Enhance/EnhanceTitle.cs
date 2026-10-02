@@ -23,6 +23,11 @@ public class EnhanceTitle : MonoBehaviour
         btnCombatPower.onClick.AddListener(OnClickCombatPower);
     }
 
+    public void SetCombatPower(string combatPower)
+    {
+        txtCombatPower.text = combatPower;
+    }
+
     public void SetStatsOpened(bool opened)
     {
         txtStatsToggle.text = opened

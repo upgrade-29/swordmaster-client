@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnhanceEquipmentSelect : MonoBehaviour
 {
-    private const int ArtifactSlotCount = 3;
+    public const int ArtifactSlotCount = 3;
 
     [ReadOnly] [SerializeField] private EnhanceEquipmentButton swordEquipmentButton;
     [ReadOnly] [SerializeField] private List<EnhanceEquipmentButton> listArtifactEquipmentButton = new List<EnhanceEquipmentButton>();
@@ -41,6 +41,16 @@ public class EnhanceEquipmentSelect : MonoBehaviour
 
             artifactEquipmentButton.OnClickEquipmentButtonEvent -= OnClickArtifactButton;
         }
+    }
+
+    public void SetSwordName(string name)
+    {
+        swordEquipmentButton.SetName(name);
+    }
+
+    public void SetArtifactName(int slotIndex, string name)
+    {
+        listArtifactEquipmentButton[slotIndex].SetName(name);
     }
 
     public void SetSelectedSword()

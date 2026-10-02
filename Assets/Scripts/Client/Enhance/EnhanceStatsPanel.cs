@@ -18,6 +18,15 @@ public class EnhanceStatsPanel : MonoBehaviour
         txtLifesteal = GameUtil.Bind<TextMeshProUGUI>(transform, "Background/Stats/Lifesteal/Value");
     }
 
+    public void SetStats(string attack, string maxHp, string attackSpeed, string critRate, string lifesteal)
+    {
+        txtAttack.text = attack;
+        txtMaxHp.text = maxHp;
+        txtAttackSpeed.text = attackSpeed;
+        txtCritRate.text = critRate;
+        txtLifesteal.text = lifesteal;
+    }
+
     public void SetOpened(bool opened)
     {
         gameObject.SetActive(opened);

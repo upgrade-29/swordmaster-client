@@ -38,6 +38,27 @@ public class EnhanceEquipmentAction : MonoBehaviour
         btnChange.onClick.AddListener(OnClickChange);
     }
 
+    public void SetEnhancePercentage(string percentage)
+    {
+        txtEnhancePercentage.text = percentage;
+    }
+
+    public void SetEnhanceCost(string cost)
+    {
+        txtEnhanceCost.text = cost;
+    }
+
+    public void SetMaterial(string count, float fillRatio)
+    {
+        txtMaterialCount.text = count;
+        rectMaterialFill.anchorMax = new Vector2(fillRatio, 1f);
+    }
+
+    public void SetSellPrice(string price)
+    {
+        txtSellPrice.text = price;
+    }
+
     public void ShowSword()
     {
         objEnhancePercentage.SetActive(true);

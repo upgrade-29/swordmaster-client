@@ -11,7 +11,6 @@ public class EnhanceEquipmentInfo : MonoBehaviour
     [ReadOnly] [SerializeField] private Image imgArtifact;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtLevel;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
-    [ReadOnly] [SerializeField] private TextMeshProUGUI txtDesc;
 
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtDetailTitle;
     [ReadOnly] [SerializeField] private GameObject objDetailGuide;
@@ -21,20 +20,30 @@ public class EnhanceEquipmentInfo : MonoBehaviour
 
     private void Awake()
     {
-        imgSword = GameUtil.Bind<Image>(transform, "EquipmentPreview/EquipmentImage/SwordImage");
-        imgArtifact = GameUtil.Bind<Image>(transform, "EquipmentPreview/EquipmentImage/ArtifactImage");
-        txtLevel = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentPreview/EquipmentName/NameRow/Level");
-        txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentPreview/EquipmentName/NameRow/Name");
-        txtDesc = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentPreview/EquipmentName/Desc");
+        imgSword = GameUtil.Bind<Image>(transform, "EquipmentRow/EquipmentImage/SwordImage");
+        imgArtifact = GameUtil.Bind<Image>(transform, "EquipmentRow/EquipmentImage/ArtifactImage");
+        txtLevel = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentName/NameRow/Level");
+        txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentName/NameRow/Name");
 
-        txtDetailTitle = GameUtil.Bind<TextMeshProUGUI>(transform, "EnhanceDetail/TitleRow/Title");
-        objDetailGuide = GameUtil.Bind<RectTransform>(transform, "EnhanceDetail/TitleRow/Guide").gameObject;
+        txtDetailTitle = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentRow/EnhanceDetail/TitleRow/Title");
+        objDetailGuide = GameUtil.Bind<RectTransform>(transform, "EquipmentRow/EnhanceDetail/TitleRow/Guide").gameObject;
         for (int i = 1; i <= StatRowCount; i++)
         {
-            listEnhanceStatRow.Add(GameUtil.Bind<EnhanceStatRow>(transform, $"EnhanceDetail/StatRow{i.ToString()}"));
+            listEnhanceStatRow.Add(GameUtil.Bind<EnhanceStatRow>(transform, $"EquipmentRow/EnhanceDetail/StatRow{i.ToString()}"));
         }
 
-        objEmptyGuide = GameUtil.Bind<RectTransform>(transform, "EnhanceDetail/EmptyGuide").gameObject;
+        objEmptyGuide = GameUtil.Bind<RectTransform>(transform, "EquipmentRow/EnhanceDetail/EmptyGuide").gameObject;
+    }
+
+    public void SetEquipment(string level, string name)
+    {
+        txtLevel.text = level;
+        txtName.text = name;
+    }
+
+    public void SetStatRow(int index, string name, string current, string next)
+    {
+        listEnhanceStatRow[index].Set(name, current, next);
     }
 
     public void ShowSword()

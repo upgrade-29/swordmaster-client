@@ -22,6 +22,11 @@ public class EnhanceEquipmentButton : MonoBehaviour
         btnEquipment.onClick.AddListener(OnClickEquipment);
     }
 
+    public void SetName(string name)
+    {
+        txtName.text = name;
+    }
+
     public void SetSelected(bool selected)
     {
         objSelectedMark.SetActive(selected);

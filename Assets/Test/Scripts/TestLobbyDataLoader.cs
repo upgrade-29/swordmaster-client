@@ -15,7 +15,5 @@ public class TestLobbyDataLoader : SingletonMonoBehaviour<TestLobbyDataLoader>
     {
         gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>("TestData/game_db").text);
         user = JsonConvert.DeserializeObject<User>(Resources.Load<TextAsset>($"TestData/User/{userFile}").text);
-
-        FindAnyObjectByType<EnhanceTab>().Init(gameDB, user);
     }
 }
