@@ -2,45 +2,90 @@ using UnityEngine;
 
 public class EnhanceTab : LobbyTab
 {
-    private const int SwordIndex = 0;
-
+    [ReadOnly] [SerializeField] private EnhanceTitle enhanceTitle;
     [ReadOnly] [SerializeField] private EnhanceEquipmentSelect enhanceEquipmentSelect;
+    [ReadOnly] [SerializeField] private EnhanceEquipmentInfo enhanceEquipmentInfo;
+    [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
+    [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
 
-    private int selectedEquipmentIndex;
+    private bool isSwordSelected;
+    private int selectedArtifactSlot;
+    private bool isStatsOpened;
 
     protected override void Awake()
     {
         base.Awake();
 
+        enhanceTitle = GameUtil.Bind<EnhanceTitle>(transform, "Title");
+        enhanceTitle.OnClickCombatPowerEvent += OnClickCombatPower;
+
         enhanceEquipmentSelect = GameUtil.Bind<EnhanceEquipmentSelect>(transform, "Viewport/Content/EquipmentSelect");
-        enhanceEquipmentSelect.OnClickEquipmentButtonEvent += OnClickEquipmentButton;
+        enhanceEquipmentSelect.OnClickSwordButtonEvent += OnClickSwordButton;
+        enhanceEquipmentSelect.OnClickArtifactButtonEvent += OnClickArtifactButton;
+
+        enhanceEquipmentInfo = GameUtil.Bind<EnhanceEquipmentInfo>(transform, "Viewport/Content/EquipmentInfo");
+        enhanceEquipmentAction = GameUtil.Bind<EnhanceEquipmentAction>(transform, "EquipmentAction");
+        enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
     }
 
     private void Start()
     {
-        SelectEquipment(SwordIndex);
+        SelectSword();
+        SetStatsOpened(false);
     }
 
     protected override void OnDestroy()
     {
         base.OnDestroy();
 
-        if (enhanceEquipmentSelect == null)
+        if (enhanceTitle != null)
         {
-            return;
+            enhanceTitle.OnClickCombatPowerEvent -= OnClickCombatPower;
         }
 
-        enhanceEquipmentSelect.OnClickEquipmentButtonEvent -= OnClickEquipmentButton;
+        if (enhanceEquipmentSelect != null)
+        {
+            enhanceEquipmentSelect.OnClickSwordButtonEvent -= OnClickSwordButton;
+            enhanceEquipmentSelect.OnClickArtifactButtonEvent -= OnClickArtifactButton;
+        }
     }
 
-    private void SelectEquipment(int equipmentIndex)
+    private void SelectSword()
     {
-        selectedEquipmentIndex = equipmentIndex;
-        enhanceEquipmentSelect.SetSelectedIndex(equipmentIndex);
+        isSwordSelected = true;
+        enhanceEquipmentSelect.SetSelectedSword();
+        enhanceEquipmentInfo.ShowSword();
+        enhanceEquipmentAction.ShowSword();
     }
 
-    private void OnClickEquipmentButton(int equipmentIndex)
+    private void SelectArtifact(int slotIndex)
     {
-        SelectEquipment(equipmentIndex);
+        isSwordSelected = false;
+        selectedArtifactSlot = slotIndex;
+        enhanceEquipmentSelect.SetSelectedArtifact(slotIndex);
+        enhanceEquipmentInfo.ShowArtifact();
+        enhanceEquipmentAction.ShowArtifact();
+    }
+
+    private void SetStatsOpened(bool opened)
+    {
+        isStatsOpened = opened;
+        enhanceStatsPanel.SetOpened(opened);
+        enhanceTitle.SetStatsOpened(opened);
+    }
+
+    private void OnClickCombatPower()
+    {
+        SetStatsOpened(isStatsOpened == false);
+    }
+
+    private void OnClickSwordButton()
+    {
+        SelectSword();
+    }
+
+    private void OnClickArtifactButton(int slotIndex)
+    {
+        SelectArtifact(slotIndex);
     }
 }

@@ -10,9 +10,6 @@ public class EnhanceEquipmentButton : MonoBehaviour
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
 
-    private bool selected;
-    public bool Selected => selected;
-
     public event Action<EnhanceEquipmentButton> OnClickEquipmentButtonEvent = delegate { };
 
     private void Awake()
@@ -27,7 +24,6 @@ public class EnhanceEquipmentButton : MonoBehaviour
 
     public void SetSelected(bool selected)
     {
-        this.selected = selected;
         objSelectedMark.SetActive(selected);
     }
 

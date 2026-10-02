@@ -6,47 +6,68 @@ public class EnhanceEquipmentSelect : MonoBehaviour
 {
     private const int ArtifactSlotCount = 3;
 
-    [ReadOnly] [SerializeField] private List<EnhanceEquipmentButton> listEnhanceEquipmentButton = new List<EnhanceEquipmentButton>();
+    [ReadOnly] [SerializeField] private EnhanceEquipmentButton swordEquipmentButton;
+    [ReadOnly] [SerializeField] private List<EnhanceEquipmentButton> listArtifactEquipmentButton = new List<EnhanceEquipmentButton>();
 
-    public event Action<int> OnClickEquipmentButtonEvent = delegate { };
+    public event Action OnClickSwordButtonEvent = delegate { };
+    public event Action<int> OnClickArtifactButtonEvent = delegate { };
 
     private void Awake()
     {
-        listEnhanceEquipmentButton.Add(GameUtil.Bind<EnhanceEquipmentButton>(transform, "SwordButton"));
+        swordEquipmentButton = GameUtil.Bind<EnhanceEquipmentButton>(transform, "SwordButton");
+        swordEquipmentButton.OnClickEquipmentButtonEvent += OnClickSwordButton;
+
         for (int i = 1; i <= ArtifactSlotCount; i++)
         {
-            listEnhanceEquipmentButton.Add(GameUtil.Bind<EnhanceEquipmentButton>(transform, $"ArtifactButton{i.ToString()}"));
-        }
-
-        foreach (var enhanceEquipmentButton in listEnhanceEquipmentButton)
-        {
-            enhanceEquipmentButton.OnClickEquipmentButtonEvent += OnClickEquipmentButton;
+            var artifactEquipmentButton = GameUtil.Bind<EnhanceEquipmentButton>(transform, $"ArtifactButton{i.ToString()}");
+            artifactEquipmentButton.OnClickEquipmentButtonEvent += OnClickArtifactButton;
+            listArtifactEquipmentButton.Add(artifactEquipmentButton);
         }
     }
 
     private void OnDestroy()
     {
-        foreach (var enhanceEquipmentButton in listEnhanceEquipmentButton)
+        if (swordEquipmentButton != null)
         {
-            if (enhanceEquipmentButton == null)
+            swordEquipmentButton.OnClickEquipmentButtonEvent -= OnClickSwordButton;
+        }
+
+        foreach (var artifactEquipmentButton in listArtifactEquipmentButton)
+        {
+            if (artifactEquipmentButton == null)
             {
                 continue;
             }
 
-            enhanceEquipmentButton.OnClickEquipmentButtonEvent -= OnClickEquipmentButton;
+            artifactEquipmentButton.OnClickEquipmentButtonEvent -= OnClickArtifactButton;
         }
     }
 
-    public void SetSelectedIndex(int selectedIndex)
+    public void SetSelectedSword()
     {
-        for (int i = 0; i < listEnhanceEquipmentButton.Count; i++)
+        swordEquipmentButton.SetSelected(true);
+        foreach (var artifactEquipmentButton in listArtifactEquipmentButton)
         {
-            listEnhanceEquipmentButton[i].SetSelected(i == selectedIndex);
+            artifactEquipmentButton.SetSelected(false);
         }
     }
 
-    private void OnClickEquipmentButton(EnhanceEquipmentButton enhanceEquipmentButton)
+    public void SetSelectedArtifact(int slotIndex)
     {
-        OnClickEquipmentButtonEvent.Invoke(listEnhanceEquipmentButton.IndexOf(enhanceEquipmentButton));
+        swordEquipmentButton.SetSelected(false);
+        for (int i = 0; i < listArtifactEquipmentButton.Count; i++)
+        {
+            listArtifactEquipmentButton[i].SetSelected(i == slotIndex);
+        }
+    }
+
+    private void OnClickSwordButton(EnhanceEquipmentButton enhanceEquipmentButton)
+    {
+        OnClickSwordButtonEvent.Invoke();
+    }
+
+    private void OnClickArtifactButton(EnhanceEquipmentButton enhanceEquipmentButton)
+    {
+        OnClickArtifactButtonEvent.Invoke(listArtifactEquipmentButton.IndexOf(enhanceEquipmentButton));
     }
 }
