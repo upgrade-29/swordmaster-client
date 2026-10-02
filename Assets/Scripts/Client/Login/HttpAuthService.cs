@@ -20,9 +20,9 @@ public class HttpAuthService : IAuthService
         this.timeoutSeconds = timeoutSeconds;
     }
 
-    public async Task<LoginResponse> LoginAsync(string loginId, string password)
+    public async Task<LoginResponse> LoginAsync(string email, string password)
     {
-        string json = await PostAsync(LoginPath, new LoginRequest(loginId, password));
+        string json = await PostAsync(LoginPath, new LoginRequest(email, password));
 
         LoginResponse response;
         try
@@ -44,10 +44,10 @@ public class HttpAuthService : IAuthService
         return response;
     }
 
-    public async Task SignupAsync(string loginId, string password)
+    public async Task SignupAsync(string email, string password)
     {
         // 성공 응답은 200만 오므로 본문은 읽지 않는다
-        await PostAsync(SignupPath, new SignupRequest(loginId, password));
+        await PostAsync(SignupPath, new SignupRequest(email, password));
     }
 
     // 성공하면 응답 본문을 돌려주고, 실패하면 AuthFailureException을 던진다
