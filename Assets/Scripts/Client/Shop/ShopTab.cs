@@ -11,7 +11,9 @@ public class ShopTab : LobbyTab
     [SerializeField] private ShopVisualCatalogSO visualCatalog;
     [SerializeField] private ConfirmPopupView confirmPopup;
 
-    private User user;
+    private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
+    private User User => TestLobbyDataLoader.Instance.User;
+
     private ShopCatalog catalog;
     private ShopPurchaseCoordinator purchaseCoordinator;
 
@@ -30,6 +32,18 @@ public class ShopTab : LobbyTab
 
         view.OnPurchaseRequestedEvent += OnPurchaseRequested;
         view.OnRetryRequestedEvent += OnCatalogRetryRequested;
+    }
+
+    private void Start()
+    {
+        catalog = new ShopCatalog(GameDB);
+
+        purchaseCoordinator = new ShopPurchaseCoordinator(new FakeShopPurchaseService());
+        purchaseCoordinator.OnPurchaseSucceededEvent += OnPurchaseSucceeded;
+        purchaseCoordinator.OnPurchaseFailedEvent += OnPurchaseFailed;
+        purchaseCoordinator.OnPurchaseResultUnknownEvent += OnPurchaseResultUnknown;
+
+        RenderCurrentCatalog();
     }
 
     private void OnEnable()
@@ -70,21 +84,6 @@ public class ShopTab : LobbyTab
             purchaseCoordinator.OnPurchaseFailedEvent -= OnPurchaseFailed;
             purchaseCoordinator.OnPurchaseResultUnknownEvent -= OnPurchaseResultUnknown;
         }
-    }
-
-    // 상점 화면이 필요로 하는 런타임 의존성을 외부(장면 조립/세션 계층)에서 주입한다.
-    // GameDB/User/구매 서비스를 실제로 어디서 가져오는지는 이 클래스의 책임이 아니다 (기존 Network Layer 부재, Phase 0 참고).
-    public void Initialize(GameDB gameDB, User user, IShopPurchaseService purchaseService)
-    {
-        this.user = user;
-        catalog = new ShopCatalog(gameDB);
-
-        purchaseCoordinator = new ShopPurchaseCoordinator(purchaseService);
-        purchaseCoordinator.OnPurchaseSucceededEvent += OnPurchaseSucceeded;
-        purchaseCoordinator.OnPurchaseFailedEvent += OnPurchaseFailed;
-        purchaseCoordinator.OnPurchaseResultUnknownEvent += OnPurchaseResultUnknown;
-
-        RenderCurrentCatalog();
     }
 
     private void RenderCurrentCatalog()
@@ -165,7 +164,7 @@ public class ShopTab : LobbyTab
     // 결과를 먼저 장수명 사용자 상태(User)에 반영한 뒤, 화면이 활성 상태일 때만 View를 갱신한다 (shop-network-flow.md 10절).
     private void OnPurchaseSucceeded(string productCode, PurchaseResult result)
     {
-        user.Currencies.SyncFrom(result.currencies);
+        User.Currencies.SyncFrom(result.currencies);
 
         if (isViewActive == false)
         {

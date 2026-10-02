@@ -13,6 +13,12 @@ public class TestLobbyDataLoader : SingletonMonoBehaviour<TestLobbyDataLoader>
 
     protected override void OnAwakeSingleton()
     {
+        // 전투 씬에서 돌아왔으면 전투 결과가 반영된 유저를 쓴다
+        if (StageSelectEntry.TryConsume(out gameDB, out user))
+        {
+            return;
+        }
+
         gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>("TestData/game_db").text);
         user = JsonConvert.DeserializeObject<User>(Resources.Load<TextAsset>($"TestData/User/{userFile}").text);
     }

@@ -1044,11 +1044,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5095826800530343092}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e2a3d51d9607d941b0b9e30a4ecb58a, type: 3}
+  m_Script: {fileID: 11500000, guid: 6cd3a9be96e6e8041a04503ffb001695, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyTab
   nestedScrollRect: {fileID: 0}
   layoutElement: {fileID: 0}
+  stageSelectController: {fileID: 0}
 --- !u!1 &5640404817224354491
 GameObject:
   m_ObjectHideFlags: 0
