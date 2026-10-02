@@ -8,6 +8,7 @@ public class LobbyView : MonoBehaviour
 {
     private static readonly LobbyTabType[] Tabs = (LobbyTabType[])Enum.GetValues(typeof(LobbyTabType));
 
+    [ReadOnly] [SerializeField] private LobbyPlayerInfo playerInfo;
     [ReadOnly] [SerializeField] private ScrollRect scrollRectTab;
     [ReadOnly] [SerializeField] private List<LobbyTab> listLobbyTab = new List<LobbyTab>();
     [ReadOnly] [SerializeField] private List<LobbyTabButton> listLobbyTabButton = new List<LobbyTabButton>();
@@ -25,6 +26,7 @@ public class LobbyView : MonoBehaviour
 
     private void Awake()
     {
+        playerInfo = GameUtil.Bind<LobbyPlayerInfo>(transform, "TopUI/PlayerInfo");
         scrollRectTab = GameUtil.Bind<ScrollRect>(transform, "TabList");
 
         foreach (var tab in Tabs)
@@ -82,6 +84,11 @@ public class LobbyView : MonoBehaviour
         }
 
         UpdateTabLayout();
+    }
+
+    public void SetCurrencies(string gold, string diamond)
+    {
+        playerInfo.SetCurrencies(gold, diamond);
     }
 
     public void SetSelectedTab(LobbyTabType selectedTab)

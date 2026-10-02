@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using UnityEngine;
 
 public class LobbyController : MonoBehaviour
@@ -9,6 +10,8 @@ public class LobbyController : MonoBehaviour
 
     [ReadOnly(true)] [SerializeField] private LobbyTabType startTab = LobbyTabType.Battle;
     [ReadOnly(true)] [SerializeField] private float swipeThresholdRatio = 0.2f; // 이 값보다 많이 움직이면 탭 전환
+
+    private User User => TestLobbyDataLoader.Instance.User;
 
     private LobbyTabType currentTab;
     public LobbyTabType CurrentTab => currentTab;
@@ -27,10 +30,19 @@ public class LobbyController : MonoBehaviour
     {
         view.SetSelectedTab(currentTab);
         view.SetTrackPosition(GetTrackPosition(currentTab));
+
+        TestLobbyDataLoader.Instance.OnChangeCurrenciesEvent += OnChangeCurrencies;
+        RefreshCurrencies();
     }
 
     private void OnDestroy()
     {
+        // 씬을 닫을 때 로더가 먼저 사라졌으면 Instance가 새 로더를 만들기 때문에 확인한다
+        if (TestLobbyDataLoader.IsInitialize())
+        {
+            TestLobbyDataLoader.Instance.OnChangeCurrenciesEvent -= OnChangeCurrencies;
+        }
+
         if (view == null)
         {
             return;
@@ -46,6 +58,13 @@ public class LobbyController : MonoBehaviour
         currentTab = tab;
         view.AnimateSelectedTab(tab);
         view.AnimateTrackPosition(GetTrackPosition(tab));
+    }
+
+    private void RefreshCurrencies()
+    {
+        view.SetCurrencies(
+            User.Currencies.Gold.ToString("N0", CultureInfo.InvariantCulture),
+            User.Currencies.Diamond.ToString("N0", CultureInfo.InvariantCulture));
     }
 
     private LobbyTabType GetSwipeTargetTab(float trackPosition)
@@ -79,5 +98,10 @@ public class LobbyController : MonoBehaviour
     private void OnUpdateTabLayout()
     {
         view.SetTrackPosition(GetTrackPosition(currentTab));
+    }
+
+    private void OnChangeCurrencies()
+    {
+        RefreshCurrencies();
     }
 }
