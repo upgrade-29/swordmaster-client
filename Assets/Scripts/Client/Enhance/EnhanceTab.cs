@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class EnhanceTab : LobbyTab
@@ -18,9 +19,12 @@ public class EnhanceTab : LobbyTab
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
 
+    private IEnhanceService enhanceService;
+
     private bool isSwordSelected;
     private int selectedArtifactSlot;
     private bool isStatsOpened;
+    private bool isRequesting;
 
     protected override void Awake()
     {
@@ -35,11 +39,16 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo = GameUtil.Bind<EnhanceEquipmentInfo>(transform, "Viewport/Content/EquipmentInfo");
         enhanceEquipmentAction = GameUtil.Bind<EnhanceEquipmentAction>(transform, "EquipmentAction");
+        enhanceEquipmentAction.OnClickEnhanceEvent += OnClickEnhance;
+        enhanceEquipmentAction.OnClickSellEvent += OnClickSell;
+
         enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
     }
 
     private void Start()
     {
+        enhanceService = new EnhanceLocalService(GameDB, User, new System.Random());
+
         RefreshCombatStats();
         RefreshEquipmentNames();
         SelectSword();
@@ -59,6 +68,12 @@ public class EnhanceTab : LobbyTab
         {
             enhanceEquipmentSelect.OnClickSwordButtonEvent -= OnClickSwordButton;
             enhanceEquipmentSelect.OnClickArtifactButtonEvent -= OnClickArtifactButton;
+        }
+
+        if (enhanceEquipmentAction != null)
+        {
+            enhanceEquipmentAction.OnClickEnhanceEvent -= OnClickEnhance;
+            enhanceEquipmentAction.OnClickSellEvent -= OnClickSell;
         }
     }
 
@@ -233,6 +248,86 @@ public class EnhanceTab : LobbyTab
         isStatsOpened = opened;
         enhanceStatsPanel.SetOpened(opened);
         enhanceTitle.SetStatsOpened(opened);
+    }
+
+    private async Task EnhanceSwordAsync()
+    {
+        EnhanceSwordResult result = await enhanceService.EnhanceSwordAsync(User.Sword.Level);
+        Debug.Log(result.result == EnhanceSwordOutcome.Success
+            ? $"[Enhance] 강화 성공 +{result.sword.Level.ToString()}"
+            : "[Enhance] 검이 파괴되었습니다. +0으로 돌아갑니다.");
+    }
+
+    private async Task EnhanceArtifactAsync()
+    {
+        UserArtifact artifact = GetEquippedArtifact(selectedArtifactSlot);
+        if (artifact == null)
+        {
+            return;
+        }
+
+        EnhanceArtifactResult result = await enhanceService.EnhanceArtifactAsync(artifact.ArtifactCode);
+        Debug.Log($"[Enhance] 아티팩트 강화 성공 Lv. {result.artifacts[0].Level.ToString()}");
+    }
+
+    private async Task SellSwordAsync()
+    {
+        EnhanceSwordSellResult result = await enhanceService.SellSwordAsync(User.Sword.Level);
+        long gold = result.rewards.Where(reward => reward.rewardType == RewardType.Gold).Sum(reward => reward.amount);
+        Debug.Log($"[Enhance] 판매 완료 +{FormatInteger(gold)} 골드");
+    }
+
+    private async Task RequestAsync(Func<Task> request)
+    {
+        if (isRequesting)
+        {
+            return;
+        }
+
+        isRequesting = true;
+        try
+        {
+            await request();
+            RefreshAfterRequest();
+        }
+        catch (EnhanceRequestException e)
+        {
+            Debug.LogWarning($"[Enhance] {e.Code}: {e.Message}");
+        }
+        finally
+        {
+            isRequesting = false;
+        }
+    }
+
+    private void RefreshAfterRequest()
+    {
+        RefreshCombatStats();
+        RefreshEquipmentNames();
+
+        if (isSwordSelected)
+        {
+            SelectSword();
+            return;
+        }
+
+        SelectArtifact(selectedArtifactSlot);
+    }
+
+    private async void OnClickEnhance()
+    {
+        if (isSwordSelected)
+        {
+            await RequestAsync(EnhanceSwordAsync);
+            return;
+        }
+
+        await RequestAsync(EnhanceArtifactAsync);
+    }
+
+    private async void OnClickSell()
+    {
+        await RequestAsync(SellSwordAsync);
     }
 
     private void OnClickCombatPower()
