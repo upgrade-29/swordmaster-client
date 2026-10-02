@@ -53,6 +53,13 @@ public class LoginView : MonoBehaviour
         objRoot.SetActive(false);
     }
 
+    // 아이디를 채우고 비밀번호는 비운다
+    public void SetLoginId(string loginId)
+    {
+        idInput.text = loginId;
+        passwordInput.text = string.Empty;
+    }
+
     public void SetResult(bool isSuccess, string message)
     {
         resultText.color = isSuccess ? Color.green : Color.red;

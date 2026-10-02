@@ -5,13 +5,11 @@ public class SignupRequest
 {
     public readonly string loginId;
     public readonly string password;
-    public readonly string nickname;
 
     [JsonConstructor]
-    public SignupRequest(string loginId, string password, string nickname)
+    public SignupRequest(string loginId, string password)
     {
         this.loginId = loginId;
         this.password = password;
-        this.nickname = nickname;
     }
 }
