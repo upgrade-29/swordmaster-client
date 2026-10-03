@@ -37,11 +37,6 @@ public class BattleUnitView : MonoBehaviour
         spriteRenderer.enabled = visible;
     }
 
-    public void SetColor(Color color)
-    {
-        spriteRenderer.color = color;
-    }
-
     // 상대 쪽으로 살짝 튀어나갔다가 제자리로 돌아온다
     public void PlayAttack(Vector3 targetPosition)
     {

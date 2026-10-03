@@ -14,7 +14,6 @@ public class LobbyController : MonoBehaviour
     private User User => TestLobbyDataLoader.Instance.User;
 
     private LobbyTabType currentTab;
-    public LobbyTabType CurrentTab => currentTab;
 
     private void Awake()
     {

@@ -54,42 +54,17 @@ public class ShopLocalService : IShopPurchaseService
 
     private void GiveReward(ShopProductRewardData reward)
     {
-        switch (reward.rewardType)
+        if (reward.rewardType != RewardType.Gold)
         {
-            case RewardType.Gold:
-                User.Currencies.Add(CurrencyType.Gold, reward.amount);
-                return;
-            case RewardType.Artifact:
-                GiveArtifact(reward.rewardCode, (int)reward.amount);
-                return;
+            throw new NotSupportedException($"{reward.rewardType.ToString()} reward is not supported yet.");
         }
 
-        throw new NotSupportedException($"{reward.rewardType.ToString()} reward is not supported yet.");
-    }
-
-    // 처음 얻으면 1개는 1레벨로 보유하고 나머지는 재료로 쌓는다
-    private void GiveArtifact(string artifactCode, int amount)
-    {
-        UserArtifact artifact = User.GetArtifact(artifactCode);
-        if (artifact == null)
-        {
-            User.AddArtifact(new UserArtifact(artifactCode, 1, amount - 1, null));
-            return;
-        }
-
-        artifact.AddMaterial(amount);
+        User.Currencies.Add(CurrencyType.Gold, reward.amount);
     }
 
     private static string GetNotEnoughMessage(CurrencyType currencyType)
     {
-        switch (currencyType)
-        {
-            case CurrencyType.Gold:
-                return "골드가 부족합니다.";
-            case CurrencyType.Diamond:
-                return "다이아가 부족합니다.";
-        }
-        return "재화가 부족합니다.";
+        return currencyType == CurrencyType.Gold ? "골드가 부족합니다." : "다이아가 부족합니다.";
     }
 
     // 서버 응답처럼 JSON을 거쳐서 넘긴다. 서버 역할의 User와 객체를 공유하지 않게 된다

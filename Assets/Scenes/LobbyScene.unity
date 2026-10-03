@@ -361,8 +361,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1049190227}
   - {fileID: 1769709539}
+  - {fileID: 1049190227}
   m_Father: {fileID: 234935217}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -475,6 +475,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 027419f1949795a48aaa1588ad3d2b41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyView
+  playerInfo: {fileID: 0}
   scrollRectTab: {fileID: 0}
   listLobbyTab: []
   listLobbyTabButton: []
@@ -2003,7 +2004,7 @@ GameObject:
   - component: {fileID: 1049190229}
   - component: {fileID: 1049190228}
   m_Layer: 5
-  m_Name: 'NoticeUI '
+  m_Name: Notice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3614,8 +3615,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1769709539}
   - component: {fileID: 1769709540}
+  - component: {fileID: 1769709541}
   m_Layer: 5
-  m_Name: TopBar
+  m_Name: PlayerInfo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3670,6 +3672,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &1769709541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1769709538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adb8d8a914fd37f46a08631f67d9903c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyPlayerInfo
+  txtGold: {fileID: 0}
+  txtDiamond: {fileID: 0}
 --- !u!224 &1786413057 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4630837961153913264, guid: 4de9251bbd92f69498274bc526d447ef, type: 3}
@@ -3687,7 +3703,7 @@ GameObject:
   - component: {fileID: 1790284161}
   - component: {fileID: 1790284160}
   m_Layer: 5
-  m_Name: Wallet
+  m_Name: Currency
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

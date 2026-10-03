@@ -36,7 +36,6 @@ public class LobbyView : MonoBehaviour
             lobbyTab.OnEndDragTrackEvent += OnEndDragTrack;
             listLobbyTab.Add(lobbyTab);
 
-            Debug.Log($"BottomMenu/{tab.ToString()}Button");
             var lobbyTabButton = GameUtil.Bind<LobbyTabButton>(transform, $"BottomMenu/{tab.ToString()}Button");
             lobbyTabButton.Init(tab);
             lobbyTabButton.OnClickTabButtonEvent += OnClickTabButton;
