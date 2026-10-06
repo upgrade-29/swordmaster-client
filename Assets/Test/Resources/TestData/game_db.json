@@ -1,5 +1,5 @@
 {
-  "version": "20261002103620",
+  "version": "20261006044526",
   "swords": [
     { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
     { "level": 1, "successRate": 0.9, "enhanceCost": 200, "sellPrice": 150, "attackPower": 14, "attackSpeed": 1.02, "maxHp": 330, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
@@ -11,7 +11,7 @@
     { "level": 7, "successRate": 0.4, "enhanceCost": 3200, "sellPrice": 12000, "attackPower": 62, "attackSpeed": 1.14, "maxHp": 630, "name": "성검", "appearanceCode": "SWORD_03" },
     { "level": 8, "successRate": 0.3, "enhanceCost": 4500, "sellPrice": 22000, "attackPower": 76, "attackSpeed": 1.16, "maxHp": 710, "name": "용살검", "appearanceCode": "SWORD_03" },
     { "level": 9, "successRate": 0.2, "enhanceCost": 6500, "sellPrice": 40000, "attackPower": 92, "attackSpeed": 1.18, "maxHp": 800, "name": "신검", "appearanceCode": "SWORD_04" },
-    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attackPower": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검 아님", "appearanceCode": "SWORD_04" }
+    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attackPower": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검", "appearanceCode": "SWORD_04" }
   ],
   "artifacts": [
     { "code": "CRIT_01", "name": "날카로운 숫돌", "grade": "COMMON", "statType": "CRIT_RATE", "baseValue": 0.03, "valuePerLevel": 0.01 },
