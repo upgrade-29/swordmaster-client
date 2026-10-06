@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -39,10 +38,9 @@ public class EnhanceLocalService : IEnhanceService
         User.Sword.SetLevel(isSuccess ? sword.level + 1 : 0);
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
-        CombatStat stats = CalculateStats();
         var result = new EnhanceSwordResult(
             isSuccess ? EnhanceSwordOutcome.Success : EnhanceSwordOutcome.Destroyed,
-            User.Sword, User.Currencies, stats, CalculateCombatPower(stats));
+            User.Sword, User.Currencies);
         return CopyAsResponse(result);
     }
 
@@ -65,9 +63,8 @@ public class EnhanceLocalService : IEnhanceService
         User.Sword.SetLevel(0);
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
-        CombatStat stats = CalculateStats();
         var rewards = new List<PurchaseRewardResult> { new PurchaseRewardResult(RewardType.Gold, null, sellPrice) };
-        var result = new EnhanceSwordSellResult(User.Sword, rewards, User.Currencies, stats, CalculateCombatPower(stats));
+        var result = new EnhanceSwordSellResult(User.Sword, rewards, User.Currencies);
         return CopyAsResponse(result);
     }
 
@@ -97,8 +94,7 @@ public class EnhanceLocalService : IEnhanceService
         artifact.LevelUp(enhance.materialCount);
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
-        CombatStat stats = CalculateStats();
-        var result = new EnhanceArtifactResult(new List<UserArtifact> { artifact }, User.Currencies, stats, CalculateCombatPower(stats));
+        var result = new EnhanceArtifactResult(new List<UserArtifact> { artifact }, User.Currencies);
         return CopyAsResponse(result);
     }
 
@@ -110,24 +106,6 @@ public class EnhanceLocalService : IEnhanceService
         }
 
         User.Currencies.Add(CurrencyType.Gold, -cost);
-    }
-
-    private CombatStat CalculateStats()
-    {
-        SwordData sword = GameDB.swords.First(x => x.level == User.Sword.Level);
-        var equippedArtifacts = User.EquippedArtifacts
-            .Select(x => (GameDB.artifacts.First(y => y.artifactCode == x.ArtifactCode), x.Level));
-        return StatCalculator.CalculatePlayer(sword, equippedArtifacts);
-    }
-
-    private long CalculateCombatPower(CombatStat stats)
-    {
-        return CombatPowerCalculator.Calculate(stats, GetConfigValue("CRIT_MULTIPLIER"), GetConfigValue("BASE_BATTLE_TIME"));
-    }
-
-    private double GetConfigValue(string key)
-    {
-        return double.Parse(GameDB.config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
     }
 
     // 서버 응답처럼 JSON을 거쳐서 넘긴다. 서버 역할의 User와 객체를 공유하지 않게 된다

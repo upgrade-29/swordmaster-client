@@ -5,16 +5,12 @@ public class EnhanceArtifactResult
 {
     public readonly IReadOnlyList<UserArtifact> artifacts;
     public readonly UserCurrencies currencies;
-    public readonly CombatStat stats;
-    public readonly long combatPower;
 
     [JsonConstructor]
-    public EnhanceArtifactResult(IReadOnlyList<UserArtifact> artifacts, UserCurrencies currencies,
-        CombatStat stats, long combatPower)
+    public EnhanceArtifactResult(IReadOnlyList<UserArtifact> artifacts, UserCurrencies currencies)
     {
         this.artifacts = artifacts ?? new List<UserArtifact>();
         this.currencies = currencies;
-        this.stats = stats;
-        this.combatPower = combatPower;
     }
+    
 }
