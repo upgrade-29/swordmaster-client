@@ -45,7 +45,7 @@ public class BattleTab : LobbyTab
 
     private IEnumerable<(ArtifactData data, int level)> GetEquippedArtifactLevels()
     {
-        return User.EquippedArtifacts.Select(x => (GameDB.artifacts.First(y => y.artifactCode == x.ArtifactCode), x.Level));
+        return User.EquippedArtifacts.Select(x => (GameDB.artifacts.First(y => y.code == x.ArtifactCode), x.Level));
     }
 
     private double GetConfigValue(string key)

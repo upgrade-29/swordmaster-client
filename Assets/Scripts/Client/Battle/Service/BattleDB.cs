@@ -30,8 +30,8 @@ public class BattleDB
         // 키가 중복된 데이터가 있으면 여기서 ArgumentException이 난다
         swordsByLevel = gameDB.swords.ToDictionary(data => data.level);
         stagesByNumber = gameDB.stages.ToDictionary(data => data.stage);
-        artifactsByCode = gameDB.artifacts.ToDictionary(data => data.artifactCode);
-        enemiesByCode = gameDB.enemies.ToDictionary(data => data.enemyCode);
+        artifactsByCode = gameDB.artifacts.ToDictionary(data => data.code);
+        enemiesByCode = gameDB.enemies.ToDictionary(data => data.code);
 
         Dictionary<string, string> configs = gameDB.config.ToDictionary(data => data.key, data => data.value);
         critMultiplier = GetConfig(configs, "CRIT_MULTIPLIER", DefaultCritMultiplier);

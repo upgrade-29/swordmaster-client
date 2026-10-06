@@ -17,7 +17,7 @@ public class BattleLogger : IDisposable
         this.director = director;
         this.view = view;
         this.playerName = playerName;
-        enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.enemyCode, data => data.name);
+        enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.code, data => data.name);
         this.logToConsole = logToConsole;
 
         director.CountdownStarted += OnCountdownStarted;

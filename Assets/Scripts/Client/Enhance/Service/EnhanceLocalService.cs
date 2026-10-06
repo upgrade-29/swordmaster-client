@@ -78,7 +78,7 @@ public class EnhanceLocalService : IEnhanceService
             throw new EnhanceRequestException(EnhanceRequestException.ArtifactNotOwned, "보유하지 않은 아티팩트입니다.");
         }
 
-        ArtifactGrade grade = GameDB.artifacts.First(x => x.artifactCode == artifactCode).grade;
+        ArtifactGrade grade = GameDB.artifacts.First(x => x.code == artifactCode).grade;
         ArtifactEnhanceData enhance = GameDB.artifactEnhance.FirstOrDefault(x => x.grade == grade && x.level == artifact.Level);
         if (enhance == null)
         {

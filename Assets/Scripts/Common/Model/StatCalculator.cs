@@ -6,7 +6,7 @@ public static class StatCalculator
     // 검 능력치에 장착한 아티팩트의 능력치를 더한다
     public static CombatStat CalculatePlayer(SwordData sword, IEnumerable<(ArtifactData data, int level)> equippedArtifacts)
     {
-        var attack = sword.attack;
+        var attack = sword.attackPower;
         var attackSpeed = sword.attackSpeed;
         var maxHp = sword.maxHp;
         var critRate = 0.0;
@@ -21,7 +21,7 @@ public static class StatCalculator
                 case StatType.MaxHp: maxHp += value; break;
                 case StatType.CritRate: critRate += value; break;
                 case StatType.Lifesteal: lifesteal += value; break;
-                default: throw new ArgumentOutOfRangeException(nameof(data.statType), data.statType, data.artifactCode);
+                default: throw new ArgumentOutOfRangeException(nameof(data.statType), data.statType, data.code);
             }
         }
 

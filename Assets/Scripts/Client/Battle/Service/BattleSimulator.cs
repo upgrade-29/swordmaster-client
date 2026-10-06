@@ -110,7 +110,7 @@ public class BattleSimulator
     private static BattleWave CreateWave(EnemyData enemy, CombatStat enemyStat, double playerStartHp,
         List<BattleEvent> events, double timeLimit, double duration, WaveOutcome outcome, double healOnKill, long gold)
     {
-        return new BattleWave(enemy.enemyCode, enemy.boss, enemyStat, playerStartHp, events, timeLimit, duration, outcome,
+        return new BattleWave(enemy.code, enemy.boss, enemyStat, playerStartHp, events, timeLimit, duration, outcome,
             healOnKill, gold);
     }
 }

@@ -1,27 +1,27 @@
 {
   "version": "20261002103620",
   "swords": [
-    { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attack": 10, "attackSpeed": 1, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
-    { "level": 1, "successRate": 0.9, "enhanceCost": 200, "sellPrice": 150, "attack": 14, "attackSpeed": 1.02, "maxHp": 330, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
-    { "level": 2, "successRate": 0.85, "enhanceCost": 400, "sellPrice": 400, "attack": 19, "attackSpeed": 1.04, "maxHp": 365, "name": "철 검", "appearanceCode": "SWORD_01" },
-    { "level": 3, "successRate": 0.8, "enhanceCost": 700, "sellPrice": 900, "attack": 25, "attackSpeed": 1.06, "maxHp": 405, "name": "강철 검", "appearanceCode": "SWORD_02" },
-    { "level": 4, "successRate": 0.7, "enhanceCost": 1100, "sellPrice": 1800, "attack": 32, "attackSpeed": 1.08, "maxHp": 450, "name": "기사의 검", "appearanceCode": "SWORD_02" },
-    { "level": 5, "successRate": 0.6, "enhanceCost": 1600, "sellPrice": 3500, "attack": 40, "attackSpeed": 1.1, "maxHp": 500, "name": "명검", "appearanceCode": "SWORD_02" },
-    { "level": 6, "successRate": 0.5, "enhanceCost": 2300, "sellPrice": 6500, "attack": 50, "attackSpeed": 1.12, "maxHp": 560, "name": "마검", "appearanceCode": "SWORD_03" },
-    { "level": 7, "successRate": 0.4, "enhanceCost": 3200, "sellPrice": 12000, "attack": 62, "attackSpeed": 1.14, "maxHp": 630, "name": "성검", "appearanceCode": "SWORD_03" },
-    { "level": 8, "successRate": 0.3, "enhanceCost": 4500, "sellPrice": 22000, "attack": 76, "attackSpeed": 1.16, "maxHp": 710, "name": "용살검", "appearanceCode": "SWORD_03" },
-    { "level": 9, "successRate": 0.2, "enhanceCost": 6500, "sellPrice": 40000, "attack": 92, "attackSpeed": 1.18, "maxHp": 800, "name": "신검", "appearanceCode": "SWORD_04" },
-    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attack": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검 아님", "appearanceCode": "SWORD_04" }
+    { "level": 0, "successRate": 0.95, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
+    { "level": 1, "successRate": 0.9, "enhanceCost": 200, "sellPrice": 150, "attackPower": 14, "attackSpeed": 1.02, "maxHp": 330, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
+    { "level": 2, "successRate": 0.85, "enhanceCost": 400, "sellPrice": 400, "attackPower": 19, "attackSpeed": 1.04, "maxHp": 365, "name": "철 검", "appearanceCode": "SWORD_01" },
+    { "level": 3, "successRate": 0.8, "enhanceCost": 700, "sellPrice": 900, "attackPower": 25, "attackSpeed": 1.06, "maxHp": 405, "name": "강철 검", "appearanceCode": "SWORD_02" },
+    { "level": 4, "successRate": 0.7, "enhanceCost": 1100, "sellPrice": 1800, "attackPower": 32, "attackSpeed": 1.08, "maxHp": 450, "name": "기사의 검", "appearanceCode": "SWORD_02" },
+    { "level": 5, "successRate": 0.6, "enhanceCost": 1600, "sellPrice": 3500, "attackPower": 40, "attackSpeed": 1.1, "maxHp": 500, "name": "명검", "appearanceCode": "SWORD_02" },
+    { "level": 6, "successRate": 0.5, "enhanceCost": 2300, "sellPrice": 6500, "attackPower": 50, "attackSpeed": 1.12, "maxHp": 560, "name": "마검", "appearanceCode": "SWORD_03" },
+    { "level": 7, "successRate": 0.4, "enhanceCost": 3200, "sellPrice": 12000, "attackPower": 62, "attackSpeed": 1.14, "maxHp": 630, "name": "성검", "appearanceCode": "SWORD_03" },
+    { "level": 8, "successRate": 0.3, "enhanceCost": 4500, "sellPrice": 22000, "attackPower": 76, "attackSpeed": 1.16, "maxHp": 710, "name": "용살검", "appearanceCode": "SWORD_03" },
+    { "level": 9, "successRate": 0.2, "enhanceCost": 6500, "sellPrice": 40000, "attackPower": 92, "attackSpeed": 1.18, "maxHp": 800, "name": "신검", "appearanceCode": "SWORD_04" },
+    { "level": 10, "successRate": null, "enhanceCost": null, "sellPrice": 80000, "attackPower": 110, "attackSpeed": 1.2, "maxHp": 900, "name": "전설의 검 아님", "appearanceCode": "SWORD_04" }
   ],
   "artifacts": [
-    { "artifactCode": "CRIT_01", "name": "날카로운 숫돌", "grade": "COMMON", "iconCode": "ICON_CRIT_01", "statType": "CRIT_RATE", "baseValue": 0.03, "valuePerLevel": 0.01 },
-    { "artifactCode": "CRIT_02", "name": "매의 눈", "grade": "EPIC", "iconCode": "ICON_CRIT_02", "statType": "CRIT_RATE", "baseValue": 0.06, "valuePerLevel": 0.02 },
-    { "artifactCode": "LIFE_01", "name": "흡혈 반지", "grade": "RARE", "iconCode": "ICON_LIFE_01", "statType": "LIFESTEAL", "baseValue": 0.02, "valuePerLevel": 0.005 },
-    { "artifactCode": "LIFE_02", "name": "피의 성배", "grade": "LEGENDARY", "iconCode": "ICON_LIFE_02", "statType": "LIFESTEAL", "baseValue": 0.05, "valuePerLevel": 0.01 },
-    { "artifactCode": "HP_01", "name": "가죽 방패", "grade": "COMMON", "iconCode": "ICON_HP_01", "statType": "MAX_HP", "baseValue": 50, "valuePerLevel": 20 },
-    { "artifactCode": "HP_02", "name": "거인의 심장", "grade": "EPIC", "iconCode": "ICON_HP_02", "statType": "MAX_HP", "baseValue": 150, "valuePerLevel": 50 },
-    { "artifactCode": "SPEED_01", "name": "바람의 깃털", "grade": "RARE", "iconCode": "ICON_SPEED_01", "statType": "ATTACK_SPEED", "baseValue": 0.05, "valuePerLevel": 0.02 },
-    { "artifactCode": "SPEED_02", "name": "시간의 모래시계", "grade": "LEGENDARY", "iconCode": "ICON_SPEED_02", "statType": "ATTACK_SPEED", "baseValue": 0.1, "valuePerLevel": 0.03 }
+    { "code": "CRIT_01", "name": "날카로운 숫돌", "grade": "COMMON", "statType": "CRIT_RATE", "baseValue": 0.03, "valuePerLevel": 0.01 },
+    { "code": "CRIT_02", "name": "매의 눈", "grade": "EPIC", "statType": "CRIT_RATE", "baseValue": 0.06, "valuePerLevel": 0.02 },
+    { "code": "LIFE_01", "name": "흡혈 반지", "grade": "RARE", "statType": "LIFESTEAL", "baseValue": 0.02, "valuePerLevel": 0.005 },
+    { "code": "LIFE_02", "name": "피의 성배", "grade": "LEGENDARY", "statType": "LIFESTEAL", "baseValue": 0.05, "valuePerLevel": 0.01 },
+    { "code": "HP_01", "name": "가죽 방패", "grade": "COMMON", "statType": "MAX_HP", "baseValue": 50, "valuePerLevel": 20 },
+    { "code": "HP_02", "name": "거인의 심장", "grade": "EPIC", "statType": "MAX_HP", "baseValue": 150, "valuePerLevel": 50 },
+    { "code": "SPEED_01", "name": "바람의 깃털", "grade": "RARE", "statType": "ATTACK_SPEED", "baseValue": 0.05, "valuePerLevel": 0.02 },
+    { "code": "SPEED_02", "name": "시간의 모래시계", "grade": "LEGENDARY", "statType": "ATTACK_SPEED", "baseValue": 0.1, "valuePerLevel": 0.03 }
   ],
   "artifactEnhance": [
     { "grade": "COMMON", "level": 1, "materialCount": 2, "gold": 100 },
@@ -42,10 +42,10 @@
     { "grade": "LEGENDARY", "level": 4, "materialCount": 4, "gold": 6400 }
   ],
   "enemies": [
-    { "enemyCode": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-    { "enemyCode": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
-    { "enemyCode": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
-    { "enemyCode": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
+    { "code": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
+    { "code": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
+    { "code": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
+    { "code": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
   ],
   "stages": [
     { "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1, "recommendedPower": 500, "imageCode": "STAGE_01" },

@@ -140,7 +140,7 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo.SetEquipment($"+{current.level.ToString()}", current.name);
         enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
-        SetStatRow(0, "공격력", current.attack, next?.attack, FormatInteger);
+        SetStatRow(0, "공격력", current.attackPower, next?.attackPower, FormatInteger);
         SetStatRow(1, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
         SetStatRow(2, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
     }
@@ -218,7 +218,7 @@ public class EnhanceTab : LobbyTab
 
     private ArtifactData GetArtifactData(string artifactCode)
     {
-        return GameDB.artifacts.First(x => x.artifactCode == artifactCode);
+        return GameDB.artifacts.First(x => x.code == artifactCode);
     }
 
     private UserArtifact GetEquippedArtifact(int slotIndex)

@@ -27,8 +27,8 @@ public class BattleEffectPresenter : IDisposable
         this.enemyView = enemyView;
         this.bossWarningView = bossWarningView;
         this.resultView = resultView;
-        enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.enemyCode, data => data.name);
-        artifactNamesByCode = gameDB.artifacts.ToDictionary(data => data.artifactCode, data => data.name);
+        enemyNamesByCode = gameDB.enemies.ToDictionary(data => data.code, data => data.name);
+        artifactNamesByCode = gameDB.artifacts.ToDictionary(data => data.code, data => data.name);
 
         director.AttackApplied += OnAttackApplied;
         director.BattleEnded += OnBattleEnded;
