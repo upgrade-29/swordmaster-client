@@ -19,12 +19,9 @@ public class BattleResultView : MonoBehaviour
     private TMP_Text descriptionText;
     private TMP_Text rewardLabelText;
     private TMP_Text rewardValueText;
-    private TMP_Text retryLabelText;
     private Button retryButton;
     private Button exitButton;
     private Sequence sequence;
-    private float retryAvailableTime; // Time.unscaledTime 기준. 이 시각이 지나야 재도전을 누를 수 있다
-    private int shownCooldownSeconds = -1;
 
     public event Action RetryClicked;
     public event Action ExitClicked;
@@ -39,7 +36,6 @@ public class BattleResultView : MonoBehaviour
         rewardLabelText = GameUtil.Bind<TMP_Text>(gameObject, "Window/RewardBox/RewardLabelText");
         rewardValueText = GameUtil.Bind<TMP_Text>(gameObject, "Window/RewardBox/RewardValueText");
         retryButton = GameUtil.Bind<Button>(gameObject, "Window/RetryButton");
-        retryLabelText = GameUtil.Bind<TMP_Text>(gameObject, "Window/RetryButton/Label");
         exitButton = GameUtil.Bind<Button>(gameObject, "Window/ExitButton");
 
         retryButton.onClick.AddListener(OnClickRetry);
@@ -55,36 +51,30 @@ public class BattleResultView : MonoBehaviour
         exitButton.onClick.RemoveListener(OnClickExit);
     }
 
-    private void Update()
-    {
-        UpdateRetryButton();
-    }
-
     // 보상이 없으면(0골드, 드랍 없음) 안내 문구만 보여준다
-    // retryCooldown은 재도전을 누를 수 있을 때까지 남은 시간(초)이다
-    public void Show(BattleResult result, IReadOnlyList<string> artifactNames, double retryCooldown)
+    public void Show(BattleEndResult result, IReadOnlyList<string> artifactNames)
     {
-        resultText.text = result.isVictory ? "성공" : "실패";
-        resultText.color = result.isVictory ? VictoryColor : DefeatColor;
-        stageText.text = $"STAGE {result.stage}";
+        SetHeader(result.isVictory, result.stage);
         descriptionText.text = result.isVictory
             ? "보스를 처치하고 스테이지를 클리어했습니다."
             : "장비를 강화한 뒤 다시 도전해보세요.";
 
         SetRewards(result.rewards, artifactNames);
+        Open();
+    }
 
-        retryAvailableTime = Time.unscaledTime + (float)retryCooldown;
-        shownCooldownSeconds = -1;
-        UpdateRetryButton();
+    // 요청이 거절됐을 때. 팝업이 열려 있으면(재도전 거절) 설명 문구만 바꾸고,
+    // 닫혀 있으면(전투 중 검증 실패) 실패 팝업을 띄운다
+    public void ShowRejected(int stage, string message)
+    {
+        descriptionText.text = message;
+        if (gameObject.activeSelf)
+            return;
 
-        sequence?.Kill();
-        gameObject.SetActive(true);
-        canvasGroup.alpha = 0f;
-        window.localScale = Vector3.one * 0.8f;
-
-        sequence = DOTween.Sequence();
-        sequence.Append(canvasGroup.DOFade(1f, ShowDuration));
-        sequence.Join(window.DOScale(1f, ShowDuration).SetEase(Ease.OutBack));
+        SetHeader(false, stage);
+        rewardLabelText.text = "";
+        rewardValueText.text = "";
+        Open();
     }
 
     public void Hide()
@@ -93,22 +83,23 @@ public class BattleResultView : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    // 재도전을 거절당했을 때처럼 설명 문구 자리에 안내를 보여준다
-    public void ShowMessage(string message)
+    private void SetHeader(bool isVictory, int stage)
     {
-        descriptionText.text = message;
+        resultText.text = isVictory ? "성공" : "실패";
+        resultText.color = isVictory ? VictoryColor : DefeatColor;
+        stageText.text = $"STAGE {stage}";
     }
 
-    // 쿨타임이 남아 있으면 버튼을 잠그고 남은 초를 보여준다. 초가 바뀔 때만 글자를 갱신한다
-    private void UpdateRetryButton()
+    private void Open()
     {
-        var seconds = Mathf.CeilToInt(retryAvailableTime - Time.unscaledTime);
-        if (seconds == shownCooldownSeconds)
-            return;
+        sequence?.Kill();
+        gameObject.SetActive(true);
+        canvasGroup.alpha = 0f;
+        window.localScale = Vector3.one * 0.8f;
 
-        shownCooldownSeconds = seconds;
-        retryButton.interactable = seconds <= 0;
-        retryLabelText.text = seconds > 0 ? $"재도전 ({seconds}s)" : "재도전";
+        sequence = DOTween.Sequence();
+        sequence.Append(canvasGroup.DOFade(1f, ShowDuration));
+        sequence.Join(window.DOScale(1f, ShowDuration).SetEase(Ease.OutBack));
     }
 
     private void SetRewards(BattleRewards rewards, IReadOnlyList<string> artifactNames)
