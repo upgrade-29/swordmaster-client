@@ -8,6 +8,7 @@ using UnityEngine;
 public class ShopVisualCatalogSO : ScriptableObject
 {
     [Serializable]
+    // 상품 코드와 상품 아이콘을 Inspector에서 연결하는 항목이다.
     private class ProductIconEntry
     {
         [SerializeField] private string iconCode;
@@ -18,6 +19,7 @@ public class ShopVisualCatalogSO : ScriptableObject
     }
 
     [Serializable]
+    // 재화 종류와 가격 아이콘을 Inspector에서 연결하는 항목이다.
     private class CurrencyIconEntry
     {
         [SerializeField] private CurrencyType currencyType;
@@ -28,6 +30,7 @@ public class ShopVisualCatalogSO : ScriptableObject
     }
 
     [Serializable]
+    // 보상 종류와 대표 보상 아이콘을 Inspector에서 연결하는 항목이다.
     private class RewardTypeIconEntry
     {
         [SerializeField] private RewardType rewardType;
@@ -38,6 +41,7 @@ public class ShopVisualCatalogSO : ScriptableObject
     }
 
     [Serializable]
+    // 카테고리와 화면용 섹션 라벨을 Inspector에서 연결하는 항목이다.
     private class CategoryLabelEntry
     {
         [SerializeField] private ShopCategory category;

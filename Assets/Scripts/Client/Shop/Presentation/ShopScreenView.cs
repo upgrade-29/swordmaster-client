@@ -65,6 +65,7 @@ public class ShopScreenView : MonoBehaviour
         ClearSections();
     }
 
+    // 목록을 만들기 전에는 로딩 패널만 보여 화면 상태를 전환한다.
     public void SetLoading(bool loading)
     {
         if (loading == true)
@@ -76,6 +77,7 @@ public class ShopScreenView : MonoBehaviour
         objLoadingPanel.SetActive(false);
     }
 
+    // 카테고리별 상품 항목을 다시 만들고 스크롤 시작 위치를 맨 위로 맞춘다.
     public void ShowProducts(IReadOnlyList<ShopProductSectionViewData> productSections)
     {
         ShowOnly(nestedScrollRect.viewport.gameObject);
@@ -87,6 +89,7 @@ public class ShopScreenView : MonoBehaviour
         nestedScrollRect.verticalNormalizedPosition = 1f;
     }
 
+    // 표시할 상품이 없을 때 빈 목록 상태만 노출한다.
     public void ShowEmpty()
     {
         ShowOnly(objEmptyPanel);
@@ -110,6 +113,7 @@ public class ShopScreenView : MonoBehaviour
         retryButton.gameObject.SetActive(isRecoverable);
     }
 
+    // 화면 상태 패널을 하나만 활성화해 중첩 표시를 막는다.
     private void ShowOnly(GameObject panelToShow)
     {
         objLoadingPanel.SetActive(panelToShow == objLoadingPanel);
@@ -144,6 +148,7 @@ public class ShopScreenView : MonoBehaviour
         comingSoonPanel.SetAsLastSibling();
     }
 
+    // 동적으로 만든 항목의 구독을 해제하고 섹션 오브젝트를 정리한다.
     private void ClearSections()
     {
         foreach (ShopProductItemView item in items)

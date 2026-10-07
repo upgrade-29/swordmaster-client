@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-// 서버가 없기 때문에 임시 코드. User는 서버 DB에 있는 유저 역할이며 구매 결과가 이 객체에 반영된다
+// EditMode와 개발 확인에서만 서버 응답을 흉내 내는 테스트 대역이다.
 public class ShopLocalService : IShopPurchaseService
 {
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
@@ -12,34 +12,35 @@ public class ShopLocalService : IShopPurchaseService
 
     private readonly Dictionary<string, PurchaseResult> succeededRequests = new Dictionary<string, PurchaseResult>();
 
-    public async void RequestPurchase(string productCode, string purchaseRequestId,
-        Action<PurchaseResult> onSuccess, Action<PurchaseFailure> onFailure)
+    // 테스트 데이터로 구매 결과를 만들고 동일 요청 ID에는 저장된 결과를 다시 전달한다.
+    public async void RequestPurchase(ShopPurchaseRequest request, Action<PurchaseResult> onSuccess,
+        Action<PurchaseFailure> onFailure)
     {
         await Task.Yield();
 
-        if (succeededRequests.TryGetValue(purchaseRequestId, out PurchaseResult succeededResult))
+        if (succeededRequests.TryGetValue(request.RequestId.ToString(), out PurchaseResult succeededResult))
         {
             onSuccess(CopyAsResponse(succeededResult));
             return;
         }
 
-        ShopProductData product = GameDB.shopProducts.FirstOrDefault(x => x.productCode == productCode);
+        ShopProductData product = GameDB.shopProducts.FirstOrDefault(x => x.productCode == request.ProductCode);
         if (product == null)
         {
-            onFailure(new PurchaseFailure(PurchaseFailureKind.FailedKnown, "존재하지 않는 상품입니다."));
+            onFailure(new PurchaseFailure(PurchaseFailureKind.ProductNotFound, "존재하지 않는 상품입니다."));
             return;
         }
 
         if (User.Currencies.Get(product.priceType) < product.price)
         {
-            onFailure(new PurchaseFailure(PurchaseFailureKind.FailedKnown, GetNotEnoughMessage(product.priceType)));
+            onFailure(new PurchaseFailure(PurchaseFailureKind.InsufficientCurrency, GetNotEnoughMessage(product.priceType)));
             return;
         }
 
         User.Currencies.Add(product.priceType, -product.price);
 
         var rewards = new List<PurchaseRewardResult>();
-        foreach (var reward in GameDB.shopProductRewards.Where(x => x.productCode == productCode))
+        foreach (var reward in GameDB.shopProductRewards.Where(x => x.productCode == request.ProductCode))
         {
             GiveReward(reward);
             rewards.Add(new PurchaseRewardResult(reward.rewardType, reward.rewardCode, reward.amount));
@@ -47,11 +48,12 @@ public class ShopLocalService : IShopPurchaseService
 
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
-        var result = new PurchaseResult(productCode, purchaseRequestId, rewards, User.Currencies);
-        succeededRequests[purchaseRequestId] = CopyAsResponse(result);
+        var result = new PurchaseResult(rewards, User.Currencies);
+        succeededRequests[request.RequestId.ToString()] = CopyAsResponse(result);
         onSuccess(CopyAsResponse(result));
     }
 
+    // 현재 테스트 대역이 지원하는 보상만 사용자 재화에 반영한다.
     private void GiveReward(ShopProductRewardData reward)
     {
         if (reward.rewardType != RewardType.Gold)

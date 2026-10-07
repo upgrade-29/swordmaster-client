@@ -47,7 +47,7 @@ public class ShopProductItemView : MonoBehaviour
         productName.text = viewData.DisplayName;
         rewardItem.Bind(viewData.RepresentativeRewardView);
 
-        // ActionButton의 Label/Icon으로 가격 정보를 표시한다 (별도 가격 표시 요소를 두지 않음, shop-ui-prefab.md 4절 조립 구조 기준).
+        // ActionButton의 Label/Icon으로 가격 정보를 표시한다.
         actionButton.SetIcon(viewData.CurrencyIcon);
 
         SetPurchaseState(ShopProductPurchaseState.Ready);

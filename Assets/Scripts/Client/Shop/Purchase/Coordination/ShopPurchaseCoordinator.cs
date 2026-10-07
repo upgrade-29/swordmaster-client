@@ -7,13 +7,14 @@ public class ShopPurchaseCoordinator
     private readonly IShopPurchaseService purchaseService;
 
     private string currentProductCode;
-    private string currentPurchaseRequestId;
+    private Guid currentRequestId;
 
     public ShopPurchaseCoordinatorState State { get; private set; } = ShopPurchaseCoordinatorState.Idle;
     public bool IsPurchasing => State != ShopPurchaseCoordinatorState.Idle;
 
     public event Action<string, PurchaseResult> OnPurchaseSucceededEvent = delegate { };
     public event Action<string, string> OnPurchaseFailedEvent = delegate { };
+    public event Action<string> OnAuthenticationRequiredEvent = delegate { };
     public event Action<string> OnPurchaseResultUnknownEvent = delegate { };
 
     public ShopPurchaseCoordinator(IShopPurchaseService purchaseService)
@@ -30,14 +31,14 @@ public class ShopPurchaseCoordinator
         }
 
         currentProductCode = productCode;
-        currentPurchaseRequestId = Guid.NewGuid().ToString();
+        currentRequestId = Guid.NewGuid();
         State = ShopPurchaseCoordinatorState.Requesting;
 
-        purchaseService.RequestPurchase(currentProductCode, currentPurchaseRequestId, OnRequestSucceeded, OnRequestFailed);
+        RequestCurrentPurchase();
         return true;
     }
 
-    // ResultUnknown 이후 같은 거래를 같은 purchaseRequestId로 다시 조회/재시도한다.
+    // 결과 불명 뒤 사용자가 선택한 경우에만 동일 UUID로 구매를 재전송한다.
     public bool TryRetry()
     {
         if (State != ShopPurchaseCoordinatorState.Reconciling)
@@ -46,19 +47,20 @@ public class ShopPurchaseCoordinator
         }
 
         State = ShopPurchaseCoordinatorState.Requesting;
-        purchaseService.RequestPurchase(currentProductCode, currentPurchaseRequestId, OnRequestSucceeded, OnRequestFailed);
+        RequestCurrentPurchase();
         return true;
     }
 
-    // 재조회 없이도 Idle로 되돌려야 하는 경우(사용자가 재시도를 포기함 등) 호출한다.
-    public void CompleteReconcile()
+    // 결과 확인 팝업만 닫고 거래 상태와 동일 UUID는 유지한다.
+    public void DismissReconcile()
     {
-        if (State != ShopPurchaseCoordinatorState.Reconciling)
-        {
-            return;
-        }
+    }
 
-        State = ShopPurchaseCoordinatorState.Idle;
+    // 현재 거래 식별자를 바꾸지 않고 서비스 경계에 구매 요청을 전달한다.
+    private void RequestCurrentPurchase()
+    {
+        purchaseService.RequestPurchase(new ShopPurchaseRequest(currentRequestId, currentProductCode),
+            OnRequestSucceeded, OnRequestFailed);
     }
 
     // 서버가 구매를 확정한 결과를 그대로 상위에 전달하고 Idle로 복귀한다.
@@ -69,7 +71,7 @@ public class ShopPurchaseCoordinator
         OnPurchaseSucceededEvent.Invoke(productCode, result);
     }
 
-    // 실패 종류에 따라 분기한다: 결과불명(ResultUnknown)이면 Reconciling 상태로 재시도 대기, 그 외 실패는 즉시 Idle로 되돌린다.
+    // 결과 불명만 재전송 대기 상태로 남기고 인증 실패는 공용 인증 경계에 넘긴다.
     private void OnRequestFailed(PurchaseFailure failure)
     {
         if (failure.Kind == PurchaseFailureKind.ResultUnknown)
@@ -81,6 +83,13 @@ public class ShopPurchaseCoordinator
 
         string productCode = currentProductCode;
         State = ShopPurchaseCoordinatorState.Idle;
+
+        if (failure.Kind == PurchaseFailureKind.AuthenticationRequired)
+        {
+            OnAuthenticationRequiredEvent.Invoke(productCode);
+            return;
+        }
+
         OnPurchaseFailedEvent.Invoke(productCode, failure.Message);
     }
 }

@@ -16,6 +16,7 @@ public class ShopTab : LobbyTab
 
     private ShopCatalog catalog;
     private ShopPurchaseCoordinator purchaseCoordinator;
+    private ShopPurchaseSuccessApplier purchaseSuccessApplier;
 
     private bool isViewActive;
     private string pendingPurchaseProductCode;
@@ -38,10 +39,12 @@ public class ShopTab : LobbyTab
     {
         catalog = new ShopCatalog(GameDB);
 
-        purchaseCoordinator = new ShopPurchaseCoordinator(new ShopLocalService());
+        purchaseCoordinator = new ShopPurchaseCoordinator(ShopPurchaseServiceComposition.CreateRuntime());
         purchaseCoordinator.OnPurchaseSucceededEvent += OnPurchaseSucceeded;
         purchaseCoordinator.OnPurchaseFailedEvent += OnPurchaseFailed;
+        purchaseCoordinator.OnAuthenticationRequiredEvent += OnAuthenticationRequired;
         purchaseCoordinator.OnPurchaseResultUnknownEvent += OnPurchaseResultUnknown;
+        purchaseSuccessApplier = new ShopPurchaseSuccessApplier(User.Currencies, view.SetItemPurchaseState);
 
         RenderCurrentCatalog();
     }
@@ -51,11 +54,18 @@ public class ShopTab : LobbyTab
         isViewActive = true;
         // 화면 재진입 시 최신 상태를 다시 렌더링한다.
         RenderCurrentCatalog();
+        RestoreReconcilePresentation();
     }
 
     private void OnDisable()
     {
         isViewActive = false;
+
+        if (pendingReconcileProductCode != null)
+        {
+            UnsubscribeReconcileAlert();
+            confirmPopup.Hide();
+        }
     }
 
     protected override void OnDestroy()
@@ -82,10 +92,12 @@ public class ShopTab : LobbyTab
         {
             purchaseCoordinator.OnPurchaseSucceededEvent -= OnPurchaseSucceeded;
             purchaseCoordinator.OnPurchaseFailedEvent -= OnPurchaseFailed;
+            purchaseCoordinator.OnAuthenticationRequiredEvent -= OnAuthenticationRequired;
             purchaseCoordinator.OnPurchaseResultUnknownEvent -= OnPurchaseResultUnknown;
         }
     }
 
+    // 현재 탭 활성 상태와 카탈로그 내용에 맞는 화면 상태를 다시 그린다.
     private void RenderCurrentCatalog()
     {
         if (isViewActive == false)
@@ -110,7 +122,7 @@ public class ShopTab : LobbyTab
         view.ShowProducts(sections);
     }
 
-    // 구매 확인 팝업을 먼저 거친 뒤 진행한다 (shop-system.md 7절, 초기 정책: 모든 상품 공통 적용).
+    // 구매 확인 팝업을 먼저 거친 뒤 진행한다.
     private void OnPurchaseRequested(string productCode)
     {
         if (purchaseCoordinator == null || purchaseCoordinator.IsPurchasing == true)
@@ -161,21 +173,18 @@ public class ShopTab : LobbyTab
         confirmPopup.OnCancelEvent -= OnPurchaseCancelled;
     }
 
-    // 결과를 먼저 장수명 사용자 상태(User)에 반영한 뒤, 화면이 활성 상태일 때만 View를 갱신한다 (shop-network-flow.md 10절).
+    // 결과를 먼저 장수명 사용자 상태에 반영하고 비활성 화면은 직접 갱신하지 않는다.
     private void OnPurchaseSucceeded(string productCode, PurchaseResult result)
     {
-        User.Currencies.SyncFrom(result.currencies);
-
-        if (isViewActive == false)
-        {
-            return;
-        }
-
-        view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
+        purchaseSuccessApplier.Apply(productCode, result, isViewActive);
+        pendingReconcileProductCode = null;
     }
 
+    // 명시적 실패 뒤 상품 입력을 복원하고 서버 안내를 사용자에게 표시한다.
     private void OnPurchaseFailed(string productCode, string message)
     {
+        pendingReconcileProductCode = null;
+
         if (isViewActive == true)
         {
             view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
@@ -184,16 +193,49 @@ public class ShopTab : LobbyTab
         ShowAlert("구매 실패", message);
     }
 
-    // Timeout/연결 끊김으로 서버 처리 여부를 알 수 없는 상태(Reconciling). 재시도 전까지는 구매 중 표시를 유지한다.
+    // 공용 인증 처리가 필요하다는 신호 뒤에는 Shop이 자체 재전송이나 토큰 갱신을 하지 않는다.
+    private void OnAuthenticationRequired(string productCode)
+    {
+        pendingReconcileProductCode = null;
+
+        if (isViewActive == true)
+        {
+            view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
+        }
+    }
+
+    // 결과 불명 상태에서는 사용자가 재전송을 선택할 때까지 구매 중 표시를 유지한다.
     private void OnPurchaseResultUnknown(string productCode)
     {
         pendingReconcileProductCode = productCode;
 
-        if (isViewActive == true)
+        if (isViewActive == false)
         {
-            view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Purchasing);
+            return;
         }
 
+        view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Purchasing);
+        ShowReconcileAlert();
+    }
+
+    // 결과 불명 거래가 남아 있으면 탭 재진입 뒤에도 구매 중 표시와 재전송 경로를 복원한다.
+    private void RestoreReconcilePresentation()
+    {
+        if (purchaseCoordinator == null ||
+            purchaseCoordinator.State != ShopPurchaseCoordinatorState.Reconciling ||
+            pendingReconcileProductCode == null)
+        {
+            return;
+        }
+
+        view.SetItemPurchaseState(pendingReconcileProductCode, ShopProductPurchaseState.Purchasing);
+        ShowReconcileAlert();
+    }
+
+    // 결과 불명 거래의 사용자 선택 UI를 표시하고 재진입 시 중복 구독을 막는다.
+    private void ShowReconcileAlert()
+    {
+        UnsubscribeReconcileAlert();
         confirmPopup.SetTitle("구매 결과 확인 필요");
         confirmPopup.SetMessage("구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?");
         confirmPopup.OnConfirmEvent += OnReconcileRetryConfirmed;
@@ -201,41 +243,21 @@ public class ShopTab : LobbyTab
         confirmPopup.Show();
     }
 
-    // 재시도를 시작할 수 있으면 구매 중 표시를 유지한 채 맡기고, 시작할 수 없으면(이미 Idle 등) 바로 포기 처리로 넘어간다.
+    // 사용자가 확인한 결과 불명 거래만 같은 UUID로 재전송한다.
     private void OnReconcileRetryConfirmed()
     {
         UnsubscribeReconcileAlert();
         confirmPopup.Hide();
 
-        if (purchaseCoordinator.TryRetry() == true)
-        {
-            return;
-        }
-
-        purchaseCoordinator.CompleteReconcile();
-        RestoreItemAfterReconcile();
+        purchaseCoordinator.TryRetry();
     }
 
-    // 실제 재조회(GET /api/users/me 등)는 기존 Network Layer 도입 이후 구현 대상이다.
-    // 그 전까지는 재시도를 포기하면 Idle로 되돌리고, 화면 재진입 시 사용자 상태가 다시 반영되는 것에 맡긴다.
+    // 취소는 재전송 UI만 닫으며 결과 불명 거래의 상태나 UUID를 변경하지 않는다.
     private void OnReconcileRetryCancelled()
     {
         UnsubscribeReconcileAlert();
         confirmPopup.Hide();
-
-        purchaseCoordinator.CompleteReconcile();
-        RestoreItemAfterReconcile();
-    }
-
-    private void RestoreItemAfterReconcile()
-    {
-        string productCode = pendingReconcileProductCode;
-        pendingReconcileProductCode = null;
-
-        if (isViewActive == true && productCode != null)
-        {
-            view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
-        }
+        purchaseCoordinator.DismissReconcile();
     }
 
     private void UnsubscribeReconcileAlert()
@@ -244,11 +266,13 @@ public class ShopTab : LobbyTab
         confirmPopup.OnCancelEvent -= OnReconcileRetryCancelled;
     }
 
+    // 카탈로그 표시 오류의 재시도 요청은 현재 데이터로 화면만 다시 구성한다.
     private void OnCatalogRetryRequested()
     {
         RenderCurrentCatalog();
     }
 
+    // 확인만 필요한 안내를 기존 확인 팝업으로 표시하고 닫기 입력을 한 곳에서 처리한다.
     private void ShowAlert(string title, string message)
     {
         confirmPopup.SetTitle(title);

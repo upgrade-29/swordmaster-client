@@ -13,6 +13,7 @@ public class ShopCatalog
         products = ShopDataMapper.ToProductModels(gameDB);
     }
 
+    // 상품 코드에 해당하는 표시 모델을 찾아 구매 확인 흐름에 제공한다.
     public ShopProductModel GetProduct(string productCode)
     {
         return products.FirstOrDefault(product => product.ProductCode == productCode);
