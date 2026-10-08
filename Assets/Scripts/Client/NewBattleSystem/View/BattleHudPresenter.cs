@@ -1,6 +1,6 @@
 using System;
 
-// BattleManager가 알려주는 진행 상황으로 상단 HUD(스테이지, 남은 시간, HP바)를 갱신한다
+// BattleManager가 알려주는 진행 상황으로 상단 HUD(스테이지, 남은 시간, HP바, 모은 골드)를 갱신한다
 public class BattleHudPresenter : IDisposable
 {
     private readonly BattleManager manager;
@@ -11,20 +11,31 @@ public class BattleHudPresenter : IDisposable
         this.manager = manager;
         this.hud = hud;
 
-        manager.CountdownStarted += SetUp;
+        manager.CountdownStarted += OnCountdownStarted;
         manager.CountdownTicked += OnCountdownTicked;
         manager.SubStageStarted += SetUp;
         manager.SubStageAdvanced += OnSubStageAdvanced;
         manager.AttackApplied += OnAttackApplied;
+        manager.SubStageVerified += OnSubStageVerified;
+        manager.BattleEnded += OnBattleEnded;
     }
 
     public void Dispose()
     {
-        manager.CountdownStarted -= SetUp;
+        manager.CountdownStarted -= OnCountdownStarted;
         manager.CountdownTicked -= OnCountdownTicked;
         manager.SubStageStarted -= SetUp;
         manager.SubStageAdvanced -= OnSubStageAdvanced;
         manager.AttackApplied -= OnAttackApplied;
+        manager.SubStageVerified -= OnSubStageVerified;
+        manager.BattleEnded -= OnBattleEnded;
+    }
+
+    // 골드는 서버 세션 값으로 시작한다. 새 전투면 0, 재접속이면 끊기기 전까지 모은 골드
+    private void OnCountdownStarted(BattleSubStage subStage)
+    {
+        SetUp(subStage);
+        hud.SetGold(manager.Session.accumulatedGold);
     }
 
     // 세부스테이지 시작 상태로 스테이지 표시, HP바, 남은 시간을 세팅한다
@@ -49,6 +60,18 @@ public class BattleHudPresenter : IDisposable
     private void OnAttackApplied(BattleSubStage subStage, BattleEvent battleEvent)
     {
         SetHp(battleEvent.playerHp, battleEvent.enemyHp, subStage);
+    }
+
+    // 처치 골드는 서버 검증을 통과한 뒤에 늘어난다
+    private void OnSubStageVerified(BattleSubStage subStage, BattleResultVerifyResponse response)
+    {
+        hud.SetGold(response.accumulatedGold);
+    }
+
+    // 포기로 끝나면 검증 응답 없이 끝나므로 최종 보상으로 한 번 더 맞춘다
+    private void OnBattleEnded(BattleEndResponse result)
+    {
+        hud.SetGold(result.rewards.gold);
     }
 
     private void SetHp(double playerHp, double enemyHp, BattleSubStage subStage)

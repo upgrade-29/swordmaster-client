@@ -1,11 +1,12 @@
 using TMPro;
 using UnityEngine;
 
-// 화면 상단의 스테이지, 남은 시간, HP바 표시
+// 화면 상단의 스테이지, 남은 시간, HP바, 이번 전투에서 모은 골드 표시
 public class BattleHudView : MonoBehaviour
 {
     private TMP_Text stageText;
     private TMP_Text timeText;
+    private TMP_Text goldText;
     private HpBarView playerHpBar;
     private HpBarView enemyHpBar;
 
@@ -16,6 +17,7 @@ public class BattleHudView : MonoBehaviour
     {
         stageText = GameUtil.Bind<TMP_Text>(gameObject, "StageText");
         timeText = GameUtil.Bind<TMP_Text>(gameObject, "TimeText");
+        goldText = GameUtil.Bind<TMP_Text>(gameObject, "GoldText");
         playerHpBar = GameUtil.Bind<HpBarView>(gameObject, "PlayerHpBar");
         enemyHpBar = GameUtil.Bind<HpBarView>(gameObject, "EnemyHpBar");
     }
@@ -35,5 +37,11 @@ public class BattleHudView : MonoBehaviour
     public void SetRemainingTime(double seconds)
     {
         timeText.text = $"{System.Math.Max(0, seconds):0.0}s";
+    }
+
+    // 전투가 끝날 때 한 번에 반영될 골드. 서버 세션에 모인 값을 그대로 보여준다
+    public void SetGold(long gold)
+    {
+        goldText.text = $"획득 골드 {gold:N0}";
     }
 }
