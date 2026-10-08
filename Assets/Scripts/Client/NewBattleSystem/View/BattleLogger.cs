@@ -67,6 +67,10 @@ public class BattleLogger : IDisposable
         Log($"{attackerName}의 {attackText}!! {AddParticle(targetName, "이", "가")} {attackText}을 받아 " +
             $"{battleEvent.damage:#,0.##}의 데미지를 입었다.",
             $" (t={battleEvent.time:0.00}, Player {battleEvent.playerHp:0.##} / Enemy {battleEvent.enemyHp:0.##})");
+
+        // 예: "테스트유저가 체력을 3.75 흡혈했다." 체력이 가득 차서 회복하지 못했으면 쓰지 않는다
+        if (battleEvent.lifesteal > 0)
+            Log($"{AddParticle(attackerName, "이", "가")} 체력을 {battleEvent.lifesteal:#,0.##} 흡혈했다.");
     }
 
     // 서버 검증을 통과한 뒤에 결과를 쓴다
