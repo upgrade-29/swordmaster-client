@@ -1,9 +1,7 @@
-using Newtonsoft.Json;
-
-// 공격 한 번
+// 공격 한 번의 결과. BattleSubStage가 공격할 때마다 만들어 View들에게 넘긴다
 public class BattleEvent
 {
-    public readonly double time; // 웨이브 시작부터 흐른 시간(초)
+    public readonly double time; // 세부스테이지 시작부터 흐른 시간(초)
     public readonly BattleSide attacker;
     public readonly double damage;
     public readonly bool isCrit;
@@ -11,7 +9,6 @@ public class BattleEvent
     public readonly double playerHp; // 이 공격이 끝난 뒤의 체력
     public readonly double enemyHp;
 
-    [JsonConstructor]
     public BattleEvent(double time, BattleSide attacker, double damage, bool isCrit, double lifesteal,
         double playerHp, double enemyHp)
     {
