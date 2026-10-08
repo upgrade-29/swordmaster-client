@@ -17,6 +17,7 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentInfo enhanceEquipmentInfo;
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
+    [ReadOnly] [SerializeField] private ArtifactChangePopup artifactChangePopup;
 
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
@@ -43,6 +44,7 @@ public class EnhanceTab : LobbyTab
         enhanceEquipmentAction = GameUtil.Bind<EnhanceEquipmentAction>(transform, "EquipmentAction");
         enhanceEquipmentAction.OnClickEnhanceEvent += OnClickEnhance;
         enhanceEquipmentAction.OnClickSellEvent += OnClickSell;
+        enhanceEquipmentAction.OnClickChangeEvent += OnClickChange;
 
         enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
     }
@@ -50,6 +52,10 @@ public class EnhanceTab : LobbyTab
     private void Start()
     {
         enhanceService = new EnhanceLocalService(new System.Random());
+
+        artifactChangePopup = LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
+        artifactChangePopup.OnClickArtifactEvent += OnClickChangeArtifact;
+        artifactChangePopup.OnClickUnequipEvent += OnClickUnequip;
 
         RefreshCombatStats();
         RefreshEquipmentNames();
@@ -76,6 +82,13 @@ public class EnhanceTab : LobbyTab
         {
             enhanceEquipmentAction.OnClickEnhanceEvent -= OnClickEnhance;
             enhanceEquipmentAction.OnClickSellEvent -= OnClickSell;
+            enhanceEquipmentAction.OnClickChangeEvent -= OnClickChange;
+        }
+
+        if (artifactChangePopup != null)
+        {
+            artifactChangePopup.OnClickArtifactEvent -= OnClickChangeArtifact;
+            artifactChangePopup.OnClickUnequipEvent -= OnClickUnequip;
         }
     }
 
@@ -232,6 +245,28 @@ public class EnhanceTab : LobbyTab
         return GameDB.artifactEnhance.FirstOrDefault(x => x.grade == grade && x.level == artifact.Level);
     }
 
+    private static string GetGradeName(ArtifactGrade grade)
+    {
+        string gradeName = string.Empty;
+        switch (grade)
+        {
+            case ArtifactGrade.Common:
+                gradeName = "일반";
+                break;
+            case ArtifactGrade.Rare:
+                gradeName = "희귀";
+                break;
+            case ArtifactGrade.Epic:
+                gradeName = "영웅";
+                break;
+            case ArtifactGrade.Legendary:
+                gradeName = "전설";
+                break;
+        }
+
+        return gradeName;
+    }
+
     private static string GetStatName(StatType statType)
     {
         switch (statType)
@@ -289,9 +324,52 @@ public class EnhanceTab : LobbyTab
         selectedArtifactSlot = slotIndex;
         enhanceEquipmentSelect.SetSelectedArtifact(slotIndex);
         enhanceEquipmentInfo.ShowArtifact();
-        enhanceEquipmentAction.ShowArtifact();
+        enhanceEquipmentAction.ShowArtifact(GetEquippedArtifact(slotIndex) != null);
         RefreshArtifactInfo(slotIndex);
         RefreshArtifactAction(slotIndex);
+    }
+
+    private void OpenArtifactChangePopup()
+    {
+        IReadOnlyList<UserArtifact> artifacts = User.Artifacts;
+
+        artifactChangePopup.Open();
+        artifactChangePopup.ShowItems(artifacts.Count);
+        for (int i = 0; i < artifacts.Count; i++)
+        {
+            SetArtifactChangeItem(i, artifacts[i]);
+        }
+
+        artifactChangePopup.SetUnequipInteractable(GetEquippedArtifact(selectedArtifactSlot) != null);
+    }
+
+    private void SetArtifactChangeItem(int index, UserArtifact artifact)
+    {
+        ArtifactData data = GetArtifactData(artifact.ArtifactCode);
+        string value = GetStatFormat(data.statType)(StatCalculator.GetArtifactValue(data, artifact.Level));
+
+        artifactChangePopup.SetItem(index,
+            GetGradeName(data.grade),
+            $"Lv. {artifact.Level.ToString()}",
+            data.name,
+            $"{GetStatName(data.statType)} {value}",
+            GetArtifactChangeStatus(artifact),
+            artifact.IsEquipped == false);
+    }
+
+    private string GetArtifactChangeStatus(UserArtifact artifact)
+    {
+        if (artifact.IsEquipped == false)
+        {
+            return "장착하기";
+        }
+
+        if (artifact.EquippedSlot == selectedArtifactSlot + 1)
+        {
+            return "현재 장착";
+        }
+
+        return $"슬롯 {artifact.EquippedSlot.Value.ToString()} 장착 중";
     }
 
     private void SetStatsOpened(bool opened)
@@ -320,6 +398,16 @@ public class EnhanceTab : LobbyTab
     private async Task SellSwordAsync()
     {
         await enhanceService.SellSwordAsync(User.Sword.Level);
+    }
+
+    private async Task EquipArtifactAsync(string artifactCode)
+    {
+        await enhanceService.EquipArtifactAsync(selectedArtifactSlot + 1, artifactCode);
+    }
+
+    private async Task UnequipArtifactAsync()
+    {
+        await enhanceService.UnequipArtifactAsync(selectedArtifactSlot + 1);
     }
 
     private async Task RequestAsync(Func<Task> request)
@@ -367,12 +455,36 @@ public class EnhanceTab : LobbyTab
             return;
         }
 
+        if (GetEquippedArtifact(selectedArtifactSlot) == null)
+        {
+            OpenArtifactChangePopup();
+            return;
+        }
+
         await RequestAsync(EnhanceArtifactAsync);
     }
 
     private async void OnClickSell()
     {
         await RequestAsync(SellSwordAsync);
+    }
+
+    private void OnClickChange()
+    {
+        OpenArtifactChangePopup();
+    }
+
+    private async void OnClickChangeArtifact(int index)
+    {
+        string artifactCode = User.Artifacts[index].ArtifactCode;
+        artifactChangePopup.Close();
+        await RequestAsync(() => EquipArtifactAsync(artifactCode));
+    }
+
+    private async void OnClickUnequip()
+    {
+        artifactChangePopup.Close();
+        await RequestAsync(UnequipArtifactAsync);
     }
 
     private void OnClickCombatPower()

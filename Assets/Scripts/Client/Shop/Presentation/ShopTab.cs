@@ -7,9 +7,9 @@ using UnityEngine;
 public class ShopTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private ShopScreenView view;
+    [ReadOnly] [SerializeField] private ConfirmPopupView confirmPopup;
 
     [SerializeField] private ShopVisualCatalogSO visualCatalog;
-    [SerializeField] private ConfirmPopupView confirmPopup;
 
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
@@ -37,6 +37,8 @@ public class ShopTab : LobbyTab
 
     private void Start()
     {
+        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopupView>();
+
         catalog = new ShopCatalog(GameDB);
 
         purchaseCoordinator = new ShopPurchaseCoordinator(ShopPurchaseServiceComposition.CreateRuntime());
@@ -64,7 +66,7 @@ public class ShopTab : LobbyTab
         if (pendingReconcileProductCode != null)
         {
             UnsubscribeReconcileAlert();
-            confirmPopup.Hide();
+            confirmPopup.Close();
         }
     }
 
@@ -137,18 +139,18 @@ public class ShopTab : LobbyTab
         }
 
         pendingPurchaseProductCode = productCode;
+        confirmPopup.Open();
         confirmPopup.SetTitle("구매 확인");
         confirmPopup.SetMessage($"{product.Name}\n{product.Price} {product.PriceType}로 구매하시겠습니까?");
         confirmPopup.OnConfirmEvent += OnPurchaseConfirmed;
         confirmPopup.OnCancelEvent += OnPurchaseCancelled;
-        confirmPopup.Show();
     }
 
     // 사용자가 구매를 확정하면 팝업을 닫고 실제 구매 요청을 시작한다.
     private void OnPurchaseConfirmed()
     {
         UnsubscribeConfirmPopup();
-        confirmPopup.Hide();
+        confirmPopup.Close();
 
         string productCode = pendingPurchaseProductCode;
         pendingPurchaseProductCode = null;
@@ -163,7 +165,7 @@ public class ShopTab : LobbyTab
     private void OnPurchaseCancelled()
     {
         UnsubscribeConfirmPopup();
-        confirmPopup.Hide();
+        confirmPopup.Close();
         pendingPurchaseProductCode = null;
     }
 
@@ -236,18 +238,18 @@ public class ShopTab : LobbyTab
     private void ShowReconcileAlert()
     {
         UnsubscribeReconcileAlert();
+        confirmPopup.Open();
         confirmPopup.SetTitle("구매 결과 확인 필요");
         confirmPopup.SetMessage("구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?");
         confirmPopup.OnConfirmEvent += OnReconcileRetryConfirmed;
         confirmPopup.OnCancelEvent += OnReconcileRetryCancelled;
-        confirmPopup.Show();
     }
 
     // 사용자가 확인한 결과 불명 거래만 같은 UUID로 재전송한다.
     private void OnReconcileRetryConfirmed()
     {
         UnsubscribeReconcileAlert();
-        confirmPopup.Hide();
+        confirmPopup.Close();
 
         purchaseCoordinator.TryRetry();
     }
@@ -256,7 +258,7 @@ public class ShopTab : LobbyTab
     private void OnReconcileRetryCancelled()
     {
         UnsubscribeReconcileAlert();
-        confirmPopup.Hide();
+        confirmPopup.Close();
         purchaseCoordinator.DismissReconcile();
     }
 
@@ -275,17 +277,17 @@ public class ShopTab : LobbyTab
     // 확인만 필요한 안내를 기존 확인 팝업으로 표시하고 닫기 입력을 한 곳에서 처리한다.
     private void ShowAlert(string title, string message)
     {
+        confirmPopup.Open();
         confirmPopup.SetTitle(title);
         confirmPopup.SetMessage(message);
         confirmPopup.OnConfirmEvent += OnAlertClosed;
         confirmPopup.OnCancelEvent += OnAlertClosed;
-        confirmPopup.Show();
     }
 
     private void OnAlertClosed()
     {
         confirmPopup.OnConfirmEvent -= OnAlertClosed;
         confirmPopup.OnCancelEvent -= OnAlertClosed;
-        confirmPopup.Hide();
+        confirmPopup.Close();
     }
 }
