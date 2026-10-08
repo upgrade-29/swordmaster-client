@@ -11,6 +11,8 @@ public class BattleManager : MonoBehaviour
     public const float BossWarningDuration = 1.8f;
     public const float MaxSpeed = 2f; // 서버 시간 검증과 같은 배속 상한
     private const float StartDelay = 2f;
+    private const int ReportMaxAttempts = 3; // 통신 오류로 보고 응답을 못 받으면 다시 보낸다. 서버는 같은 보고에 같은 응답을 준다
+    private const int RequestRetryDelayMs = 1000;
 
     // 세션을 받아 StartDelay 대기를 시작할 때. 새 전투와 재접속 모두. 첫 세부스테이지를 미리 넘겨서 시작 전 화면을 세팅할 수 있게 한다
     public event Action<BattleSubStage> CountdownStarted;
@@ -27,6 +29,7 @@ public class BattleManager : MonoBehaviour
     private IBattleSessionService battleService;
     private BattleDB battleDB;
     private BattleEngine engine;
+    private string gameDataVersion; // 서버가 같은 데이터로 계산하는지 확인하도록 모든 요청에 담는다
     private BattleSessionInfo session;
     private Coroutine battleRoutine;
     private bool isBusy; // 요청을 기다리거나 전투를 진행하는 중
@@ -43,6 +46,7 @@ public class BattleManager : MonoBehaviour
         this.battleService = battleService;
         battleDB = new BattleDB(gameDB);
         engine = new BattleEngine(battleDB);
+        gameDataVersion = gameDB.version;
     }
 
     // 진행 중인 세션이 있으면 이어서 하고, 없으면 새로 시작한다
@@ -53,7 +57,8 @@ public class BattleManager : MonoBehaviour
 
         isBusy = true;
         BattleSessionInfo info = await Request(async () =>
-            await battleService.GetActiveSessionAsync() ?? await battleService.StartBattleAsync(stage));
+            await battleService.GetActiveSessionAsync(gameDataVersion) ??
+            await battleService.StartBattleAsync(stage, gameDataVersion));
         Begin(info);
     }
 
@@ -64,7 +69,7 @@ public class BattleManager : MonoBehaviour
             return;
 
         isBusy = true;
-        BattleSessionInfo info = await Request(() => battleService.StartBattleAsync(session.stage));
+        BattleSessionInfo info = await Request(() => battleService.StartBattleAsync(session.stage, gameDataVersion));
         Begin(info);
     }
 
@@ -89,30 +94,43 @@ public class BattleManager : MonoBehaviour
     }
 
     // 실패하면 거절 문구를 알리고 null을 돌려준다. 기다리는 동안 씬이 바뀌었어도 null
-    private async Task<T> Request<T>(Func<Task<T>> request) where T : class
+    // 서버가 거절한 것은 다시 보내도 같으므로 바로 끝내고, 통신 오류만 maxAttempts번까지 다시 보낸다
+    private async Task<T> Request<T>(Func<Task<T>> request, int maxAttempts = 1) where T : class
     {
-        try
+        for (var attempt = 1; ; attempt++)
         {
-            T response = await request();
-            return this == null ? null : response;
-        }
-        catch (BattleRequestException e)
-        {
-            Debug.LogWarning($"[Battle] Request rejected: {e.Reason}");
-            if (this != null)
+            try
             {
-                isBusy = false;
-                RequestRejected?.Invoke(e.Message);
+                T response = await request();
+                return this == null ? null : response;
+            }
+            catch (BattleRequestException e)
+            {
+                Debug.LogWarning($"[Battle] Request rejected: {e.ErrorEnum} {e.Reason}");
+                if (this != null)
+                {
+                    isBusy = false;
+                    RequestRejected?.Invoke(e.Message);
+                }
+
+                return null;
+            }
+            catch (Exception e)
+            {
+                if (attempt < maxAttempts && this != null)
+                {
+                    Debug.LogWarning($"[Battle] Request failed, retry {attempt}/{maxAttempts - 1}: {e.Message}");
+                    await Task.Delay(RequestRetryDelayMs);
+                    continue;
+                }
+
+                Debug.LogException(e);
+                if (this != null)
+                    isBusy = false;
+
+                return null;
             }
         }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-            if (this != null)
-                isBusy = false;
-        }
-
-        return null;
     }
 
     private void Begin(BattleSessionInfo info)
@@ -142,13 +160,15 @@ public class BattleManager : MonoBehaviour
         {
             yield return RunSubStage(subStage);
 
-            Task<BattleResultVerifyResponse> verifyTask = Request(() =>
-                battleService.ReportSubStageAsync(BattleResultVerifyRequest.From(session.battleId, subStage)));
+            var request = BattleResultVerifyRequest.From(session.battleId, gameDataVersion, subStage);
+            Task<BattleResultVerifyResponse> verifyTask =
+                Request(() => battleService.ReportSubStageAsync(request), ReportMaxAttempts);
             yield return new WaitUntil(() => verifyTask.IsCompleted);
 
+            // 거절됐다. 검증 실패면 서버가 이미 패배로 끝냈고, 데이터 버전이 다르면 세션이 남아 있어 다시 접속하면 이어서 한다
             BattleResultVerifyResponse verified = verifyTask.Result;
             if (verified == null)
-                yield break; // 거절. 서버가 이미 패배로 끝냈다
+                yield break;
 
             SubStageVerified?.Invoke(subStage, verified);
 

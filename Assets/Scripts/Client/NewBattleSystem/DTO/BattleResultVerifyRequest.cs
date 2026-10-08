@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 public class BattleResultVerifyRequest
 {
     public readonly string battleId;
+    public readonly string gameDataVersion; // 이 결과를 계산한 GameDB.version
     public readonly int subStageIndex;
     public readonly BattleSubStageResultEnum resultEnum;
     public readonly double playerHp; // 끝났을 때의 체력. 처치 회복은 더하기 전
@@ -14,10 +15,12 @@ public class BattleResultVerifyRequest
     public readonly int enemyAttackCount;
 
     [JsonConstructor]
-    public BattleResultVerifyRequest(string battleId, int subStageIndex, BattleSubStageResultEnum resultEnum, double playerHp,
-        double enemyHp, double duration, int playerAttackCount, int enemyAttackCount)
+    public BattleResultVerifyRequest(string battleId, string gameDataVersion, int subStageIndex,
+        BattleSubStageResultEnum resultEnum, double playerHp, double enemyHp, double duration, int playerAttackCount,
+        int enemyAttackCount)
     {
         this.battleId = battleId;
+        this.gameDataVersion = gameDataVersion;
         this.subStageIndex = subStageIndex;
         this.resultEnum = resultEnum;
         this.playerHp = playerHp;
@@ -27,9 +30,10 @@ public class BattleResultVerifyRequest
         this.enemyAttackCount = enemyAttackCount;
     }
 
-    public static BattleResultVerifyRequest From(string battleId, BattleSubStage subStage)
+    public static BattleResultVerifyRequest From(string battleId, string gameDataVersion, BattleSubStage subStage)
     {
-        return new BattleResultVerifyRequest(battleId, subStage.SubStageIndex, subStage.ResultEnum, subStage.PlayerHp,
-            subStage.EnemyHp, subStage.Duration, subStage.PlayerAttackCount, subStage.EnemyAttackCount);
+        return new BattleResultVerifyRequest(battleId, gameDataVersion, subStage.SubStageIndex, subStage.ResultEnum,
+            subStage.PlayerHp, subStage.EnemyHp, subStage.Duration, subStage.PlayerAttackCount,
+            subStage.EnemyAttackCount);
     }
 }
