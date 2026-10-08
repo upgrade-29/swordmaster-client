@@ -7,5 +7,5 @@
     { "artifactCode": "CRIT_01", "level": 1, "materialCount": 0, "equippedSlot": 1 },
     { "artifactCode": "HP_01", "level": 1, "materialCount": 0, "equippedSlot": 2 }
   ],
-  "stageProgress": { "clearedStage": 1, "nextBattleAvailableAt": "2026-01-01T00:00:00Z" }
+  "stageProgress": { "clearedStage": 1 }
 }

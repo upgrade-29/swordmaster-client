@@ -13,5 +13,5 @@
     { "artifactCode": "SPEED_01", "level": 1, "materialCount": 1, "equippedSlot": null },
     { "artifactCode": "SPEED_02", "level": 4, "materialCount": 4, "equippedSlot": 3 }
   ],
-  "stageProgress": { "clearedStage": 2, "nextBattleAvailableAt": "2026-01-01T00:00:00Z" }
+  "stageProgress": { "clearedStage": 2 }
 }

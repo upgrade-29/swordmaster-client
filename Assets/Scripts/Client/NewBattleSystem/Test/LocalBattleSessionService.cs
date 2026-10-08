@@ -200,7 +200,7 @@ public class LocalBattleSessionService : IBattleSessionService
         var result = new BattleEndResponse(session.stage.stage, isVictory,
             new BattleRewards(session.accumulatedGold, droppedArtifactCodes),
             new UserCurrencies(user.Currencies.Gold, user.Currencies.Diamond),
-            new StageProgress(progress.ClearedStage, progress.NextBattleAvailableAt),
+            new StageProgress(progress.ClearedStage),
             changedArtifacts, utcNow());
 
         session = null;
