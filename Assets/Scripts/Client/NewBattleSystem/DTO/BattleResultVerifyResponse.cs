@@ -9,13 +9,13 @@ public class BattleResultVerifyResponse
     public readonly int nextSubStageIndex;
     public readonly double nextPlayerHp; // 처치 회복까지 더한 다음 세부스테이지 시작 체력
     public readonly long accumulatedGold; // 이번 처치까지 모은 골드
-    public readonly BattleEndResult battleEnd;
+    public readonly BattleEndResponse battleEnd;
 
     [JsonIgnore] public bool IsBattleEnded => battleEnd != null;
 
     [JsonConstructor]
     public BattleResultVerifyResponse(int subStageIndex, BattleSubStageResultEnum resultEnum, int nextSubStageIndex,
-        double nextPlayerHp, long accumulatedGold, BattleEndResult battleEnd)
+        double nextPlayerHp, long accumulatedGold, BattleEndResponse battleEnd)
     {
         this.subStageIndex = subStageIndex;
         this.resultEnum = resultEnum;

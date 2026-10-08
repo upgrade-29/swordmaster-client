@@ -15,5 +15,5 @@ public interface IBattleSessionService
     Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request);
 
     // 전투를 포기한다. 패배로 처리하고, 그때까지 모은 골드는 반영한 뒤 세션을 끝낸다
-    Task<BattleEndResult> AbandonAsync(string battleId);
+    Task<BattleEndResponse> AbandonAsync(string battleId);
 }

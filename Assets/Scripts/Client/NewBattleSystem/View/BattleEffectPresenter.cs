@@ -87,7 +87,7 @@ public class BattleEffectPresenter : IDisposable
             enemyView.SetVisible(false);
     }
 
-    private void OnBattleEnded(BattleEndResult result)
+    private void OnBattleEnded(BattleEndResponse result)
     {
         var artifactNames = result.rewards.artifactCodes.Select(code => artifactNamesByCode[code]).ToList();
         resultView.Show(result, artifactNames);

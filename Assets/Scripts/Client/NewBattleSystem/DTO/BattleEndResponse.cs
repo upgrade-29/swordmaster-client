@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 // 전투가 끝났을 때(마지막 세부스테이지 승리, 패배, 포기) 세션에 모아 둔 보상을 한 번에 반영한 결과
 // 서버는 이 시점에 세션을 지운다
-public class BattleEndResult
+public class BattleEndResponse
 {
     public readonly int stage;
     public readonly bool isVictory;
@@ -18,7 +18,7 @@ public class BattleEndResult
     public readonly DateTime serverTime; // UTC
 
     [JsonConstructor]
-    public BattleEndResult(int stage, bool isVictory, BattleRewards rewards, UserCurrencies currencies,
+    public BattleEndResponse(int stage, bool isVictory, BattleRewards rewards, UserCurrencies currencies,
         StageProgress stageProgress, IReadOnlyList<UserArtifact> changedArtifacts, DateTime serverTime)
     {
         this.stage = stage;

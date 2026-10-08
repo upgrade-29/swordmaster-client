@@ -106,7 +106,7 @@ public class LocalBattleSessionService : IBattleSessionService
         return Clone(CreateVerifyResponse(subStage, null));
     }
 
-    public async Task<BattleEndResult> AbandonAsync(string battleId)
+    public async Task<BattleEndResponse> AbandonAsync(string battleId)
     {
         await Task.Yield();
 
@@ -145,7 +145,7 @@ public class LocalBattleSessionService : IBattleSessionService
     }
 
     // 세션에 모아 둔 보상을 한 번에 반영하고 세션을 지운다. 패배해도 그때까지 처치한 적의 골드는 준다
-    private BattleEndResult EndBattle(bool isVictory)
+    private BattleEndResponse EndBattle(bool isVictory)
     {
         StageProgress progress = user.StageProgress;
         user.Currencies.Add(CurrencyType.Gold, session.accumulatedGold);
@@ -157,7 +157,7 @@ public class LocalBattleSessionService : IBattleSessionService
         var droppedArtifactCodes = new List<string>();
         var changedArtifacts = new List<UserArtifact>();
 
-        var result = new BattleEndResult(session.stage.stage, isVictory,
+        var result = new BattleEndResponse(session.stage.stage, isVictory,
             new BattleRewards(session.accumulatedGold, droppedArtifactCodes),
             new UserCurrencies(user.Currencies.Gold, user.Currencies.Diamond),
             new StageProgress(progress.ClearedStage, progress.NextBattleAvailableAt),
@@ -189,7 +189,7 @@ public class LocalBattleSessionService : IBattleSessionService
     }
 
     // battleEnd가 있으면 세션은 이미 지워졌으므로 session을 쓰지 않는다
-    private BattleResultVerifyResponse CreateVerifyResponse(BattleSubStage subStage, BattleEndResult battleEnd)
+    private BattleResultVerifyResponse CreateVerifyResponse(BattleSubStage subStage, BattleEndResponse battleEnd)
     {
         if (battleEnd != null)
             return new BattleResultVerifyResponse(subStage.SubStageIndex, subStage.ResultEnum, subStage.SubStageIndex,

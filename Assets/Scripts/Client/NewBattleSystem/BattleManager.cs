@@ -21,7 +21,7 @@ public class BattleManager : MonoBehaviour
     public event Action<BattleSubStage> BossWarningStarted; // 끝날 때까지 공격은 시작하지 않는다
     public event Action<BattleSubStage, BattleEvent> AttackApplied;
     public event Action<BattleSubStage, BattleResultVerifyResponse> SubStageVerified;
-    public event Action<BattleEndResult> BattleEnded;
+    public event Action<BattleEndResponse> BattleEnded;
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
 
     private IBattleSessionService battleService;
@@ -78,7 +78,7 @@ public class BattleManager : MonoBehaviour
             StopCoroutine(battleRoutine);
         battleRoutine = null;
 
-        BattleEndResult result = await Request(() => battleService.AbandonAsync(session.battleId));
+        BattleEndResponse result = await Request(() => battleService.AbandonAsync(session.battleId));
         if (result != null)
             Finish(result);
     }
@@ -187,7 +187,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void Finish(BattleEndResult result)
+    private void Finish(BattleEndResponse result)
     {
         battleRoutine = null;
         isBusy = false;

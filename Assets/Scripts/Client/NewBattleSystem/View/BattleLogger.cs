@@ -75,7 +75,7 @@ public class BattleLogger : IDisposable
         Log(GetSubStageEndText(subStage), $" ({response.resultEnum} at {subStage.Duration:0.00}s, verified)");
     }
 
-    private void OnBattleEnded(BattleEndResult result)
+    private void OnBattleEnded(BattleEndResponse result)
     {
         var resultText = result.isVictory ? "클리어!" : "실패...";
         Log($"스테이지 {result.stage} {resultText} 골드 +{result.rewards.gold:N0} (보유 {result.currencies.Gold:N0})");

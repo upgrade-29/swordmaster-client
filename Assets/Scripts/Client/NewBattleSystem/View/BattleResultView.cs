@@ -52,7 +52,7 @@ public class BattleResultView : MonoBehaviour
     }
 
     // 보상이 없으면(0골드, 드랍 없음) 안내 문구만 보여준다
-    public void Show(BattleEndResult result, IReadOnlyList<string> artifactNames)
+    public void Show(BattleEndResponse result, IReadOnlyList<string> artifactNames)
     {
         SetHeader(result.isVictory, result.stage);
         descriptionText.text = result.isVictory
