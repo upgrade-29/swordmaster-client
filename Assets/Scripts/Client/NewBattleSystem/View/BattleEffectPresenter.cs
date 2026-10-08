@@ -10,6 +10,8 @@ public class BattleEffectPresenter : IDisposable
     private static readonly Color EnemyDamageColor = Color.white;
     private static readonly Color PlayerDamageColor = new Color(1f, 0.4f, 0.4f);
     private static readonly Color CritDamageColor = new Color(1f, 0.85f, 0.2f);
+    private static readonly Color LifestealColor = new Color(0.4f, 1f, 0.5f);
+    private static readonly Vector2 LifestealOffset = new Vector2(0.6f, 0.3f); // x는 상대 반대쪽으로
 
     private readonly BattleManager manager;
     private readonly BattleUnitView playerView;
@@ -78,6 +80,16 @@ public class BattleEffectPresenter : IDisposable
 
         Color color = battleEvent.isCrit ? CritDamageColor : isPlayerAttack ? EnemyDamageColor : PlayerDamageColor;
         damageFloaters.Show(target.HeadPosition, battleEvent.damage.ToString("#,0.##"), color, battleEvent.isCrit);
+
+        // 흡혈은 공격자 머리 위에 회복량을 띄운다. 체력이 가득 차서 회복하지 못했으면 보여주지 않는다
+        // 바로 뒤에 맞으면 같은 자리에 데미지 숫자가 뜨므로, 상대 반대쪽 바깥으로 비켜서 띄운다
+        if (battleEvent.lifesteal > 0)
+        {
+            attacker.PlayHeal();
+            var outward = Mathf.Sign(attacker.transform.position.x - target.transform.position.x);
+            Vector3 position = attacker.HeadPosition + new Vector3(outward * LifestealOffset.x, LifestealOffset.y, 0f);
+            damageFloaters.Show(position, $"+{battleEvent.lifesteal:#,0.##}", LifestealColor, false);
+        }
     }
 
     // 처치한 적은 서버 검증을 통과한 뒤 사라진다

@@ -9,14 +9,17 @@ public class BattleUnitView : MonoBehaviour
     private const float HitDuration = 0.2f;
     private const float HitScale = 0.1f; // 원래 크기에 대한 비율
     private const float CritHitScale = 0.25f;
+    private const float HealDuration = 0.3f;
     private static readonly Color HitColor = new Color(1f, 0.35f, 0.35f);
+    private static readonly Color HealColor = new Color(0.4f, 1f, 0.5f);
 
     private SpriteRenderer spriteRenderer;
 
-    // 공격은 위치, 피격은 크기/색만 움직여서 두 연출이 겹쳐도 서로 값을 덮어쓰지 않게 한다
+    // 공격은 위치, 피격은 크기, 피격/흡혈은 색만 움직여서 연출이 겹쳐도 서로 값을 덮어쓰지 않게 한다
+    // 색은 피격과 흡혈이 함께 쓰므로 새 연출을 시작할 때 이전 연출을 끝내 원래 색으로 돌려놓는다
     private Tween attackTween;
     private Tween hitScaleTween;
-    private Tween hitColorTween;
+    private Tween colorTween;
 
     // 데미지 숫자를 띄울 머리 위 위치
     public Vector3 HeadPosition => new Vector3(transform.position.x, spriteRenderer.bounds.max.y, 0f);
@@ -51,11 +54,18 @@ public class BattleUnitView : MonoBehaviour
     public void PlayHit(bool isCrit)
     {
         CompleteIfActive(hitScaleTween);
-        CompleteIfActive(hitColorTween);
+        CompleteIfActive(colorTween);
 
         var scale = isCrit ? CritHitScale : HitScale;
         hitScaleTween = transform.DOPunchScale(transform.localScale * scale, HitDuration, 1, 0f);
-        hitColorTween = spriteRenderer.DOColor(HitColor, HitDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
+        colorTween = spriteRenderer.DOColor(HitColor, HitDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
+    }
+
+    // 흡혈로 체력을 회복하면 초록색으로 번쩍인다
+    public void PlayHeal()
+    {
+        CompleteIfActive(colorTween);
+        colorTween = spriteRenderer.DOColor(HealColor, HealDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
     }
 
     private static void CompleteIfActive(Tween tween)
