@@ -13,6 +13,7 @@ public class LocalBattleSessionService : IBattleSessionService
     private const double ValueEpsilon = 1e-6; // 체력, 시간 비교 허용 오차. 플랫폼마다 double 계산이 아주 조금 다를 수 있다
 
     private readonly User user; // 서버 DB에 있는 유저 역할. 전투가 끝나면 보상이 이 객체에 반영된다
+    private readonly string gameDataVersion; // 서버가 쓰는 GameDB.version. 클라 버전과 다르면 거절한다
     private readonly BattleDB battleDB;
     private readonly BattleEngine engine;
     private readonly Random random; // 시드 발급용. 서버에서만 쓰므로 System.Random이어도 된다
@@ -20,20 +21,27 @@ public class LocalBattleSessionService : IBattleSessionService
 
     private Session session;
 
+    // 마지막으로 검증에 통과한 보고와 그 응답. 응답을 못 받은 클라가 같은 보고를 다시 보내면 그대로 돌려준다
+    // 전투가 끝나 세션이 지워진 뒤에도 마지막 보고는 다시 받을 수 있어야 하므로 세션과 따로 둔다
+    // (서버에서는 battleId를 키로 짧은 TTL을 둔 Redis 값)
+    private LastReport lastReport;
+
     // utcNow는 테스트에서 시간을 직접 흘리고 싶을 때 넣는다. 없으면 DateTime.UtcNow
     public LocalBattleSessionService(GameDB gameDB, User user, Random random, Func<DateTime> utcNow = null)
     {
         this.user = user;
         this.random = random;
         this.utcNow = utcNow ?? (() => DateTime.UtcNow);
+        gameDataVersion = gameDB.version;
         battleDB = new BattleDB(gameDB);
         engine = new BattleEngine(battleDB);
     }
 
-    public async Task<BattleSessionInfo> GetActiveSessionAsync()
+    public async Task<BattleSessionInfo> GetActiveSessionAsync(string clientGameDataVersion)
     {
         await Task.Yield();
 
+        ValidateGameDataVersion(clientGameDataVersion);
         if (session == null)
             return null;
 
@@ -42,17 +50,20 @@ public class LocalBattleSessionService : IBattleSessionService
         return Clone(CreateSessionInfo());
     }
 
-    public async Task<BattleSessionInfo> StartBattleAsync(int stageNumber)
+    public async Task<BattleSessionInfo> StartBattleAsync(int stageNumber, string clientGameDataVersion)
     {
         await Task.Yield();
 
+        ValidateGameDataVersion(clientGameDataVersion);
         if (session != null)
-            throw new BattleRequestException($"Battle {session.battleId} is already in progress");
+            throw new BattleRequestException(BattleRequestErrorEnum.AlreadyInProgress,
+                $"Battle {session.battleId} is already in progress");
 
         // 이미 깬 스테이지는 다시 도전할 수 있고, 아직 열리지 않은 스테이지는 도전할 수 없다
         var nextStage = user.StageProgress.NextStage;
         if (stageNumber < 1 || stageNumber > nextStage)
-            throw new BattleRequestException($"Stage {stageNumber} is locked. Next stage is {nextStage}");
+            throw new BattleRequestException(BattleRequestErrorEnum.StageLocked,
+                $"Stage {stageNumber} is locked. Next stage is {nextStage}");
 
         StageData stage = battleDB.GetStage(stageNumber);
         CombatStat playerStat = CalculatePlayerStat();
@@ -75,6 +86,14 @@ public class LocalBattleSessionService : IBattleSessionService
     {
         await Task.Yield();
 
+        // 데이터가 다르면 검증할 수 없다. 유저 잘못이 아니므로 세션은 끝내지 않고, 데이터를 다시 받으면 이어서 할 수 있다
+        ValidateGameDataVersion(request.gameDataVersion);
+
+        // 이미 검증한 보고를 다시 보냈으면 다시 검증하지 않는다. 세션은 이미 다음으로 넘어갔거나 지워졌다
+        if (lastReport != null && lastReport.battleId == request.battleId &&
+            lastReport.subStageIndex == request.subStageIndex)
+            return Clone(lastReport.response);
+
         ValidateBattleId(request.battleId);
 
         // 같은 시드와 스탯으로 다시 돌려서 클라가 보낸 요약과 비교한다
@@ -88,22 +107,35 @@ public class LocalBattleSessionService : IBattleSessionService
             // 같은 세부스테이지를 계속 다시 보내며 시험해 보지 못하게, 검증에 실패하면 패배로 끝낸다
             var failedBattleId = session.battleId;
             EndBattle(false);
-            throw new BattleRequestException($"Battle {failedBattleId} verification failed: {failReason}");
+            throw new BattleRequestException(BattleRequestErrorEnum.VerifyFailed,
+                $"Battle {failedBattleId} verification failed: {failReason}");
         }
 
-        int verifiedIndex = session.subStageIndex;
+        BattleResultVerifyResponse response = ApplyVerifiedSubStage(subStage);
+        lastReport = new LastReport
+        {
+            battleId = request.battleId,
+            subStageIndex = request.subStageIndex,
+            response = response,
+        };
+        return Clone(response);
+    }
+
+    // 검증에 통과한 세부스테이지 결과를 세션에 반영한다. 마지막이거나 졌으면 전투를 끝낸다
+    private BattleResultVerifyResponse ApplyVerifiedSubStage(BattleSubStage subStage)
+    {
         if (subStage.ResultEnum != BattleSubStageResultEnum.EnemyDead)
-            return Clone(CreateVerifyResponse(subStage, EndBattle(false)));
+            return CreateVerifyResponse(subStage, EndBattle(false));
 
         session.accumulatedGold += subStage.KillGold;
-        if (verifiedIndex == BattleEngine.GetSubStageCount(session.stage) - 1)
-            return Clone(CreateVerifyResponse(subStage, EndBattle(true)));
+        if (subStage.SubStageIndex == BattleEngine.GetSubStageCount(session.stage) - 1)
+            return CreateVerifyResponse(subStage, EndBattle(true));
 
         // 체력은 다음 세부스테이지로 이어지고, 처치 회복을 더한다
         session.subStageIndex++;
         session.playerHp = subStage.PlayerHp + subStage.HealOnKill;
         session.subStageStartedAt = utcNow();
-        return Clone(CreateVerifyResponse(subStage, null));
+        return CreateVerifyResponse(subStage, null);
     }
 
     public async Task<BattleEndResponse> AbandonAsync(string battleId)
@@ -136,12 +168,20 @@ public class LocalBattleSessionService : IBattleSessionService
         return null;
     }
 
+    private void ValidateGameDataVersion(string clientGameDataVersion)
+    {
+        if (clientGameDataVersion != gameDataVersion)
+            throw new BattleRequestException(BattleRequestErrorEnum.GameDataOutdated,
+                $"Game data version {clientGameDataVersion} != server {gameDataVersion}");
+    }
+
     private void ValidateBattleId(string battleId)
     {
         if (session == null)
-            throw new BattleRequestException("No battle in progress");
+            throw new BattleRequestException(BattleRequestErrorEnum.NoActiveBattle, "No battle in progress");
         if (session.battleId != battleId)
-            throw new BattleRequestException($"Battle {battleId} is not the current battle");
+            throw new BattleRequestException(BattleRequestErrorEnum.BattleIdMismatch,
+                $"Battle {battleId} is not the current battle");
     }
 
     // 세션에 모아 둔 보상을 한 번에 반영하고 세션을 지운다. 패배해도 그때까지 처치한 적의 골드는 준다
@@ -221,5 +261,12 @@ public class LocalBattleSessionService : IBattleSessionService
         public double playerHp; // 지금 세부스테이지를 시작할 때의 체력
         public long accumulatedGold;
         public DateTime subStageStartedAt; // 시간 검증 기준. 세부스테이지 시작이나 재접속 때 갱신한다
+    }
+
+    private class LastReport
+    {
+        public string battleId;
+        public int subStageIndex;
+        public BattleResultVerifyResponse response;
     }
 }
