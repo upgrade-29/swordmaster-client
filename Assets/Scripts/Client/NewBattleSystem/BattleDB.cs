@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-// 서버가 없기 때문에 임시 코드. 전투 계산에 필요한 GameDB 데이터를 한 번만 준비해 둔다
+// 전투 계산에 필요한 GameDB 데이터를 한 번만 준비해 둔다. 클라의 전투 진행과 서버 검증이 같이 쓴다
 // 목록은 키로 바로 찾을 수 있게 Dictionary로 만들고, config 값도 여기서 한 번만 읽는다
 public class BattleDB
 {
@@ -12,13 +12,11 @@ public class BattleDB
     private const double DefaultHealRate = 0;
     private const double DefaultNormalTimeLimit = 30;
     private const double DefaultBossTimeLimit = 60;
-    private const double DefaultCooldownBuffer = 2;
 
     public readonly double critMultiplier;
     public readonly double healRate;
     public readonly double normalTimeLimit;
     public readonly double bossTimeLimit;
-    public readonly double cooldownBuffer;
 
     private readonly Dictionary<int, SwordData> swordsByLevel;
     private readonly Dictionary<int, StageData> stagesByNumber;
@@ -38,7 +36,6 @@ public class BattleDB
         healRate = GetConfig(configs, "HEAL_RATE", DefaultHealRate);
         normalTimeLimit = GetConfig(configs, "NORMAL_BATTLE_TIME_LIMIT", DefaultNormalTimeLimit);
         bossTimeLimit = GetConfig(configs, "BOSS_BATTLE_TIME_LIMIT", DefaultBossTimeLimit);
-        cooldownBuffer = GetConfig(configs, "BATTLE_COOLDOWN_BUFFER", DefaultCooldownBuffer);
     }
 
     public SwordData GetSword(int level)
