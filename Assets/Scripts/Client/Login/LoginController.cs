@@ -6,7 +6,7 @@ public class LoginController : MonoBehaviour
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
 
-    [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:5000"; // 서버 주소 확정 전 가정값
+    [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:8080"; // 지금은 씬 인스펙터 값을 쓴다. 로그인하면 AuthJwtToken에 같이 저장된다
     [ReadOnly(true)] [SerializeField] private int timeoutSeconds = 10;
 
     private IAuthService authService;
@@ -140,7 +140,8 @@ public class LoginController : MonoBehaviour
         string message;
         try
         {
-            await authService.LoginAsync(id, password);
+            LoginResponse response = await authService.LoginAsync(id, password);
+            AuthJwtToken.Set(response.accessToken, baseUrl);
             isSuccess = true;
             message = "로그인 성공";
         }

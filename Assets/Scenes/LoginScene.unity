@@ -3151,7 +3151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LoginController
   view: {fileID: 0}
   signupView: {fileID: 0}
-  baseUrl: http://43.203.177.220:8080
+  baseUrl: http://localhost:8080
   timeoutSeconds: 10
 --- !u!114 &1324106453
 MonoBehaviour:
