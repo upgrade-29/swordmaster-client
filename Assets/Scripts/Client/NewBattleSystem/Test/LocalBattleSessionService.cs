@@ -196,11 +196,15 @@ public class LocalBattleSessionService : IBattleSessionService
 
         // TODO: 아티팩트 드랍 시점이 정해지면 여기서 드랍하고, 바뀐 아티팩트를 changedArtifacts에 담는다
         var droppedArtifactCodes = new List<string>();
-        var changedArtifacts = new List<UserArtifact>();
+        var changedArtifacts = new List<PlayerArtifactResponse>();
+        var currencies = new Dictionary<CurrencyType, long>
+        {
+            { CurrencyType.Gold, user.Currencies.Gold },
+            { CurrencyType.Diamond, user.Currencies.Diamond },
+        };
 
         var result = new BattleEndResponse(session.stage.stage, isVictory,
-            new BattleRewards(session.accumulatedGold, droppedArtifactCodes),
-            new UserCurrencies(user.Currencies.Gold, user.Currencies.Diamond),
+            new BattleRewards(session.accumulatedGold, droppedArtifactCodes), currencies,
             new StageProgress(progress.ClearedStage),
             changedArtifacts, utcNow());
 

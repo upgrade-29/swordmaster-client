@@ -82,7 +82,8 @@ public class BattleLogger : IDisposable
     private void OnBattleEnded(BattleEndResponse result)
     {
         var resultText = result.isVictory ? "클리어!" : "실패...";
-        Log($"스테이지 {result.stage} {resultText} 골드 +{result.rewards.gold:N0} (보유 {result.currencies.Gold:N0})");
+        result.currencies.TryGetValue(CurrencyType.Gold, out long gold);
+        Log($"스테이지 {result.stage} {resultText} 골드 +{result.rewards.gold:N0} (보유 {gold:N0})");
     }
 
     private void OnRequestRejected(string message)
