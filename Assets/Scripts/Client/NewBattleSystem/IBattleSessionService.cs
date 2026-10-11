@@ -14,7 +14,8 @@ public interface IBattleSessionService
 
     // 끝난 세부스테이지를 보고한다. 서버 계산과 다르면 거절하고 세션을 패배로 끝낸다
     // 응답을 못 받아 같은 보고를 다시 보내면, 서버는 다시 검증하지 않고 처음 응답을 그대로 돌려준다
-    Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request);
+    // gameDataVersion은 본문이 아니라 X-Game-Data-Version 헤더에 담는다
+    Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request, string gameDataVersion);
 
     // 전투를 포기한다. 패배로 처리하고, 그때까지 모은 골드는 반영한 뒤 세션을 끝낸다
     Task<BattleEndResponse> AbandonAsync(string battleId);

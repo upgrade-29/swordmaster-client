@@ -82,12 +82,13 @@ public class LocalBattleSessionService : IBattleSessionService
         return Clone(CreateSessionInfo());
     }
 
-    public async Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request)
+    public async Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request,
+        string gameDataVersion)
     {
         await Task.Yield();
 
         // 데이터가 다르면 검증할 수 없다. 유저 잘못이 아니므로 세션은 끝내지 않고, 데이터를 다시 받으면 이어서 할 수 있다
-        ValidateGameDataVersion(request.gameDataVersion);
+        ValidateGameDataVersion(gameDataVersion);
 
         // 이미 검증한 보고를 다시 보냈으면 다시 검증하지 않는다. 세션은 이미 다음으로 넘어갔거나 지워졌다
         if (lastReport != null && lastReport.battleId == request.battleId &&

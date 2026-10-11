@@ -160,9 +160,9 @@ public class BattleManager : MonoBehaviour
         {
             yield return RunSubStage(subStage);
 
-            var request = BattleResultVerifyRequest.From(session.battleId, gameDataVersion, subStage);
+            var request = BattleResultVerifyRequest.From(session.battleId, subStage);
             Task<BattleResultVerifyResponse> verifyTask =
-                Request(() => battleService.ReportSubStageAsync(request), ReportMaxAttempts);
+                Request(() => battleService.ReportSubStageAsync(request, gameDataVersion), ReportMaxAttempts);
             yield return new WaitUntil(() => verifyTask.IsCompleted);
 
             // 거절됐다. 검증 실패면 서버가 이미 패배로 끝냈고, 데이터 버전이 다르면 세션이 남아 있어 다시 접속하면 이어서 한다

@@ -2,10 +2,10 @@ using Newtonsoft.Json;
 
 // 세부스테이지 하나가 끝났을 때 클라가 서버에 보내는 요약. 서버는 같은 시드로 다시 돌려서 이 값과 비교한다
 // 공격 이벤트 전체는 보내지 않는다. 시드와 스탯이 같으면 서버가 똑같이 재현할 수 있다
+// 이 결과를 계산한 GameDB.version은 본문이 아니라 X-Game-Data-Version 헤더로 보낸다
 public class BattleResultVerifyRequest
 {
     public readonly string battleId;
-    public readonly string gameDataVersion; // 이 결과를 계산한 GameDB.version
     public readonly int subStageIndex;
     public readonly BattleSubStageResultEnum resultEnum;
     public readonly double playerHp; // 끝났을 때의 체력. 처치 회복은 더하기 전
@@ -15,12 +15,10 @@ public class BattleResultVerifyRequest
     public readonly int enemyAttackCount;
 
     [JsonConstructor]
-    public BattleResultVerifyRequest(string battleId, string gameDataVersion, int subStageIndex,
-        BattleSubStageResultEnum resultEnum, double playerHp, double enemyHp, double duration, int playerAttackCount,
-        int enemyAttackCount)
+    public BattleResultVerifyRequest(string battleId, int subStageIndex, BattleSubStageResultEnum resultEnum,
+        double playerHp, double enemyHp, double duration, int playerAttackCount, int enemyAttackCount)
     {
         this.battleId = battleId;
-        this.gameDataVersion = gameDataVersion;
         this.subStageIndex = subStageIndex;
         this.resultEnum = resultEnum;
         this.playerHp = playerHp;
@@ -30,9 +28,9 @@ public class BattleResultVerifyRequest
         this.enemyAttackCount = enemyAttackCount;
     }
 
-    public static BattleResultVerifyRequest From(string battleId, string gameDataVersion, BattleSubStage subStage)
+    public static BattleResultVerifyRequest From(string battleId, BattleSubStage subStage)
     {
-        return new BattleResultVerifyRequest(battleId, gameDataVersion, subStage.SubStageIndex, subStage.ResultEnum,
+        return new BattleResultVerifyRequest(battleId, subStage.SubStageIndex, subStage.ResultEnum,
             subStage.PlayerHp, subStage.EnemyHp, subStage.Duration, subStage.PlayerAttackCount,
             subStage.EnemyAttackCount);
     }
