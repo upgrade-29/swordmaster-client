@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 // 서버가 없기 때문에 임시 코드. User는 서버 DB에 있는 유저 역할이며 강화 결과가 이 객체에 반영된다
 public class EnhanceLocalService : IEnhanceService
 {
+    private const int ArtifactSlotCount = 3;
+
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
 
@@ -95,6 +97,53 @@ public class EnhanceLocalService : IEnhanceService
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
         var result = new EnhanceArtifactResult(new List<UserArtifact> { artifact }, User.Currencies);
+        return CopyAsResponse(result);
+    }
+
+    public async Task<EnhanceArtifactEquipResult> EquipArtifactAsync(int slot, string artifactCode)
+    {
+        await Task.Yield();
+
+        CheckArtifactSlot(slot);
+
+        UserArtifact artifact = User.GetArtifact(artifactCode);
+        if (artifact == null)
+        {
+            throw new EnhanceRequestException(EnhanceRequestException.ArtifactNotOwned, "보유하지 않은 아티팩트입니다.");
+        }
+
+        User.GetEquippedArtifact(slot)?.SetEquippedSlot(null);
+        artifact.SetEquippedSlot(slot);
+
+        return CreateEquipResult();
+    }
+
+    public async Task<EnhanceArtifactEquipResult> UnequipArtifactAsync(int slot)
+    {
+        await Task.Yield();
+
+        CheckArtifactSlot(slot);
+
+        User.GetEquippedArtifact(slot)?.SetEquippedSlot(null);
+
+        return CreateEquipResult();
+    }
+
+    private void CheckArtifactSlot(int slot)
+    {
+        if (slot < 1 || slot > ArtifactSlotCount)
+        {
+            throw new EnhanceRequestException(EnhanceRequestException.InvalidSlot, "슬롯 번호가 잘못되었습니다.");
+        }
+    }
+
+    private EnhanceArtifactEquipResult CreateEquipResult()
+    {
+        var equippedArtifacts = User.EquippedArtifacts
+            .Select(x => new EnhanceEquippedArtifactResult(x.EquippedSlot.Value, x.ArtifactCode, x.Level, x.MaterialCount))
+            .ToList();
+
+        var result = new EnhanceArtifactEquipResult(equippedArtifacts);
         return CopyAsResponse(result);
     }
 

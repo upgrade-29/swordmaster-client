@@ -9,6 +9,7 @@ public class EnhanceRequestException : Exception
     public const string ArtifactNotOwned = "ARTIFACT_NOT_OWNED";
     public const string ArtifactMaxLevel = "ARTIFACT_MAX_LEVEL";
     public const string NotEnoughMaterial = "NOT_ENOUGH_MATERIAL";
+    public const string InvalidSlot = "INVALID_SLOT";
 
     public string Code { get; }
 

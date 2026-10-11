@@ -5,12 +5,17 @@ using UnityEngine.UI;
 
 public class EnhanceEquipmentAction : MonoBehaviour
 {
+    private const string EnhanceLabel = "강화";
+    private const string EquipLabel = "아티팩트 장착";
+
     [ReadOnly] [SerializeField] private GameObject objEnhancePercentage;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtEnhancePercentage;
     [ReadOnly] [SerializeField] private GameObject objMaterial;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtMaterialCount;
     [ReadOnly] [SerializeField] private RectTransform rectMaterialFill;
     [ReadOnly] [SerializeField] private Button btnEnhance;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtEnhanceLabel;
+    [ReadOnly] [SerializeField] private GameObject objEnhanceCost;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtEnhanceCost;
     [ReadOnly] [SerializeField] private Button btnSell;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtSellPrice;
@@ -28,6 +33,8 @@ public class EnhanceEquipmentAction : MonoBehaviour
         txtMaterialCount = GameUtil.Bind<TextMeshProUGUI>(transform, "Material/Count");
         rectMaterialFill = GameUtil.Bind<RectTransform>(transform, "Material/Progress/Fill");
         btnEnhance = GameUtil.Bind<Button>(transform, "Buttons/EnhanceButton");
+        txtEnhanceLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/EnhanceButton/Label");
+        objEnhanceCost = GameUtil.Bind<RectTransform>(transform, "Buttons/EnhanceButton/Cost").gameObject;
         txtEnhanceCost = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/EnhanceButton/Cost/Value");
         btnSell = GameUtil.Bind<Button>(transform, "Buttons/SellButton");
         txtSellPrice = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/SellButton/Cost/Value");
@@ -63,16 +70,22 @@ public class EnhanceEquipmentAction : MonoBehaviour
     {
         objEnhancePercentage.SetActive(true);
         objMaterial.SetActive(false);
+        txtEnhanceLabel.text = EnhanceLabel;
+        objEnhanceCost.SetActive(true);
         btnSell.gameObject.SetActive(true);
         btnChange.gameObject.SetActive(false);
     }
 
-    public void ShowArtifact()
+    public void ShowArtifact(bool equipped)
     {
         objEnhancePercentage.SetActive(false);
-        objMaterial.SetActive(true);
+        objMaterial.SetActive(equipped);
+        txtEnhanceLabel.text = equipped
+            ? EnhanceLabel
+            : EquipLabel;
+        objEnhanceCost.SetActive(equipped);
         btnSell.gameObject.SetActive(false);
-        btnChange.gameObject.SetActive(true);
+        btnChange.gameObject.SetActive(equipped);
     }
 
     private void OnClickEnhance()
