@@ -1,11 +1,15 @@
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
-// 로그인에 성공하면 로비 씬으로 넘어간다
+// 로그인에 성공하면 게임 플레이어가 있는지 확인하고(없으면 만들고) 로비 씬으로 넘어간다
 public class LoginController : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
+    private const string PlayerMePath = "api/players/me";
+    private const string PlayersPath = "api/players";
 
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
@@ -146,11 +150,18 @@ public class LoginController : MonoBehaviour
         {
             LoginResponse response = await authService.LoginAsync(id, password);
             AuthJwtToken.Set(response.accessToken, baseUrl);
+            await EnsurePlayerAsync();
             isSuccess = true;
             message = string.Empty;
         }
         catch (AuthFailureException e)
         {
+            isSuccess = false;
+            message = $"로그인 실패: {e.Message}";
+        }
+        catch (ServerRequestException e)
+        {
+            Debug.LogWarning($"[Login] Player check failed: {e}");
             isSuccess = false;
             message = $"로그인 실패: {e.Message}";
         }
@@ -173,5 +184,27 @@ public class LoginController : MonoBehaviour
 
         view.SetInteractable(true);
         view.SetResult(false, message);
+    }
+
+    // 서버는 회원가입 때 계정만 만들고 게임 플레이어는 만들지 않는다. 플레이어가 없으면 전투, 강화 등이 막히므로
+    // 로그인 직후 확인해서 없으면(404) 만든다. 동시에 다른 곳에서 만들어 이미 있으면(409) 그대로 진행한다
+    private static async Task EnsurePlayerAsync()
+    {
+        var client = new AuthorizedServerClient();
+        try
+        {
+            await client.GetAsync<JObject>(PlayerMePath);
+        }
+        catch (ServerRequestException e) when (e.StatusCode == 404)
+        {
+            try
+            {
+                await client.PostAsync<JObject>(PlayersPath, null);
+                Debug.Log("[Login] Player created");
+            }
+            catch (ServerRequestException createError) when (createError.StatusCode == 409)
+            {
+            }
+        }
     }
 }
