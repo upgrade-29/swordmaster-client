@@ -1,8 +1,12 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
+// 로그인에 성공하면 로비 씬으로 넘어간다
 public class LoginController : MonoBehaviour
 {
+    private const string LobbySceneName = "LobbyScene";
+
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
 
@@ -143,7 +147,7 @@ public class LoginController : MonoBehaviour
             LoginResponse response = await authService.LoginAsync(id, password);
             AuthJwtToken.Set(response.accessToken, baseUrl);
             isSuccess = true;
-            message = "로그인 성공";
+            message = string.Empty;
         }
         catch (AuthFailureException e)
         {
@@ -161,7 +165,13 @@ public class LoginController : MonoBehaviour
             return;
         }
 
+        if (isSuccess)
+        {
+            SceneManager.LoadScene(LobbySceneName);
+            return;
+        }
+
         view.SetInteractable(true);
-        view.SetResult(isSuccess, message);
+        view.SetResult(false, message);
     }
 }
