@@ -81,7 +81,7 @@ public class BattleSubStage
                 return;
             }
 
-            if (time > Elapsed)
+            if (time > Elapsed + TimeEpsilon)
                 return;
 
             ApplyAttack(isPlayerTurn, time);
