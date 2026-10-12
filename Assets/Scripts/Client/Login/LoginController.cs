@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
-// 로그인에 성공하면 게임 플레이어가 있는지 확인하고(없으면 만들고) 로비 씬으로 넘어간다
+// 로그인에 성공하면 서버의 플레이어 정보를 받아(없으면 만들고) 로비에 넘기고 로비 씬으로 넘어간다
 public class LoginController : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
@@ -150,7 +149,8 @@ public class LoginController : MonoBehaviour
         {
             LoginResponse response = await authService.LoginAsync(id, password);
             AuthJwtToken.Set(response.accessToken, baseUrl);
-            await EnsurePlayerAsync();
+            PlayerResponse player = await LoadPlayerAsync();
+            LoginEntry.Set(player.ToUser());
             isSuccess = true;
             message = string.Empty;
         }
@@ -161,7 +161,7 @@ public class LoginController : MonoBehaviour
         }
         catch (ServerRequestException e)
         {
-            Debug.LogWarning($"[Login] Player check failed: {e}");
+            Debug.LogWarning($"[Login] Loading player failed: {e}");
             isSuccess = false;
             message = $"로그인 실패: {e.Message}";
         }
@@ -186,25 +186,29 @@ public class LoginController : MonoBehaviour
         view.SetResult(false, message);
     }
 
+    // 로그인한 계정의 플레이어 정보를 받는다
     // 서버는 회원가입 때 계정만 만들고 게임 플레이어는 만들지 않는다. 플레이어가 없으면 전투, 강화 등이 막히므로
-    // 로그인 직후 확인해서 없으면(404) 만든다. 동시에 다른 곳에서 만들어 이미 있으면(409) 그대로 진행한다
-    private static async Task EnsurePlayerAsync()
+    // 없으면(404) 만든다. 동시에 다른 곳에서 만들어 이미 있으면(409) 다시 받는다
+    private static async Task<PlayerResponse> LoadPlayerAsync()
     {
         var client = new AuthorizedServerClient();
         try
         {
-            await client.GetAsync<JObject>(PlayerMePath);
+            return await client.GetAsync<PlayerResponse>(PlayerMePath);
         }
         catch (ServerRequestException e) when (e.StatusCode == 404)
         {
-            try
-            {
-                await client.PostAsync<JObject>(PlayersPath, null);
-                Debug.Log("[Login] Player created");
-            }
-            catch (ServerRequestException createError) when (createError.StatusCode == 409)
-            {
-            }
+        }
+
+        try
+        {
+            PlayerResponse created = await client.PostAsync<PlayerResponse>(PlayersPath, null);
+            Debug.Log("[Login] Player created");
+            return created;
+        }
+        catch (ServerRequestException e) when (e.StatusCode == 409)
+        {
+            return await client.GetAsync<PlayerResponse>(PlayerMePath);
         }
     }
 }

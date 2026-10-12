@@ -22,7 +22,15 @@ public class TestLobbyDataLoader : SingletonMonoBehaviour<TestLobbyDataLoader>
             return;
         }
 
+        // 게임 데이터는 아직 서버에서 받지 않아 테스트 데이터를 쓴다
         gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>("TestData/game_db").text);
+
+        // 로그인했으면 서버에서 받은 플레이어를 쓰고, 로그인 없이 로비를 열었으면 테스트 유저를 쓴다
+        if (LoginEntry.TryConsume(out user))
+        {
+            return;
+        }
+
         user = JsonConvert.DeserializeObject<User>(Resources.Load<TextAsset>($"TestData/User/{userFile}").text);
     }
 
