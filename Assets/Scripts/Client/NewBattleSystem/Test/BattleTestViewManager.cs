@@ -48,6 +48,7 @@ public class BattleTestViewManager : MonoBehaviour
     private void OnDestroy()
     {
         resultView.RetryClicked -= manager.Retry;
+        manager.BattleEnded -= OnBattleEnded;
         resultView.ExitClicked -= OnExitClicked;
         hudPresenter?.Dispose();
         battleLogger?.Dispose();
@@ -73,9 +74,16 @@ public class BattleTestViewManager : MonoBehaviour
         effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, resultView, gameDB);
 
         resultView.RetryClicked += manager.Retry;
+        manager.BattleEnded += OnBattleEnded;
         resultView.ExitClicked += OnExitClicked;
 
         manager.EnterBattle(stage);
+    }
+
+    // 서버가 확정한 재화, 진행도, 아티팩트를 유저에 반영한다. 로비로 돌아가면 이 유저로 화면을 그린다
+    private void OnBattleEnded(BattleEndResponse result)
+    {
+        result.ApplyTo(user);
     }
 
     private IBattleSessionService CreateBattleService()
