@@ -11,7 +11,7 @@ public class BattleEndResponse
     public readonly BattleRewards rewards; // 패배해도 그때까지 처치한 적의 골드는 준다
 
     // 보상까지 반영한 뒤의 유저 상태. 클라는 덮어쓰기만 한다
-    public readonly IReadOnlyDictionary<CurrencyType, long> currencies; // 보상까지 반영한 전체 재화. {"GOLD": 130, "DIAMOND": 0}
+    public readonly UserCurrencies currencies; // 보상까지 반영한 전체 재화 {gold, diamond}
     public readonly StageProgress stageProgress;
     public readonly IReadOnlyList<ArtifactResponse> changedArtifacts; // 드랍으로 새로 생기거나 바뀐 아티팩트
 
@@ -19,13 +19,13 @@ public class BattleEndResponse
 
     [JsonConstructor]
     public BattleEndResponse(int stage, bool isVictory, BattleRewards rewards,
-        IReadOnlyDictionary<CurrencyType, long> currencies, StageProgress stageProgress,
+        UserCurrencies currencies, StageProgress stageProgress,
         IReadOnlyList<ArtifactResponse> changedArtifacts, DateTime serverTime)
     {
         this.stage = stage;
         this.isVictory = isVictory;
         this.rewards = rewards;
-        this.currencies = currencies ?? new Dictionary<CurrencyType, long>();
+        this.currencies = currencies;
         this.stageProgress = stageProgress;
         this.changedArtifacts = changedArtifacts ?? new List<ArtifactResponse>();
         this.serverTime = serverTime;
@@ -34,9 +34,8 @@ public class BattleEndResponse
     // 서버가 확정한 값으로 클라 유저를 덮어쓴다. 이미 반영된 유저에 다시 해도 결과는 같다
     public void ApplyTo(User user)
     {
-        currencies.TryGetValue(CurrencyType.Gold, out long gold);
-        currencies.TryGetValue(CurrencyType.Diamond, out long diamond);
-        user.Currencies.SyncFrom(new UserCurrencies(gold, diamond));
+        if (currencies != null)
+            user.Currencies.SyncFrom(currencies);
 
         if (stageProgress != null)
             user.StageProgress.SetCleared(stageProgress.ClearedStage);

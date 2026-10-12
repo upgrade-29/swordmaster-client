@@ -8,13 +8,13 @@ public class PlayerResponse
     public readonly long userId;
     public readonly string nickname;
     public readonly SwordResponse swordResponse;
-    public readonly CurrenciesResponse currenciesResponse;
+    public readonly UserCurrencies currenciesResponse;
     public readonly IReadOnlyList<ArtifactResponse> artifactResponses;
     public readonly StageProgress stageProgress;
 
     [JsonConstructor]
     public PlayerResponse(long userId, string nickname, SwordResponse swordResponse,
-        CurrenciesResponse currenciesResponse, IReadOnlyList<ArtifactResponse> artifactResponses,
+        UserCurrencies currenciesResponse, IReadOnlyList<ArtifactResponse> artifactResponses,
         StageProgress stageProgress)
     {
         this.userId = userId;
@@ -29,7 +29,7 @@ public class PlayerResponse
     public User ToUser()
     {
         return new User(userId, nickname,
-            new UserCurrencies(currenciesResponse.gold, currenciesResponse.diamond),
+            new UserCurrencies(currenciesResponse.Gold, currenciesResponse.Diamond),
             new UserSword(swordResponse.level),
             artifactResponses.Select(artifact => artifact.ToUserArtifact()).ToList(),
             new StageProgress(stageProgress.ClearedStage));
@@ -46,16 +46,4 @@ public class PlayerResponse
         }
     }
 
-    public class CurrenciesResponse
-    {
-        public readonly long gold;
-        public readonly long diamond;
-
-        [JsonConstructor]
-        public CurrenciesResponse(long gold, long diamond)
-        {
-            this.gold = gold;
-            this.diamond = diamond;
-        }
-    }
 }
