@@ -1,9 +1,11 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // 아이디/비밀번호 입력, 로그인/회원가입 버튼 입력 전달, 결과 문구 표시만 담당한다. 인증 로직은 갖지 않는다.
+// Tab으로 입력칸을 오가고, Enter로 로그인한다
 public class LoginView : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private GameObject objRoot;
@@ -27,7 +29,25 @@ public class LoginView : MonoBehaviour
 
         loginButton.onClick.AddListener(OnClickLogin);
         signupButton.onClick.AddListener(OnClickSignup);
+        idInput.onSubmit.AddListener(OnSubmitInput);
+        passwordInput.onSubmit.AddListener(OnSubmitInput);
         resultText.text = string.Empty;
+    }
+
+    // Tab을 누르면 아이디와 비밀번호 입력칸을 오간다
+    private void Update()
+    {
+        if (objRoot.activeInHierarchy == false || Keyboard.current == null)
+        {
+            return;
+        }
+
+        if (Keyboard.current.tabKey.wasPressedThisFrame)
+        {
+            TMP_InputField next = idInput.isFocused ? passwordInput : idInput;
+            next.Select();
+            next.ActivateInputField();
+        }
     }
 
     private void OnDestroy()
@@ -35,6 +55,16 @@ public class LoginView : MonoBehaviour
         if (loginButton != null)
         {
             loginButton.onClick.RemoveListener(OnClickLogin);
+        }
+
+        if (idInput != null)
+        {
+            idInput.onSubmit.RemoveListener(OnSubmitInput);
+        }
+
+        if (passwordInput != null)
+        {
+            passwordInput.onSubmit.RemoveListener(OnSubmitInput);
         }
 
         if (signupButton != null)
@@ -83,6 +113,15 @@ public class LoginView : MonoBehaviour
     private void OnClickLogin()
     {
         OnClickLoginEvent.Invoke(idInput.text, passwordInput.text);
+    }
+
+    // 입력칸에서 Enter를 누르면 로그인 버튼을 누른 것과 같다
+    private void OnSubmitInput(string _)
+    {
+        if (loginButton.interactable)
+        {
+            OnClickLogin();
+        }
     }
 
     private void OnClickSignup()
