@@ -1092,6 +1092,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9032295925633020153}
   - component: {fileID: 2337276565608601579}
+  - component: {fileID: 2249804216538940680}
   m_Layer: 0
   m_Name: ChatUI
   m_TagString: Untagged
@@ -1140,6 +1141,20 @@ MonoBehaviour:
   _inputField: {fileID: 6279433655296050704}
   _sendButton: {fileID: 1003626349224242886}
   _errorText: {fileID: 5073370864112189462}
+--- !u!114 &2249804216538940680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6269633597876557657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 102a08cda8235694493c718f0ba9035e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyChatHost
+  _chatOverlayView: {fileID: 2337276565608601579}
+  _topNoticeView: {fileID: 0}
 --- !u!1 &6484157875997622224
 GameObject:
   m_ObjectHideFlags: 0

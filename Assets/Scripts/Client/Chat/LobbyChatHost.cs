@@ -5,6 +5,8 @@ using UnityEngine;
 // Lobby 수명 동안 채팅 service와 coordinator를 조립하고 runtime 연결 정보를 받아 연결을 제어한다.
 public sealed class LobbyChatHost : MonoBehaviour
 {
+    private const string WebSocketPath = "/ws";
+
 #if UNITY_EDITOR
     private const string EditorTestWebSocketUrlEnvironmentVariableName = "SWORDMASTER_CHAT_WS_URL";
     private const string EditorTestStompHostEnvironmentVariableName = "SWORDMASTER_CHAT_STOMP_HOST";
@@ -27,13 +29,32 @@ public sealed class LobbyChatHost : MonoBehaviour
         BindViews();
     }
 
-#if UNITY_EDITOR
-    // Editor PlayMode에서만 환경 변수로 전달된 일회성 연결 정보로 실제 서버 테스트를 시작한다.
+    // 로그인하고 로비에 들어왔으면 로그인한 서버의 채팅에 연결한다.
+    // 로그인 없이 연 경우 Editor PlayMode에서만 환경 변수로 전달된 일회성 연결 정보로 실제 서버 테스트를 시작한다.
     private void Start()
     {
+        if (AuthJwtToken.HasValue)
+        {
+            var serverUri = new Uri(AuthJwtToken.ServerUrl);
+            ConfigureAndConnect(ToWebSocketUrl(serverUri), serverUri.Host, AuthJwtToken.Value);
+            return;
+        }
+
+#if UNITY_EDITOR
         TryConnectForEditorTest();
-    }
 #endif
+    }
+
+    // 로그인한 서버 주소(http://host:port)에서 STOMP endpoint 주소(ws://host:port/ws)를 만든다.
+    private static string ToWebSocketUrl(Uri serverUri)
+    {
+        var builder = new UriBuilder(serverUri)
+        {
+            Scheme = serverUri.Scheme == Uri.UriSchemeHttps ? "wss" : "ws",
+            Path = WebSocketPath,
+        };
+        return builder.Uri.ToString();
+    }
 
     // 로그인 성공 경계가 제공한 WebSocket URL, STOMP host, access token으로 연결을 시작한다.
     public void ConfigureAndConnect(string webSocketUrl, string stompHost, string accessToken)
