@@ -29,18 +29,6 @@ public static class ShopApi
             this.rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
             this.currencies = currencies ?? throw new ArgumentNullException(nameof(currencies));
         }
-
-        // 응답의 전체 보상과 서버가 확정한 재화를 기능 모델로 보존한다.
-        public PurchaseResult ToPurchaseResult()
-        {
-            var listReward = new List<PurchaseRewardResult>(rewards.Count);
-            foreach (RewardResponse reward in rewards)
-            {
-                listReward.Add(reward.ToPurchaseRewardResult());
-            }
-
-            return new PurchaseResult(listReward, currencies.ToUserCurrencies());
-        }
     }
 
     public class RewardResponse
@@ -60,12 +48,6 @@ public static class ShopApi
             this.rewardType = rewardType;
             this.rewardCode = rewardCode;
             this.amount = amount;
-        }
-
-        // 서버 보상 1건을 화면과 상태가 사용하는 결과 모델로 변환한다.
-        public PurchaseRewardResult ToPurchaseRewardResult()
-        {
-            return new PurchaseRewardResult(rewardType, rewardCode, amount);
         }
     }
 

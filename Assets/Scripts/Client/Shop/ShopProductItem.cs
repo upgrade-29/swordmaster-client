@@ -5,28 +5,26 @@ using UnityEngine.UI;
 
 // 상품 1개의 이름/가격/보상/구매 입력 표시를 담당.
 
-public class ShopProductItemView : MonoBehaviour
+public class ShopProductItem : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private Image productVisual;
     [ReadOnly] [SerializeField] private TextMeshProUGUI productName;
-    [ReadOnly] [SerializeField] private ShopRewardItemView rewardItem;
+    [ReadOnly] [SerializeField] private ShopRewardItem rewardItem;
     [ReadOnly] [SerializeField] private Button actionButton;
     [ReadOnly] [SerializeField] private Image actionIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI actionLabel;
     [ReadOnly] [SerializeField] private GameObject objActionLoading;
 
-    private string productCode;
-    private string priceText;
+    private ShopProductData product;
+    public ShopProductData Product => product;
 
-    public string ProductCode => productCode;
-
-    public event Action<string> OnPurchaseRequestedEvent = delegate { };
+    public event Action<ShopProductItem> OnClickPurchaseEvent = delegate { };
 
     private void Awake()
     {
         productVisual = GameUtil.Bind<Image>(transform, "ProductVisual");
         productName = GameUtil.Bind<TextMeshProUGUI>(transform, "Info/ProductName");
-        rewardItem = GameUtil.Bind<ShopRewardItemView>(transform, "Info/ShopRewardItem");
+        rewardItem = GameUtil.Bind<ShopRewardItem>(transform, "Info/ShopRewardItem");
         actionButton = GameUtil.Bind<Button>(transform, "ActionButton");
         actionIcon = GameUtil.Bind<Image>(transform, "ActionButton/Icon");
         actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "ActionButton/Label");
@@ -35,19 +33,19 @@ public class ShopProductItemView : MonoBehaviour
         actionButton.onClick.AddListener(OnClickActionButton);
     }
 
-    // Bind를 여러 번 호출해도 이전 상품의 상태가 남지 않도록 항상 Ready 상태로 초기화한다.
-    public void Bind(ShopProductViewData viewData)
+    public void SetProduct(ShopProductData product, ShopProductRewardData representativeReward,
+        ShopVisualCatalogSO visualCatalog)
     {
-        productCode = viewData.ProductCode;
-        priceText = viewData.PriceText;
+        this.product = product;
 
-        productVisual.sprite = viewData.ProductVisual;
-        productName.text = viewData.DisplayName;
-        rewardItem.Bind(viewData.RepresentativeRewardView);
+        productVisual.sprite = visualCatalog.GetProductIcon(product.iconCode);
+        productName.text = product.name;
+        rewardItem.SetReward(representativeReward, visualCatalog);
 
         // ActionButton의 Label/Icon으로 가격 정보를 표시한다.
-        actionIcon.sprite = viewData.CurrencyIcon;
-        actionIcon.gameObject.SetActive(viewData.CurrencyIcon != null);
+        Sprite currencyIcon = visualCatalog.GetCurrencyIcon(product.priceType);
+        actionIcon.sprite = currencyIcon;
+        actionIcon.gameObject.SetActive(currencyIcon != null);
 
         SetPurchaseState(ShopProductPurchaseState.Ready);
     }
@@ -60,12 +58,17 @@ public class ShopProductItemView : MonoBehaviour
             case ShopProductPurchaseState.Ready:
                 objActionLoading.SetActive(false);
                 actionButton.interactable = true;
-                actionLabel.text = priceText;
+                actionLabel.text = product.price.ToString();
                 break;
 
             case ShopProductPurchaseState.Purchasing:
                 objActionLoading.SetActive(true);
                 actionButton.interactable = false;
+                break;
+
+            case ShopProductPurchaseState.ResultUnknown:
+                objActionLoading.SetActive(true);
+                actionButton.interactable = true;
                 break;
 
             case ShopProductPurchaseState.SoldOut:
@@ -92,6 +95,6 @@ public class ShopProductItemView : MonoBehaviour
 
     private void OnClickActionButton()
     {
-        OnPurchaseRequestedEvent.Invoke(productCode);
+        OnClickPurchaseEvent.Invoke(this);
     }
 }

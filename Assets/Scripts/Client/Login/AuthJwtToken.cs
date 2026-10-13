@@ -8,12 +8,27 @@ public static class AuthJwtToken
     public static string Value { get; private set; }
     public static string ServerUrl { get; private set; } // 끝의 '/'는 뺀 값
     public static bool HasValue => string.IsNullOrEmpty(Value) == false;
+    // 로그인한 상태에서 서버가 토큰을 거절해 로그인 씬으로 돌아가는 중인지. 로그인 화면이 안내 문구를 띄운 뒤 지운다
+    public static bool IsExpired { get; private set; }
 
     public static void Set(string accessToken, string serverUrl)
     {
         Value = accessToken;
         ServerUrl = serverUrl.TrimEnd('/');
+        IsExpired = false;
         HttpConfig.SetHeader(AuthorizationHeader, $"Bearer {accessToken}");
+    }
+
+    // 로그인한 상태에서 서버가 401로 토큰을 거절했을 때
+    public static void Expire()
+    {
+        Clear();
+        IsExpired = true;
+    }
+
+    public static void ClearExpired()
+    {
+        IsExpired = false;
     }
 
     // 로그아웃하거나 서버가 401로 토큰을 거절했을 때

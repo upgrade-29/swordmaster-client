@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class LoginController : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
+    private const string SessionExpiredMessage = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
@@ -36,6 +37,13 @@ public class LoginController : MonoBehaviour
     {
         view.Show();
         signupView.Hide();
+
+        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우
+        if (AuthJwtToken.IsExpired)
+        {
+            AuthJwtToken.ClearExpired();
+            view.SetResult(false, SessionExpiredMessage);
+        }
     }
 
     private void OnDestroy()
