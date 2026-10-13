@@ -222,7 +222,7 @@ public class ShopTab : LobbyTab
 
         EndPurchase();
 
-        // 로그인 만료처럼 전역 에러 핸들러가 이미 처리한 에러는 알림을 띄우지 않는다
+        // 로그인 만료처럼 HttpErrorHandler가 이미 처리한 에러는 알림을 띄우지 않는다
         if (error.IsHandled)
         {
             return;

@@ -23,7 +23,7 @@ public sealed class HttpError
     private readonly string message;
     public string Message => message;
 
-    // 전역 에러 핸들러가 이미 처리했는지 여부입니다. true라면 호출부에서 에러 팝업을 띄우지 않습니다.
+    // HttpErrorHandler가 이미 처리했는지 여부입니다. true라면 호출부에서 에러 팝업을 띄우지 않습니다.
     private bool isHandled;
     public bool IsHandled => isHandled;
 

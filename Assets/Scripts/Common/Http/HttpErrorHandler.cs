@@ -1,22 +1,17 @@
-using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// 부트스트랩 씬이 없어서, 어느 씬에서 시작하든 전역 에러 핸들러가 적용되도록 앱이 시작될 때 자동으로 등록한다
-// HttpRequest 오브젝트는 싱글턴이 처음 요청할 때 만든다. 부트스트랩 씬을 만들면 이 등록을 그쪽으로 옮긴다
-public static class HttpBootstrap
+/// <summary>
+/// 모든 요청의 에러를 콜백보다 먼저 받아서 공통으로 처리합니다. 등록 없이 첫 요청부터 항상 호출됩니다.
+/// 처리했다면 true를 반환합니다. 콜백에는 IsHandled=true로 전달되므로, 호출부에서 에러 팝업을 다시 띄우지 않습니다.
+/// </summary>
+public static class HttpErrorHandler
 {
     private const int UnauthorizedStatusCode = 401;
     private const string LoginSceneName = "LoginScene";
 
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    private static void Init()
-    {
-        HttpRequest.SetGlobalErrorHandler(OnGlobalHttpError);
-    }
-
     // 로그인한 상태에서 401을 받으면 토큰이 만료됐거나 거절된 것이므로, 토큰을 지우고 로그인 씬으로 돌아간다
     // 토큰 없이 보낸 요청의 401(로그인할 때 비밀번호가 틀린 경우 등)은 호출부가 처리하도록 처리하지 않은 것으로 돌려준다
-    private static bool OnGlobalHttpError(HttpError error)
+    public static bool OnError(HttpError error)
     {
         if (error.Type != HttpErrorType.Server || error.StatusCode != UnauthorizedStatusCode)
         {

@@ -5,7 +5,8 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 /// <summary>
-/// HttpRequestFactory로 만든 HttpRequestInfo를 전송하고 응답을 DTO로 변환합니다. 처음 요청할 때 싱글턴 오브젝트를 만들고 씬이 바뀌어도 유지합니다.
+/// HttpRequestFactory로 만든 HttpRequestInfo를 전송하고 응답을 DTO로 변환합니다. 에러는 콜백보다 먼저 HttpErrorHandler가 처리합니다.
+/// 처음 요청할 때 싱글턴 오브젝트를 만들고 씬이 바뀌어도 유지합니다.
 /// 요청을 시작하면 콜백은 성공과 실패에 관계없이 한 번 호출됩니다. 단, 싱글턴 오브젝트가 파괴되어 코루틴이 멈추면 호출되지 않습니다.
 /// </summary>
 public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
@@ -13,9 +14,6 @@ public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
     private const string ConnectionFailedMessage = "서버에 연결할 수 없습니다.";
     private const string TimeoutMessage = "서버 응답 시간이 초과되었습니다.";
     private const string ParseFailedMessage = "서버 응답을 읽을 수 없습니다.";
-
-    // 토큰 만료처럼 공통으로 처리할 에러를 받아서 처리했다면 true를 반환합니다.
-    private static Func<HttpError, bool> globalErrorHandler;
 
     // showLoading이 true인 요청 중에서 아직 끝나지 않은 요청의 개수입니다.
     private static int loadingRequestCount;
@@ -31,7 +29,6 @@ public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticState()
     {
-        globalErrorHandler = null;
         loadingRequestCount = 0;
         OnLoadingStartEvent = delegate { };
         OnLoadingEndEvent = delegate { };
@@ -42,14 +39,6 @@ public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
     protected override void OnAwakeSingleton()
     {
         DontDestroyOnLoad(gameObject);
-    }
-
-    /// <summary>
-    /// 토큰 만료처럼 공통으로 처리할 에러의 핸들러를 지정합니다. 처리했다면 true를 반환하고, null을 넘기면 핸들러를 해제합니다.
-    /// </summary>
-    public static void SetGlobalErrorHandler(Func<HttpError, bool> globalErrorHandler)
-    {
-        HttpRequest.globalErrorHandler = globalErrorHandler;
     }
 
     public static Coroutine Request<T>(HttpRequestInfo<T> requestInfo, Action<HttpError, T> callback, bool showLoading = true) where T : class
@@ -107,7 +96,7 @@ public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
                 LogError(requestInfo, request, error);
             }
 
-            error.SetHandled(InvokeGlobalErrorHandler(error));
+            error.SetHandled(InvokeErrorHandler(error));
         }
 
         callback?.Invoke(error, result);
@@ -154,16 +143,12 @@ public class HttpRequest : SingletonMonoBehaviour<HttpRequest>
         }
     }
 
-    private static bool InvokeGlobalErrorHandler(HttpError error)
+    // 핸들러에서 발생한 예외가 콜백 호출을 막지 않도록, 예외가 나면 처리하지 않은 것으로 봅니다.
+    private static bool InvokeErrorHandler(HttpError error)
     {
-        if (globalErrorHandler == null)
-        {
-            return false;
-        }
-
         try
         {
-            return globalErrorHandler.Invoke(error);
+            return HttpErrorHandler.OnError(error);
         }
         catch (Exception e)
         {
