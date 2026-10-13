@@ -1,9 +1,10 @@
+using Newtonsoft.Json;
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Networking;
+using static UnityEngine.Audio.ProcessorInstance;
 
 // IAuthService의 HTTP 구현. {baseUrl}/api/auth/... 로 JSON POST 요청을 보내고, 실패는 AuthFailureException으로 던진다
 public class HttpAuthService : IAuthService
@@ -66,7 +67,13 @@ public class HttpAuthService : IAuthService
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                throw ToException(request);
+                if(request.downloadHandler.text != null)
+                {
+                    ErrorMessageResponse response = JsonConvert.DeserializeObject<ErrorMessageResponse>(request.downloadHandler.text);
+                    throw ToException(request, response?.message);
+                }
+
+                throw ToException(request, null);
             }
 
             return request.downloadHandler.text;
@@ -80,7 +87,7 @@ public class HttpAuthService : IAuthService
         return tcs.Task;
     }
 
-    private static AuthFailureException ToException(UnityWebRequest request)
+    private static AuthFailureException ToException(UnityWebRequest request, string message)
     {
         switch (request.result)
         {
@@ -100,6 +107,14 @@ public class HttpAuthService : IAuthService
                 if (request.responseCode == 409)
                 {
                     return new AuthFailureException(AuthFailureReason.DuplicateId, "이미 사용 중인 아이디입니다.");
+                }
+                if (request.responseCode == 400)
+                {
+                    if(message != null)
+                    {
+                        return new AuthFailureException(AuthFailureReason.BedRequest, message);
+                    }
+                    return new AuthFailureException(AuthFailureReason.BedRequest, $"잘못된 요청입니다.");
                 }
                 return new AuthFailureException(AuthFailureReason.ServerError, $"서버 오류가 발생했습니다. ({request.responseCode})");
 

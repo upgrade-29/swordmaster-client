@@ -3,7 +3,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
-// 로그인에 성공하면 서버의 플레이어 정보를 받아(없으면 만들고) 로비에 넘기고 로비 씬으로 넘어간다
+// 로그인에 성공하면 서버의 플레이어 정보를 받아 로비에 넘기고 로비 씬으로 넘어간다.
+// 플레이어가 없으면 닉네임 팝업을 띄워 닉네임을 받아 만든다
 public class LoginController : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
@@ -12,6 +13,7 @@ public class LoginController : MonoBehaviour
 
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
+    [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
 
     [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:8080"; // 임시 값. 로그인하면 AuthJwtToken에 같이 저장된다
     [ReadOnly(true)] [SerializeField] private int timeoutSeconds = 10;
@@ -23,12 +25,14 @@ public class LoginController : MonoBehaviour
     {
         GameUtil.Bind(gameObject, ref view);
         GameUtil.Bind(gameObject, ref signupView);
+        nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
         authService = new HttpAuthService(baseUrl, timeoutSeconds);
 
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
         signupView.OnClickSignupEvent += OnClickSignup;
         signupView.OnClickBackEvent += OnClickSignupBack;
+        nicknamePopup.OnClickConfirmEvent += OnClickNicknameConfirm;
     }
 
     private void Start()
@@ -49,6 +53,11 @@ public class LoginController : MonoBehaviour
         {
             signupView.OnClickSignupEvent -= OnClickSignup;
             signupView.OnClickBackEvent -= OnClickSignupBack;
+        }
+
+        if (nicknamePopup != null)
+        {
+            nicknamePopup.OnClickConfirmEvent -= OnClickNicknameConfirm;
         }
     }
 
@@ -145,12 +154,12 @@ public class LoginController : MonoBehaviour
 
         bool isSuccess;
         string message;
+        PlayerResponse player = null;
         try
         {
             LoginResponse response = await authService.LoginAsync(id, password);
             AuthJwtToken.Set(response.accessToken, baseUrl);
-            PlayerResponse player = await LoadPlayerAsync();
-            LoginEntry.Set(player.ToUser());
+            player = await TryLoadPlayerAsync();
             isSuccess = true;
             message = string.Empty;
         }
@@ -176,39 +185,86 @@ public class LoginController : MonoBehaviour
             return;
         }
 
-        if (isSuccess)
+        if (isSuccess == false)
         {
-            SceneManager.LoadScene(LobbySceneName);
+            view.SetInteractable(true);
+            view.SetResult(false, message);
             return;
         }
 
-        view.SetInteractable(true);
-        view.SetResult(false, message);
+        // 플레이어가 없으면 닉네임을 받아 만든 뒤 로비로 간다
+        if (player == null)
+        {
+            view.SetMessage(string.Empty);
+            nicknamePopup.Open();
+            nicknamePopup.Focus();
+            return;
+        }
+
+        EnterLobby(player);
     }
 
-    // 로그인한 계정의 플레이어 정보를 받는다
-    // 서버는 회원가입 때 계정만 만들고 게임 플레이어는 만들지 않는다. 플레이어가 없으면 전투, 강화 등이 막히므로
-    // 없으면(404) 만든다. 동시에 다른 곳에서 만들어 이미 있으면(409) 다시 받는다
-    private static async Task<PlayerResponse> LoadPlayerAsync()
+    private async void OnClickNicknameConfirm(string nickname)
     {
-        var client = new AuthorizedServerClient();
+        if (isRequesting)
+        {
+            return;
+        }
+
+        isRequesting = true;
+        nicknamePopup.SetInteractable(false);
+
+        PlayerResponse player = null;
+        string message = string.Empty;
         try
         {
-            return await client.GetAsync<PlayerResponse>(PlayerMePath);
+            player = await new AuthorizedServerClient().PostAsync<PlayerResponse>(PlayersPath, new CreatePlayerRequest(nickname));
+            Debug.Log("[Login] Player created");
+        }
+        catch (ServerRequestException e)
+        {
+            Debug.LogWarning($"[Login] Creating player failed: {e}");
+            message = e.Message;
+        }
+        finally
+        {
+            isRequesting = false;
+        }
+
+        // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
+        if (this == null)
+        {
+            return;
+        }
+
+        if (player == null)
+        {
+            nicknamePopup.SetInteractable(true);
+            nicknamePopup.SetError(message);
+            nicknamePopup.Focus();
+            return;
+        }
+
+        EnterLobby(player);
+    }
+
+    private static void EnterLobby(PlayerResponse player)
+    {
+        LoginEntry.Set(player.ToUser());
+        SceneManager.LoadScene(LobbySceneName);
+    }
+
+    // 로그인한 계정의 플레이어 정보를 받는다. 없으면(404) null
+    // 서버는 회원가입 때 계정만 만들고 게임 플레이어는 만들지 않는다. 플레이어는 닉네임을 받아 따로 만든다
+    private static async Task<PlayerResponse> TryLoadPlayerAsync()
+    {
+        try
+        {
+            return await new AuthorizedServerClient().GetAsync<PlayerResponse>(PlayerMePath);
         }
         catch (ServerRequestException e) when (e.StatusCode == 404)
         {
-        }
-
-        try
-        {
-            PlayerResponse created = await client.PostAsync<PlayerResponse>(PlayersPath, null);
-            Debug.Log("[Login] Player created");
-            return created;
-        }
-        catch (ServerRequestException e) when (e.StatusCode == 409)
-        {
-            return await client.GetAsync<PlayerResponse>(PlayerMePath);
+            return null;
         }
     }
 }

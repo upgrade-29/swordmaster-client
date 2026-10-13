@@ -6,4 +6,7 @@ public enum AuthFailureReason
     NetworkError,       // 서버에 연결할 수 없음
     Timeout,            // 응답 시간 초과
     ServerError,        // 그 밖의 서버 오류 응답
+
+    BedRequest,         // 잘못된 요청 (400)
+
 }
