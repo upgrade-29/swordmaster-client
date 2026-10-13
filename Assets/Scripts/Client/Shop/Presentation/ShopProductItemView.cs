@@ -10,7 +10,10 @@ public class ShopProductItemView : MonoBehaviour
     [ReadOnly] [SerializeField] private Image productVisual;
     [ReadOnly] [SerializeField] private TextMeshProUGUI productName;
     [ReadOnly] [SerializeField] private ShopRewardItemView rewardItem;
-    [ReadOnly] [SerializeField] private ShopButtonView actionButton;
+    [ReadOnly] [SerializeField] private Button actionButton;
+    [ReadOnly] [SerializeField] private Image actionIcon;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI actionLabel;
+    [ReadOnly] [SerializeField] private GameObject objActionLoading;
 
     private string productCode;
     private string priceText;
@@ -24,17 +27,12 @@ public class ShopProductItemView : MonoBehaviour
         productVisual = GameUtil.Bind<Image>(transform, "ProductVisual");
         productName = GameUtil.Bind<TextMeshProUGUI>(transform, "Info/ProductName");
         rewardItem = GameUtil.Bind<ShopRewardItemView>(transform, "Info/ShopRewardItem");
-        actionButton = GameUtil.Bind<ShopButtonView>(transform, "ActionButton");
+        actionButton = GameUtil.Bind<Button>(transform, "ActionButton");
+        actionIcon = GameUtil.Bind<Image>(transform, "ActionButton/Icon");
+        actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "ActionButton/Label");
+        objActionLoading = GameUtil.Bind<RectTransform>(transform, "ActionButton/Loading").gameObject;
 
-        actionButton.OnClickEvent += OnClickActionButton;
-    }
-
-    private void OnDestroy()
-    {
-        if (actionButton != null)
-        {
-            actionButton.OnClickEvent -= OnClickActionButton;
-        }
+        actionButton.onClick.AddListener(OnClickActionButton);
     }
 
     // Bind를 여러 번 호출해도 이전 상품의 상태가 남지 않도록 항상 Ready 상태로 초기화한다.
@@ -48,7 +46,8 @@ public class ShopProductItemView : MonoBehaviour
         rewardItem.Bind(viewData.RepresentativeRewardView);
 
         // ActionButton의 Label/Icon으로 가격 정보를 표시한다.
-        actionButton.SetIcon(viewData.CurrencyIcon);
+        actionIcon.sprite = viewData.CurrencyIcon;
+        actionIcon.gameObject.SetActive(viewData.CurrencyIcon != null);
 
         SetPurchaseState(ShopProductPurchaseState.Ready);
     }
@@ -59,30 +58,31 @@ public class ShopProductItemView : MonoBehaviour
         switch (state)
         {
             case ShopProductPurchaseState.Ready:
-                actionButton.SetLoading(false);
-                actionButton.SetInteractable(true);
-                actionButton.SetLabel(priceText);
+                objActionLoading.SetActive(false);
+                actionButton.interactable = true;
+                actionLabel.text = priceText;
                 break;
 
             case ShopProductPurchaseState.Purchasing:
-                actionButton.SetLoading(true);
+                objActionLoading.SetActive(true);
+                actionButton.interactable = false;
                 break;
 
             case ShopProductPurchaseState.SoldOut:
-                actionButton.SetLoading(false);
-                actionButton.SetInteractable(false);
-                actionButton.SetLabel("품절");
+                objActionLoading.SetActive(false);
+                actionButton.interactable = false;
+                actionLabel.text = "품절";
                 break;
 
             case ShopProductPurchaseState.LimitReached:
-                actionButton.SetLoading(false);
-                actionButton.SetInteractable(false);
-                actionButton.SetLabel("구매 제한");
+                objActionLoading.SetActive(false);
+                actionButton.interactable = false;
+                actionLabel.text = "구매 제한";
                 break;
 
             case ShopProductPurchaseState.Unavailable:
-                actionButton.SetLoading(false);
-                actionButton.SetInteractable(false);
+                objActionLoading.SetActive(false);
+                actionButton.interactable = false;
                 break;
 
             default:

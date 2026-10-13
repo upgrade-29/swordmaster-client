@@ -3,9 +3,14 @@ using System;
 // 실행 환경에 맞는 구매 서비스 구현체를 한 곳에서 선택한다.
 public static class ShopPurchaseServiceComposition
 {
-    // 런타임 구매는 공용 인증·전송 구현이 제공될 때까지 명시적으로 사용할 수 없다.
+    // 로그인했으면 서버로 구매하고, 로그인하지 않았으면 구매를 명시적으로 실패시킨다.
     public static IShopPurchaseService CreateRuntime()
     {
+        if (AuthJwtToken.HasValue)
+        {
+            return new HttpShopPurchaseService();
+        }
+
         return new ShopPurchaseServiceUnavailable();
     }
 

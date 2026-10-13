@@ -14,7 +14,7 @@ public class ShopScreenView : MonoBehaviour
     [ReadOnly] [SerializeField] private NestedScrollRect nestedScrollRect;
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private TextMeshProUGUI errorMessageText;
-    [ReadOnly] [SerializeField] private ShopButtonView retryButton;
+    [ReadOnly] [SerializeField] private Button retryButton;
     [ReadOnly] [SerializeField] private Transform comingSoonPanel;
 
     [SerializeField] private ShopProductItemView itemPrefab;
@@ -48,20 +48,15 @@ public class ShopScreenView : MonoBehaviour
         nestedScrollRect = GameUtil.Bind(gameObject, ref nestedScrollRect);
         contentTransform = nestedScrollRect.content;
         errorMessageText = GameUtil.Bind<TextMeshProUGUI>(transform, "ErrorPanel/Message");
-        retryButton = GameUtil.Bind<ShopButtonView>(transform, "ErrorPanel/RetryButton");
+        retryButton = GameUtil.Bind<Button>(transform, "ErrorPanel/RetryButton");
         comingSoonPanel = GameUtil.Bind<RectTransform>(transform, "Viewport/Content/ComingSoonPanel");
 
-        retryButton.OnClickEvent += OnClickRetry;
+        retryButton.onClick.AddListener(OnClickRetry);
         isBound = true;
     }
 
     private void OnDestroy()
     {
-        if (retryButton != null)
-        {
-            retryButton.OnClickEvent -= OnClickRetry;
-        }
-
         ClearSections();
     }
 

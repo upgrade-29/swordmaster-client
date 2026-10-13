@@ -179,6 +179,7 @@ public class ShopTab : LobbyTab
     private void OnPurchaseSucceeded(string productCode, PurchaseResult result)
     {
         purchaseSuccessApplier.Apply(productCode, result, isViewActive);
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
         pendingReconcileProductCode = null;
     }
 
