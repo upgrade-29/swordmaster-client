@@ -98,8 +98,8 @@ public class EnhanceTab : LobbyTab
 
     private void RefreshCombatStats()
     {
-        CombatStat stat = StatCalculator.CalculatePlayer(GetSwordData(User.Sword.Level), GetEquippedArtifactLevels());
-        long combatPower = CombatPowerCalculator.Calculate(stat, GetConfigValue("CRIT_MULTIPLIER"), GetConfigValue("BASE_BATTLE_TIME"));
+        CombatStat stat = StatCalculator.CalculatePlayer(GameDB, User);
+        long combatPower = CombatPowerCalculator.Calculate(stat, GameDB);
 
         enhanceTitle.SetCombatPower(FormatInteger(combatPower));
         enhanceStatsPanel.SetStats(
@@ -108,16 +108,6 @@ public class EnhanceTab : LobbyTab
             FormatAttackSpeed(stat.attackSpeed),
             FormatPercentage(stat.critRate),
             FormatPercentage(stat.lifesteal));
-    }
-
-    private IEnumerable<(ArtifactData data, int level)> GetEquippedArtifactLevels()
-    {
-        return User.EquippedArtifacts.Select(x => (GetArtifactData(x.ArtifactCode), x.Level));
-    }
-
-    private double GetConfigValue(string key)
-    {
-        return double.Parse(GameDB.config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
     }
 
     private void RefreshEquipmentNames()

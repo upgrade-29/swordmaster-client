@@ -7,8 +7,6 @@ using UnityEngine.SceneManagement;
 // 결과 팝업의 나가기를 받아 로비 씬으로 돌아간다. 전투 결과는 GameSession의 유저에 이미 반영되어 있다
 public class BattleViewManager : MonoBehaviour
 {
-    private const string LobbySceneName = "LobbyScene";
-    private const string LoginSceneName = "LoginScene";
     private const float ExitFadeDuration = 0.5f;
 
     [ReadOnly(true)] [SerializeField] private bool logToConsole = true; // 로그 창 문장을 Console에도 찍는다
@@ -56,7 +54,7 @@ public class BattleViewManager : MonoBehaviour
         if (BattleEntry.TryConsume(out int stage) == false || GameSession.Instance.User == null)
         {
             Debug.LogWarning("[Battle] No entry data. Back to lobby");
-            SceneManager.LoadScene(LobbySceneName);
+            SceneManager.LoadScene(SceneNames.Lobby);
             return;
         }
 
@@ -67,7 +65,7 @@ public class BattleViewManager : MonoBehaviour
         if (GameSession.Instance.IsLoggedIn == false)
         {
             Debug.LogWarning("[Battle] Not logged in. Back to login");
-            SceneManager.LoadScene(LoginSceneName);
+            SceneManager.LoadScene(SceneNames.Login);
             return;
         }
 
@@ -98,7 +96,7 @@ public class BattleViewManager : MonoBehaviour
     {
         screenFader.FadeOut(ExitFadeDuration, () =>
         {
-            SceneManager.LoadScene(LobbySceneName);
+            SceneManager.LoadScene(SceneNames.Lobby);
         });
     }
 }

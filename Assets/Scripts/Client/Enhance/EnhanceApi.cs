@@ -57,15 +57,15 @@ public static class EnhanceApi
     public class SwordSellResponse
     {
         public readonly SwordResponse swordResponse;
-        public readonly IReadOnlyList<PurchaseRewardResult> rewardResponses;
+        public readonly IReadOnlyList<RewardResponse> rewardResponses;
         public readonly UserCurrencies currenciesResponse;
 
         [JsonConstructor]
-        public SwordSellResponse(SwordResponse swordResponse, IReadOnlyList<PurchaseRewardResult> rewardResponses,
+        public SwordSellResponse(SwordResponse swordResponse, IReadOnlyList<RewardResponse> rewardResponses,
             UserCurrencies currenciesResponse)
         {
             this.swordResponse = swordResponse;
-            this.rewardResponses = rewardResponses ?? new List<PurchaseRewardResult>();
+            this.rewardResponses = rewardResponses ?? new List<RewardResponse>();
             this.currenciesResponse = currenciesResponse;
         }
     }
@@ -81,17 +81,6 @@ public static class EnhanceApi
         {
             this.artifactResponses = artifactResponses ?? new List<ArtifactResponse>();
             this.currenciesResponse = currenciesResponse;
-        }
-    }
-
-    public class SwordResponse
-    {
-        public readonly int level;
-
-        [JsonConstructor]
-        public SwordResponse(int level)
-        {
-            this.level = level;
         }
     }
 

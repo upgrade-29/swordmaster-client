@@ -7,7 +7,6 @@ using UnityEngine.SceneManagement;
 public static class HttpErrorHandler
 {
     private const int UnauthorizedStatusCode = 401;
-    private const string LoginSceneName = "LoginScene";
 
     // 로그인한 상태에서 401을 받으면 토큰이 만료됐거나 거절된 것이므로, 토큰을 지우고 로그인 씬으로 돌아간다
     // 토큰 없이 보낸 요청의 401(로그인할 때 비밀번호가 틀린 경우 등)은 호출부가 처리하도록 처리하지 않은 것으로 돌려준다
@@ -38,7 +37,7 @@ public static class HttpErrorHandler
         }
 
         session.Expire();
-        SceneManager.LoadScene(LoginSceneName);
+        SceneManager.LoadScene(SceneNames.Login);
         return true;
     }
 }

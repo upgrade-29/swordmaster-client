@@ -53,17 +53,6 @@ public static class PlayerApi
         }
     }
 
-    public class SwordResponse
-    {
-        public readonly int level;
-
-        [JsonConstructor]
-        public SwordResponse(int level)
-        {
-            this.level = level;
-        }
-    }
-
     // 처음 로그인한 계정은 플레이어가 없어서 404를 받는다. 정상 흐름이므로 실패 로그를 남기지 않는다
     public static HttpRequestInfo<PlayerResponse> GetMe()
     {

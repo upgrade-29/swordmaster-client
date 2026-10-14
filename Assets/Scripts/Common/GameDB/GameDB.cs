@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Newtonsoft.Json;
 
 public class GameDB
@@ -36,5 +38,11 @@ public class GameDB
         this.shopProducts = shopProducts;
         this.shopProductRewards = shopProductRewards;
         this.config = config;
+    }
+
+    // config 값은 문자열로 저장되어 있으므로 숫자로 바꿔서 돌려준다
+    public double GetConfigValue(string key)
+    {
+        return double.Parse(config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
     }
 }

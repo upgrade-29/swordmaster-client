@@ -267,7 +267,7 @@ public class ShopTab : LobbyTab
     // 서버가 확정한 최종 재화와 유물 스냅샷을 연출 시작 전에 한 번만 반영한다.
     private void ApplyPurchaseResult(ShopApi.PurchaseResponse response)
     {
-        User.Currencies.SyncFrom(response.currencies.ToUserCurrencies());
+        User.Currencies.SyncFrom(response.currencies);
         ApplyChangedArtifacts(response.changedArtifacts);
         GameSession.Instance.NotifyChangeCurrencies();
     }
@@ -295,8 +295,7 @@ public class ShopTab : LobbyTab
                 continue;
             }
 
-            ownedArtifact.SyncFromServerSnapshot(changedArtifact.level,
-                changedArtifact.materialCount, changedArtifact.equipSlot);
+            ownedArtifact.SyncFrom(changedArtifact.ToUserArtifact());
         }
     }
 
@@ -313,7 +312,7 @@ public class ShopTab : LobbyTab
         gachaResultPopup.OnNextRequestedEvent += OnGachaNextRequested;
     }
 
-    private void ShowGachaReward(ShopApi.RewardResponse reward, int index, int totalCount)
+    private void ShowGachaReward(RewardResponse reward, int index, int totalCount)
     {
         if (gachaResultPopup.IsOpened == false)
         {

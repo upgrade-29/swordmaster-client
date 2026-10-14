@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 
 // 전투 규칙. 클라는 이걸로 실제 전투를 진행하고, 서버는 같은 코드로 다시 돌려서 클라가 보낸 결과를 검증한다
@@ -17,10 +16,10 @@ public class BattleEngine
     public BattleEngine(GameDB gameDB)
     {
         this.gameDB = gameDB;
-        critMultiplier = GetConfig(BattleManager.CritMultiplierConfigKey);
-        healRate = GetConfig(BattleManager.HealRateConfigKey);
-        normalTimeLimit = GetConfig(BattleManager.NormalTimeLimitConfigKey);
-        bossTimeLimit = GetConfig(BattleManager.BossTimeLimitConfigKey);
+        critMultiplier = gameDB.GetConfigValue(ConfigKey.CritMultiplier);
+        healRate = gameDB.GetConfigValue(ConfigKey.HealRate);
+        normalTimeLimit = gameDB.GetConfigValue(ConfigKey.NormalBattleTimeLimit);
+        bossTimeLimit = gameDB.GetConfigValue(ConfigKey.BossBattleTimeLimit);
     }
 
     public static int GetSubStageCount(StageData stage)
@@ -76,10 +75,5 @@ public class BattleEngine
     public double GetHealOnKill(CombatStat player, double playerHp)
     {
         return Math.Min(player.maxHp * healRate, player.maxHp - playerHp);
-    }
-
-    private double GetConfig(string key)
-    {
-        return double.Parse(gameDB.config.First(data => data.key == key).value, CultureInfo.InvariantCulture);
     }
 }

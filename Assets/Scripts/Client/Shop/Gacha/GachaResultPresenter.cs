@@ -4,24 +4,24 @@ using System.Collections.Generic;
 // 가챠 결과의 순서를 보존하고 사용자 입력마다 한 보상씩 표시하도록 제어한다.
 public class GachaResultPresenter
 {
-    private readonly Action<ShopApi.RewardResponse, int, int> showReward;
+    private readonly Action<RewardResponse, int, int> showReward;
     private readonly Action closePopup;
 
-    private IReadOnlyList<ShopApi.RewardResponse> rewards;
+    private IReadOnlyList<RewardResponse> rewards;
     private Action completed;
     private int currentIndex;
 
     public bool IsPlaying => rewards != null;
     public int CurrentIndex => currentIndex;
 
-    public GachaResultPresenter(Action<ShopApi.RewardResponse, int, int> showReward, Action closePopup)
+    public GachaResultPresenter(Action<RewardResponse, int, int> showReward, Action closePopup)
     {
         this.showReward = showReward ?? throw new ArgumentNullException(nameof(showReward));
         this.closePopup = closePopup ?? throw new ArgumentNullException(nameof(closePopup));
     }
 
     // 빈 결과와 중복 시작은 거부하고, 서버가 준 배열의 첫 보상부터 그대로 표시한다.
-    public bool Play(IReadOnlyList<ShopApi.RewardResponse> resultRewards, Action onCompleted = null)
+    public bool Play(IReadOnlyList<RewardResponse> resultRewards, Action onCompleted = null)
     {
         if (IsPlaying == true || resultRewards == null || resultRewards.Count == 0)
         {

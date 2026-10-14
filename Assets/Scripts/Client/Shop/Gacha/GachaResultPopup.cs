@@ -41,7 +41,7 @@ public class GachaResultPopup : BasePopup
     }
 
     // 보상 타입 아이콘을 재사용하고 개별 유물 Sprite 매핑 없이 이름 또는 코드 문자열을 표시한다.
-    public void Show(ShopApi.RewardResponse reward, int index, int totalCount,
+    public void Show(RewardResponse reward, int index, int totalCount,
         ShopVisualCatalogSO visualCatalog, GameDB gameDB)
     {
         titleText.text = "가챠 결과";
@@ -53,7 +53,7 @@ public class GachaResultPopup : BasePopup
         nextButton.interactable = true;
     }
 
-    private static string GetRewardName(ShopApi.RewardResponse reward, GameDB gameDB)
+    private static string GetRewardName(RewardResponse reward, GameDB gameDB)
     {
         if (reward.rewardType == RewardType.Artifact && string.IsNullOrEmpty(reward.rewardCode) == false)
         {

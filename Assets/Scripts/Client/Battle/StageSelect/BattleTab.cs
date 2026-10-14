@@ -1,13 +1,8 @@
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class BattleTab : LobbyTab
 {
-    private const string BattleSceneName = "BattleScene";
-
     [ReadOnly] [SerializeField] private StageSelectController stageSelectController;
 
     private GameDB GameDB => GameSession.Instance.GameDB;
@@ -38,24 +33,13 @@ public class BattleTab : LobbyTab
 
     private long CalculateCombatPower()
     {
-        SwordData sword = GameDB.swords.First(x => x.level == User.Sword.Level);
-        CombatStat stat = StatCalculator.CalculatePlayer(sword, GetEquippedArtifactLevels());
-        return CombatPowerCalculator.Calculate(stat, GetConfigValue("CRIT_MULTIPLIER"), GetConfigValue("BASE_BATTLE_TIME"));
-    }
-
-    private IEnumerable<(ArtifactData data, int level)> GetEquippedArtifactLevels()
-    {
-        return User.EquippedArtifacts.Select(x => (GameDB.artifacts.First(y => y.code == x.ArtifactCode), x.Level));
-    }
-
-    private double GetConfigValue(string key)
-    {
-        return double.Parse(GameDB.config.First(x => x.key == key).value, CultureInfo.InvariantCulture);
+        CombatStat stat = StatCalculator.CalculatePlayer(GameDB, User);
+        return CombatPowerCalculator.Calculate(stat, GameDB);
     }
 
     private void OnStageEntered(int stage)
     {
         BattleEntry.Set(stage);
-        SceneManager.LoadScene(BattleSceneName);
+        SceneManager.LoadScene(SceneNames.Battle);
     }
 }

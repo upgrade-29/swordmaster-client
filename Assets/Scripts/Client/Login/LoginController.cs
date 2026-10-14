@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 // 플레이어가 없으면 닉네임 팝업을 띄워 닉네임을 받아 만든다
 public class LoginController : MonoBehaviour
 {
-    private const string LobbySceneName = "LobbyScene";
     private const string SessionExpiredMessage = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
     [ReadOnly] [SerializeField] private LoginView view;
@@ -241,6 +240,6 @@ public class LoginController : MonoBehaviour
     private static void EnterLobby(PlayerApi.PlayerResponse player)
     {
         GameSession.Instance.SetUser(player.ToUser());
-        SceneManager.LoadScene(LobbySceneName);
+        SceneManager.LoadScene(SceneNames.Lobby);
     }
 }

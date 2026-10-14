@@ -17,10 +17,6 @@ public class BattleManager : MonoBehaviour
 
     // 전투 규칙에 쓰는 값. 서버 검증도 같은 값을 써야 결과가 같다
     public const double TimeEpsilon = 1e-9; // 부동소수점 오차 때문에 같은 시각의 공격이 미세하게 어긋나는 것을 같은 시각으로 본다
-    public const string CritMultiplierConfigKey = "CRIT_MULTIPLIER"; // GameDB.config 키
-    public const string HealRateConfigKey = "HEAL_RATE";
-    public const string NormalTimeLimitConfigKey = "NORMAL_BATTLE_TIME_LIMIT";
-    public const string BossTimeLimitConfigKey = "BOSS_BATTLE_TIME_LIMIT";
 
     // 세션을 받아 StartDelay 대기를 시작할 때. 새 전투와 재접속 모두. 첫 세부스테이지를 미리 넘겨서 시작 전 화면을 세팅할 수 있게 한다
     public event Action<BattleSubStage> CountdownStarted;

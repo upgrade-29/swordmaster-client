@@ -1,8 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public static class StatCalculator
 {
+    // 유저의 검 레벨과 장착한 아티팩트로 능력치를 계산한다
+    public static CombatStat CalculatePlayer(GameDB gameDB, User user)
+    {
+        SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
+        var equippedArtifacts = user.EquippedArtifacts.Select(x => (gameDB.artifacts.First(y => y.code == x.ArtifactCode), x.Level));
+        return CalculatePlayer(sword, equippedArtifacts);
+    }
+
     // 검 능력치에 장착한 아티팩트의 능력치를 더한다
     public static CombatStat CalculatePlayer(SwordData sword, IEnumerable<(ArtifactData data, int level)> equippedArtifacts)
     {

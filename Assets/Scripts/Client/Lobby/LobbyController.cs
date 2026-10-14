@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 
 public class LobbyController : MonoBehaviour
 {
-    private const string LoginSceneName = "LoginScene";
     private static readonly int LastTabIndex = Enum.GetValues(typeof(LobbyTabType)).Length - 1;
 
     [ReadOnly] [SerializeField] private LobbyView view;
@@ -24,7 +23,7 @@ public class LobbyController : MonoBehaviour
         {
             Debug.LogWarning("[Lobby] Not logged in. Back to login");
             gameObject.SetActive(false);
-            SceneManager.LoadScene(LoginSceneName);
+            SceneManager.LoadScene(SceneNames.Login);
             return;
         }
 

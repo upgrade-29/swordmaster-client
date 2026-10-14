@@ -40,12 +40,4 @@ public class UserArtifact
     {
         equippedSlot = slot;
     }
-
-    // 서버가 확정한 최종 스냅샷으로 동기화해 보상 수량을 클라이언트가 다시 계산하지 않게 한다.
-    public void SyncFromServerSnapshot(int latestLevel, int latestMaterialCount, int? latestEquippedSlot)
-    {
-        level = latestLevel;
-        materialCount = latestMaterialCount;
-        equippedSlot = latestEquippedSlot;
-    }
 }
