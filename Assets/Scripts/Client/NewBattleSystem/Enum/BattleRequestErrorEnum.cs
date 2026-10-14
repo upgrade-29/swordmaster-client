@@ -11,4 +11,5 @@ public enum BattleRequestErrorEnum
     BattleIdMismatch,
     VerifyFailed, // 보고가 서버 계산과 다름. 서버는 이미 패배로 끝냈다
     GameDataOutdated, // 클라 게임 데이터 버전이 서버와 다름. 세션은 그대로 남아 있어 데이터를 다시 받으면 이어서 할 수 있다
+    REQUEST_IN_PROGRESS, // 서버가 이전 전투 요청을 처리중.
 }
