@@ -17,7 +17,7 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
     [ReadOnly] [SerializeField] private ArtifactChangePopup artifactChangePopup;
-    [ReadOnly] [SerializeField] private ConfirmPopupView confirmPopup;
+    [ReadOnly] [SerializeField] private ConfirmPopup confirmPopup;
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
@@ -54,7 +54,7 @@ public class EnhanceTab : LobbyTab
         artifactChangePopup = LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
         artifactChangePopup.OnClickArtifactEvent += OnClickChangeArtifact;
         artifactChangePopup.OnClickUnequipEvent += OnClickUnequip;
-        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopupView>();
+        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopup>();
 
         RefreshCombatStats();
         RefreshEquipmentNames();

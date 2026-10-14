@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class BattleTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private StageSelectController stageSelectController;
+    [ReadOnly] [SerializeField] private Button btnChat;
+    [ReadOnly] [SerializeField] private ChatOverlayView chatOverlayView;
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
@@ -14,10 +17,14 @@ public class BattleTab : LobbyTab
 
         stageSelectController = GameUtil.Bind<StageSelectController>(transform, "Viewport/Content/StageSelectView");
         stageSelectController.StageEntered += OnStageEntered;
+
+        btnChat = GameUtil.Bind<Button>(transform, "Viewport/Content/StageSelectView/ChatUI/ChatButton");
+        btnChat.onClick.AddListener(OnClickChat);
     }
 
     private void Start()
     {
+        chatOverlayView = LobbyPopupUI.Instance.Get<ChatOverlayView>();
         stageSelectController.Init(GameDB.stages, User.StageProgress, CalculateCombatPower());
     }
 
@@ -28,6 +35,11 @@ public class BattleTab : LobbyTab
         if (stageSelectController != null)
         {
             stageSelectController.StageEntered -= OnStageEntered;
+        }
+
+        if (btnChat != null)
+        {
+            btnChat.onClick.RemoveListener(OnClickChat);
         }
     }
 
@@ -41,5 +53,10 @@ public class BattleTab : LobbyTab
     {
         BattleEntry.Set(stage);
         SceneManager.LoadScene(SceneNames.Battle);
+    }
+
+    private void OnClickChat()
+    {
+        chatOverlayView.Open();
     }
 }

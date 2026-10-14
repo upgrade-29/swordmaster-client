@@ -10,7 +10,7 @@ public class ShopTab : LobbyTab
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private Transform comingSoonPanel;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
-    [ReadOnly] [SerializeField] private ConfirmPopupView confirmPopup;
+    [ReadOnly] [SerializeField] private ConfirmPopup confirmPopup;
 
     [SerializeField] private ShopVisualCatalogSO visualCatalog;
     [SerializeField] private ShopSection sectionPrefab;
@@ -39,7 +39,7 @@ public class ShopTab : LobbyTab
 
     private void Start()
     {
-        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopupView>();
+        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopup>();
         InitializeGachaResultPresenter();
 
         InitProductList();
@@ -216,9 +216,9 @@ public class ShopTab : LobbyTab
             ApplyPurchaseResult(response);
 
             if (purchasedProduct.category == ShopCategory.Gacha && response.rewards.Count > 0 &&
-                (gachaResultPresenter == null || gachaResultPresenter.Play(response.rewards) == false))
+                gachaResultPresenter.Play(response.rewards) == false)
             {
-                Debug.LogWarning("GachaResultPopup이 없어 가챠 결과 연출을 시작하지 않습니다.");
+                Debug.LogWarning("이전 가챠 결과 연출이 끝나지 않아 이번 결과 연출을 시작하지 않습니다.");
             }
 
             return;
@@ -299,15 +299,9 @@ public class ShopTab : LobbyTab
         }
     }
 
-    // GachaResultPopup Prefab은 별도 Editor 작업으로 추가되므로, 없으면 구매 결과만 반영한다.
     private void InitializeGachaResultPresenter()
     {
-        gachaResultPopup = FindFirstObjectByType<GachaResultPopup>(FindObjectsInactive.Include);
-        if (gachaResultPopup == null)
-        {
-            return;
-        }
-
+        gachaResultPopup = LobbyPopupUI.Instance.Get<GachaResultPopup>();
         gachaResultPresenter = new GachaResultPresenter(ShowGachaReward, gachaResultPopup.Close);
         gachaResultPopup.OnNextRequestedEvent += OnGachaNextRequested;
     }

@@ -7,7 +7,6 @@ using UnityEngine;
 public sealed class ChatOverlayView : BasePopup
 {
     [Header("오버레이")]
-    [SerializeField] private UnityEngine.UI.Button _openButton;
     [SerializeField] private UnityEngine.UI.Button _closeButton;
 
     [Header("채팅 목록")]
@@ -30,18 +29,14 @@ public sealed class ChatOverlayView : BasePopup
 
     private ChatCoordinator _chatCoordinator;
 
-    // BasePopup이 Dimmed를 bind한 뒤 Prefab 내부 button callback을 연결하고,
-    // 패널은 활성 상태로 로드되므로 와이어링 직후 스스로 Close()를 호출해 기본적으로 닫아 둔다.
+    // BasePopup이 Dimmed를 bind한 뒤 Prefab 내부 button callback을 연결한다.
+    // PopupUI에 꺼 둔 채로 배치되어 처음 Open할 때 실행되므로, 그 전에 표시한 연결 오류를 지우지 않는다.
     protected override void Awake()
     {
         base.Awake();
 
-        _openButton.onClick.AddListener(Open);
         _closeButton.onClick.AddListener(Close);
         _sendButton.onClick.AddListener(RequestSend);
-        _errorText.text = string.Empty;
-
-        Close();
     }
 
     // coordinator 수신 이벤트를 view 갱신으로만 연결한다.
@@ -88,7 +83,6 @@ public sealed class ChatOverlayView : BasePopup
     // button callback을 해제해 Prefab 재생성이나 파괴 시 중복 구독을 남기지 않는다.
     private void OnDestroy()
     {
-        _openButton.onClick.RemoveListener(Open);
         _closeButton.onClick.RemoveListener(Close);
         _sendButton.onClick.RemoveListener(RequestSend);
         Unbind();

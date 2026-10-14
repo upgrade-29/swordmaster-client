@@ -14,9 +14,9 @@ public sealed class LobbyChatHost : MonoBehaviour
 #endif
 
     [Header("연결 대상")]
-    [SerializeField] private ChatOverlayView _chatOverlayView;
     [SerializeField] private TopNoticeView _topNoticeView;
 
+    private ChatOverlayView _chatOverlayView; // PopupUI에 있으므로 Start에서 LobbyPopupUI로 가져온다
     private StompChatService _chatService;
     private ChatCoordinator _chatCoordinator;
     private bool _isDestroying;
@@ -33,6 +33,9 @@ public sealed class LobbyChatHost : MonoBehaviour
     // 로그인 없이 연 경우 Editor PlayMode에서만 환경 변수로 전달된 일회성 연결 정보로 실제 서버 테스트를 시작한다.
     private void Start()
     {
+        _chatOverlayView = LobbyPopupUI.Instance.Get<ChatOverlayView>();
+        _chatOverlayView.Bind(_chatCoordinator);
+
         if (GameSession.Instance.IsLoggedIn)
         {
             var serverUri = new Uri(ServerSettings.BaseUrl);
@@ -113,14 +116,9 @@ public sealed class LobbyChatHost : MonoBehaviour
         }
     }
 
-    // Scene에 배치된 선택적 채팅 오버레이와 Lobby 상단 공지를 같은 coordinator에 연결한다.
+    // Lobby 상단 공지를 coordinator에 연결한다. 채팅창은 PopupUI에 있으므로 Start에서 연결한다.
     private void BindViews()
     {
-        if (_chatOverlayView != null)
-        {
-            _chatOverlayView.Bind(_chatCoordinator);
-        }
-
         if (_topNoticeView != null)
         {
             _topNoticeView.Bind(_chatCoordinator);

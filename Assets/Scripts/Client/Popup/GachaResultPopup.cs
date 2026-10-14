@@ -21,13 +21,13 @@ public class GachaResultPopup : BasePopup
     {
         base.Awake();
 
-        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/Title");
-        rewardIcon = GameUtil.Bind<Image>(transform, "Root/RewardIcon");
-        rewardNameText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/RewardName");
-        rewardAmountText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/RewardAmount");
-        progressText = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/ProgressText");
-        nextButton = GameUtil.Bind<Button>(transform, "Root/NextButton");
-        nextButtonLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Root/NextButton/Label");
+        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Title");
+        rewardIcon = GameUtil.Bind<Image>(transform, "Panel/RewardIcon");
+        rewardNameText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardName");
+        rewardAmountText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardAmount");
+        progressText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/ProgressText");
+        nextButton = GameUtil.Bind<Button>(transform, "Panel/NextButton");
+        nextButtonLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/NextButton/Label");
 
         nextButton.onClick.AddListener(OnClickNext);
     }
