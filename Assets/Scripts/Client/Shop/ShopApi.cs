@@ -22,12 +22,15 @@ public static class ShopApi
     {
         public readonly IReadOnlyList<RewardResponse> rewards;
         public readonly CurrenciesResponse currencies;
+        public readonly IReadOnlyList<ArtifactResponse> changedArtifacts;
 
         [JsonConstructor]
-        public PurchaseResponse(IReadOnlyList<RewardResponse> rewards, CurrenciesResponse currencies)
+        public PurchaseResponse(IReadOnlyList<RewardResponse> rewards, CurrenciesResponse currencies,
+            IReadOnlyList<ArtifactResponse> changedArtifacts = null)
         {
             this.rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
             this.currencies = currencies ?? throw new ArgumentNullException(nameof(currencies));
+            this.changedArtifacts = changedArtifacts;
         }
     }
 
@@ -54,10 +57,10 @@ public static class ShopApi
     public class CurrenciesResponse
     {
         public readonly long gold;
-        public readonly int diamond;
+        public readonly long diamond;
 
         [JsonConstructor]
-        public CurrenciesResponse(long gold, int diamond)
+        public CurrenciesResponse(long gold, long diamond)
         {
             this.gold = gold;
             this.diamond = diamond;
