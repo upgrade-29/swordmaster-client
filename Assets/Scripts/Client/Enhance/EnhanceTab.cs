@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class EnhanceTab : LobbyTab
@@ -18,16 +17,17 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
     [ReadOnly] [SerializeField] private ArtifactChangePopup artifactChangePopup;
+    [ReadOnly] [SerializeField] private ConfirmPopupView confirmPopup;
 
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
-
-    private IEnhanceService enhanceService;
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
     private bool isStatsOpened;
     private bool isRequesting;
+    // 결과를 알 수 없어 다시 보내기를 기다리는 요청. 같은 요청 정보(같은 requestId)를 그대로 다시 보낸다
+    private Action retryRequest;
 
     protected override void Awake()
     {
@@ -51,11 +51,10 @@ public class EnhanceTab : LobbyTab
 
     private void Start()
     {
-        enhanceService = new EnhanceLocalService(new System.Random());
-
         artifactChangePopup = LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
         artifactChangePopup.OnClickArtifactEvent += OnClickChangeArtifact;
         artifactChangePopup.OnClickUnequipEvent += OnClickUnequip;
+        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopupView>();
 
         RefreshCombatStats();
         RefreshEquipmentNames();
@@ -89,6 +88,11 @@ public class EnhanceTab : LobbyTab
         {
             artifactChangePopup.OnClickArtifactEvent -= OnClickChangeArtifact;
             artifactChangePopup.OnClickUnequipEvent -= OnClickUnequip;
+        }
+
+        if (confirmPopup != null)
+        {
+            UnsubscribeRetryPopup();
         }
     }
 
@@ -379,58 +383,76 @@ public class EnhanceTab : LobbyTab
         enhanceTitle.SetStatsOpened(opened);
     }
 
-    private async Task EnhanceSwordAsync()
+    // 성공하면 응답을 User에 반영하고 화면을 갱신한다. 실패는 HttpRequest가 남기는 로그로 확인한다
+    private void SendRequest<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse) where T : class
     {
-        await enhanceService.EnhanceSwordAsync(User.Sword.Level);
-    }
-
-    private async Task EnhanceArtifactAsync()
-    {
-        UserArtifact artifact = GetEquippedArtifact(selectedArtifactSlot);
-        if (artifact == null)
-        {
-            return;
-        }
-
-        await enhanceService.EnhanceArtifactAsync(artifact.ArtifactCode);
-    }
-
-    private async Task SellSwordAsync()
-    {
-        await enhanceService.SellSwordAsync(User.Sword.Level);
-    }
-
-    private async Task EquipArtifactAsync(string artifactCode)
-    {
-        await enhanceService.EquipArtifactAsync(selectedArtifactSlot + 1, artifactCode);
-    }
-
-    private async Task UnequipArtifactAsync()
-    {
-        await enhanceService.UnequipArtifactAsync(selectedArtifactSlot + 1);
-    }
-
-    private async Task RequestAsync(Func<Task> request)
-    {
-        if (isRequesting)
-        {
-            return;
-        }
-
         isRequesting = true;
-        try
+        HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, error, response));
+    }
+
+    private void ApplySwordEnhance(EnhanceApi.SwordEnhanceResponse response)
+    {
+        User.Sword.SetLevel(response.swordResponse.level);
+        SyncCurrencies(response.currenciesResponse);
+    }
+
+    private void ApplySwordSell(EnhanceApi.SwordSellResponse response)
+    {
+        User.Sword.SetLevel(response.swordResponse.level);
+        SyncCurrencies(response.currenciesResponse);
+    }
+
+    private void ApplyArtifactEnhance(EnhanceApi.ArtifactEnhanceResponse response)
+    {
+        foreach (ArtifactResponse artifact in response.artifactResponses)
         {
-            await request();
-            RefreshAfterRequest();
+            User.GetArtifact(artifact.code)?.SyncFrom(artifact.ToUserArtifact());
         }
-        catch (EnhanceRequestException e)
+
+        SyncCurrencies(response.currenciesResponse);
+    }
+
+    // 응답에는 장착한 아티팩트만 들어 있으므로, 응답에 없는 아티팩트는 장착 해제된 것이다
+    private void ApplyEquippedArtifacts(List<ArtifactResponse> equippedArtifacts)
+    {
+        foreach (UserArtifact artifact in User.Artifacts)
         {
-            Debug.LogWarning($"[Enhance] {e.Code}: {e.Message}");
+            ArtifactResponse equipped = equippedArtifacts.FirstOrDefault(x => x.code == artifact.ArtifactCode);
+            artifact.SetEquippedSlot(equipped?.equipSlot);
         }
-        finally
+    }
+
+    private void SyncCurrencies(UserCurrencies currencies)
+    {
+        User.Currencies.SyncFrom(currencies);
+        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
+    }
+
+    // 재전송을 기다리는 요청이 있으면 재전송 팝업을 다시 열고 true를 돌려준다
+    private bool TryReopenRetryPopup()
+    {
+        if (retryRequest == null)
         {
-            isRequesting = false;
+            return false;
         }
+
+        ShowRetryPopup();
+        return true;
+    }
+
+    private void ShowRetryPopup()
+    {
+        confirmPopup.Open();
+        confirmPopup.SetTitle("요청 결과 확인 필요");
+        confirmPopup.SetMessage("요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?");
+        confirmPopup.OnConfirmEvent += OnConfirmRetry;
+        confirmPopup.OnCancelEvent += OnCancelRetry;
+    }
+
+    private void UnsubscribeRetryPopup()
+    {
+        confirmPopup.OnConfirmEvent -= OnConfirmRetry;
+        confirmPopup.OnCancelEvent -= OnCancelRetry;
     }
 
     private void RefreshAfterRequest()
@@ -447,26 +469,63 @@ public class EnhanceTab : LobbyTab
         SelectArtifact(selectedArtifactSlot);
     }
 
-    private async void OnClickEnhance()
+    private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, HttpError error, T response) where T : class
     {
-        if (isSwordSelected)
+        // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
+        if (this == null)
         {
-            await RequestAsync(EnhanceSwordAsync);
             return;
         }
 
-        if (GetEquippedArtifact(selectedArtifactSlot) == null)
+        if (error == null)
+        {
+            isRequesting = false;
+            applyResponse(response);
+            RefreshAfterRequest();
+            return;
+        }
+
+        if (HttpErrorUtil.IsResultUnknown(error))
+        {
+            retryRequest = () => SendRequest(requestInfo, applyResponse);
+            ShowRetryPopup();
+            return;
+        }
+
+        isRequesting = false;
+    }
+
+    private void OnClickEnhance()
+    {
+        if (TryReopenRetryPopup() || isRequesting)
+        {
+            return;
+        }
+
+        if (isSwordSelected)
+        {
+            SendRequest(EnhanceApi.EnhanceSword(Guid.NewGuid(), User.Sword.Level), ApplySwordEnhance);
+            return;
+        }
+
+        UserArtifact artifact = GetEquippedArtifact(selectedArtifactSlot);
+        if (artifact == null)
         {
             OpenArtifactChangePopup();
             return;
         }
 
-        await RequestAsync(EnhanceArtifactAsync);
+        SendRequest(EnhanceApi.EnhanceArtifact(Guid.NewGuid(), artifact.ArtifactCode), ApplyArtifactEnhance);
     }
 
-    private async void OnClickSell()
+    private void OnClickSell()
     {
-        await RequestAsync(SellSwordAsync);
+        if (TryReopenRetryPopup() || isRequesting)
+        {
+            return;
+        }
+
+        SendRequest(EnhanceApi.SellSword(Guid.NewGuid(), User.Sword.Level), ApplySwordSell);
     }
 
     private void OnClickChange()
@@ -474,17 +533,46 @@ public class EnhanceTab : LobbyTab
         OpenArtifactChangePopup();
     }
 
-    private async void OnClickChangeArtifact(int index)
+    private void OnClickChangeArtifact(int index)
     {
         string artifactCode = User.Artifacts[index].ArtifactCode;
         artifactChangePopup.Close();
-        await RequestAsync(() => EquipArtifactAsync(artifactCode));
+
+        if (TryReopenRetryPopup() || isRequesting)
+        {
+            return;
+        }
+
+        SendRequest(EnhanceApi.EquipArtifact(artifactCode, selectedArtifactSlot + 1), ApplyEquippedArtifacts);
     }
 
-    private async void OnClickUnequip()
+    private void OnClickUnequip()
     {
         artifactChangePopup.Close();
-        await RequestAsync(UnequipArtifactAsync);
+
+        if (TryReopenRetryPopup() || isRequesting)
+        {
+            return;
+        }
+
+        SendRequest(EnhanceApi.UnequipArtifact(selectedArtifactSlot + 1), ApplyEquippedArtifacts);
+    }
+
+    private void OnConfirmRetry()
+    {
+        UnsubscribeRetryPopup();
+        confirmPopup.Close();
+
+        Action retry = retryRequest;
+        retryRequest = null;
+        retry();
+    }
+
+    // 요청은 그대로 두고, 강화 화면의 버튼을 누르면 재전송 팝업을 다시 연다
+    private void OnCancelRetry()
+    {
+        UnsubscribeRetryPopup();
+        confirmPopup.Close();
     }
 
     private void OnClickCombatPower()

@@ -28,6 +28,11 @@ public static class HttpRequestFactory
         return new HttpRequestInfo<T>(UnityWebRequest.kHttpVerbPUT, path, GetJsonBytes(body), headers, silentStatusCodes);
     }
 
+    public static HttpRequestInfo<T> Delete<T>(string path, IReadOnlyDictionary<string, string> headers = null, IReadOnlyList<int> silentStatusCodes = null) where T : class
+    {
+        return new HttpRequestInfo<T>(UnityWebRequest.kHttpVerbDELETE, path, null, headers, silentStatusCodes);
+    }
+
     private static byte[] GetJsonBytes(object body)
     {
         if (body == null)

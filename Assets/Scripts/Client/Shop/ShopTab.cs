@@ -6,9 +6,6 @@ using UnityEngine;
 // 탭 안쪽 세로 스크롤과 바깥쪽 가로 탭 스와이프의 라우팅은 기반 클래스 LobbyTab이 담당한다.
 public class ShopTab : LobbyTab
 {
-    private const int InternalServerErrorStatusCode = 500;
-    private const int ServiceUnavailableStatusCode = 503;
-
     [ReadOnly] [SerializeField] private GameObject objViewport;
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private Transform comingSoonPanel;
@@ -98,18 +95,6 @@ public class ShopTab : LobbyTab
     {
         purchasingItem.SetPurchaseState(ShopProductPurchaseState.Ready);
         purchasingItem = null;
-    }
-
-    // 응답을 받지 못했거나 서버 내부 오류이면 서버가 구매를 처리했는지 알 수 없다.
-    private static bool IsResultUnknown(HttpError error)
-    {
-        if (error.Type == HttpErrorType.Network)
-        {
-            return true;
-        }
-
-        return error.Type == HttpErrorType.Server
-            && (error.StatusCode == InternalServerErrorStatusCode || error.StatusCode == ServiceUnavailableStatusCode);
     }
 
     private void ShowPurchasePopup(ShopProductData product)
@@ -212,7 +197,7 @@ public class ShopTab : LobbyTab
             return;
         }
 
-        if (IsResultUnknown(error))
+        if (HttpErrorUtil.IsResultUnknown(error))
         {
             isWaitingRetry = true;
             purchasingItem.SetPurchaseState(ShopProductPurchaseState.ResultUnknown);
