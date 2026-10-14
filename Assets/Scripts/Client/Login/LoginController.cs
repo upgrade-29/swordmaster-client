@@ -1,24 +1,21 @@
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 통신은 IAuthService에 맡긴다.
+// 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 요청은 AuthApi, PlayerApi로 만들어 HttpRequest로 보낸다.
 // 로그인에 성공하면 서버의 플레이어 정보를 받아 로비에 넘기고 로비 씬으로 넘어간다.
 // 플레이어가 없으면 닉네임 팝업을 띄워 닉네임을 받아 만든다
 public class LoginController : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
-    private const string PlayerMePath = "api/players/me";
-    private const string PlayersPath = "api/players";
+    private const string SessionExpiredMessage = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
     [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
 
-    [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:8080"; // 임시 값. 로그인하면 AuthJwtToken에 같이 저장된다
+    [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:8080"; // 임시 값. HttpConfig의 BaseUrl로 쓰고, 로그인하면 AuthJwtToken에도 저장된다
     [ReadOnly(true)] [SerializeField] private int timeoutSeconds = 10;
 
-    private IAuthService authService;
     private bool isRequesting;
 
     private void Awake()
@@ -26,7 +23,8 @@ public class LoginController : MonoBehaviour
         GameUtil.Bind(gameObject, ref view);
         GameUtil.Bind(gameObject, ref signupView);
         nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
-        authService = new HttpAuthService(baseUrl, timeoutSeconds);
+        HttpConfig.SetBaseUrl(baseUrl);
+        HttpConfig.SetTimeoutSeconds(timeoutSeconds);
 
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
@@ -39,6 +37,13 @@ public class LoginController : MonoBehaviour
     {
         view.Show();
         signupView.Hide();
+
+        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우
+        if (AuthJwtToken.IsExpired)
+        {
+            AuthJwtToken.ClearExpired();
+            view.SetResult(false, SessionExpiredMessage);
+        }
     }
 
     private void OnDestroy()
@@ -73,7 +78,7 @@ public class LoginController : MonoBehaviour
         view.Show();
     }
 
-    private async void OnClickSignup(string id, string password, string passwordConfirm)
+    private void OnClickSignup(string id, string password, string passwordConfirm)
     {
         if (isRequesting)
         {
@@ -96,23 +101,12 @@ public class LoginController : MonoBehaviour
         signupView.SetInteractable(false);
         signupView.SetMessage("회원가입 중...");
 
-        bool isSuccess;
-        string message;
-        try
-        {
-            await authService.SignupAsync(id, password);
-            isSuccess = true;
-            message = string.Empty;
-        }
-        catch (AuthFailureException e)
-        {
-            isSuccess = false;
-            message = $"회원가입 실패: {e.Message}";
-        }
-        finally
-        {
-            isRequesting = false;
-        }
+        HttpRequest.Request(AuthApi.Signup(id, password), (error, result) => OnSignupResponse(id, error));
+    }
+
+    private void OnSignupResponse(string id, HttpError error)
+    {
+        isRequesting = false;
 
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
@@ -122,9 +116,9 @@ public class LoginController : MonoBehaviour
 
         signupView.SetInteractable(true);
 
-        if (isSuccess == false)
+        if (error != null)
         {
-            signupView.SetResult(false, message);
+            signupView.SetResult(false, $"회원가입 실패: {error.Message}");
             return;
         }
 
@@ -135,7 +129,7 @@ public class LoginController : MonoBehaviour
         view.SetResult(true, "회원가입 완료. 로그인해 주세요.");
     }
 
-    private async void OnClickLogin(string id, string password)
+    private void OnClickLogin(string id, string password)
     {
         if (isRequesting)
         {
@@ -152,47 +146,50 @@ public class LoginController : MonoBehaviour
         view.SetInteractable(false);
         view.SetMessage("로그인 중...");
 
-        bool isSuccess;
-        string message;
-        PlayerResponse player = null;
-        try
-        {
-            LoginResponse response = await authService.LoginAsync(id, password);
-            AuthJwtToken.Set(response.accessToken, baseUrl);
-            player = await TryLoadPlayerAsync();
-            isSuccess = true;
-            message = string.Empty;
-        }
-        catch (AuthFailureException e)
-        {
-            isSuccess = false;
-            message = $"로그인 실패: {e.Message}";
-        }
-        catch (ServerRequestException e)
-        {
-            Debug.LogWarning($"[Login] Loading player failed: {e}");
-            isSuccess = false;
-            message = $"로그인 실패: {e.Message}";
-        }
-        finally
-        {
-            isRequesting = false;
-        }
+        HttpRequest.Request(AuthApi.Login(id, password), OnLoginResponse);
+    }
 
+    private void OnLoginResponse(HttpError error, AuthApi.LoginResponse response)
+    {
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
         {
             return;
         }
 
-        if (isSuccess == false)
+        if (error != null)
         {
-            view.SetInteractable(true);
-            view.SetResult(false, message);
+            FailLogin(error.Message);
             return;
         }
 
-        // 플레이어가 없으면 닉네임을 받아 만든 뒤 로비로 간다
+        if (string.IsNullOrEmpty(response?.accessToken))
+        {
+            FailLogin("서버 응답을 읽을 수 없습니다.");
+            return;
+        }
+
+        AuthJwtToken.Set(response.accessToken, baseUrl);
+        HttpRequest.Request(PlayerApi.GetMe(), OnLoadPlayerResponse);
+    }
+
+    // 플레이어가 없으면(404) 닉네임 팝업을 띄워 닉네임을 받아 만든 뒤 로비로 간다
+    private void OnLoadPlayerResponse(HttpError error, PlayerApi.PlayerResponse player)
+    {
+        if (this == null)
+        {
+            return;
+        }
+
+        bool isPlayerNotFound = error?.StatusCode == PlayerApi.PlayerNotFoundStatusCode;
+        if (error != null && isPlayerNotFound == false)
+        {
+            FailLogin(error.Message);
+            return;
+        }
+
+        isRequesting = false;
+
         if (player == null)
         {
             view.SetMessage(string.Empty);
@@ -204,7 +201,14 @@ public class LoginController : MonoBehaviour
         EnterLobby(player);
     }
 
-    private async void OnClickNicknameConfirm(string nickname)
+    private void FailLogin(string message)
+    {
+        isRequesting = false;
+        view.SetInteractable(true);
+        view.SetResult(false, $"로그인 실패: {message}");
+    }
+
+    private void OnClickNicknameConfirm(string nickname)
     {
         if (isRequesting)
         {
@@ -214,22 +218,12 @@ public class LoginController : MonoBehaviour
         isRequesting = true;
         nicknamePopup.SetInteractable(false);
 
-        PlayerResponse player = null;
-        string message = string.Empty;
-        try
-        {
-            player = await new AuthorizedServerClient().PostAsync<PlayerResponse>(PlayersPath, new CreatePlayerRequest(nickname));
-            Debug.Log("[Login] Player created");
-        }
-        catch (ServerRequestException e)
-        {
-            Debug.LogWarning($"[Login] Creating player failed: {e}");
-            message = e.Message;
-        }
-        finally
-        {
-            isRequesting = false;
-        }
+        HttpRequest.Request(PlayerApi.Create(nickname), OnCreatePlayerResponse);
+    }
+
+    private void OnCreatePlayerResponse(HttpError error, PlayerApi.PlayerResponse player)
+    {
+        isRequesting = false;
 
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
@@ -237,34 +231,21 @@ public class LoginController : MonoBehaviour
             return;
         }
 
-        if (player == null)
+        if (error != null || player == null)
         {
             nicknamePopup.SetInteractable(true);
-            nicknamePopup.SetError(message);
+            nicknamePopup.SetError(error?.Message ?? string.Empty);
             nicknamePopup.Focus();
             return;
         }
 
+        Debug.Log("[Login] Player created");
         EnterLobby(player);
     }
 
-    private static void EnterLobby(PlayerResponse player)
+    private static void EnterLobby(PlayerApi.PlayerResponse player)
     {
         LoginEntry.Set(player.ToUser());
         SceneManager.LoadScene(LobbySceneName);
-    }
-
-    // 로그인한 계정의 플레이어 정보를 받는다. 없으면(404) null
-    // 서버는 회원가입 때 계정만 만들고 게임 플레이어는 만들지 않는다. 플레이어는 닉네임을 받아 따로 만든다
-    private static async Task<PlayerResponse> TryLoadPlayerAsync()
-    {
-        try
-        {
-            return await new AuthorizedServerClient().GetAsync<PlayerResponse>(PlayerMePath);
-        }
-        catch (ServerRequestException e) when (e.StatusCode == 404)
-        {
-            return null;
-        }
     }
 }
