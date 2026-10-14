@@ -91,7 +91,7 @@ public class BattleTestViewManager : MonoBehaviour
         if (AuthJwtToken.HasValue)
         {
             Debug.Log($"[Battle] Using server {AuthJwtToken.ServerUrl}");
-            return new HttpBattleSessionService(new AuthorizedServerClient());
+            return new HttpBattleSessionService();
         }
 
         if (localBattleService == null || localBattleServiceUser != user)

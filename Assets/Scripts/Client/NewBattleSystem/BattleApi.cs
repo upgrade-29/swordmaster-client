@@ -2,28 +2,29 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-// 전투 API가 주고받는 요청/응답 DTO 모음
+// 전투 API 요청을 만들고, 주고받는 요청/응답 DTO를 정의한다. 만든 요청은 HttpRequest.Request로 보낸다
+// 게임 데이터로 계산하는 요청은 클라의 GameDB.version을 X-Game-Data-Version 헤더에 담는다. 서버와 다르면 거절된다
 public static class BattleApi
 {
-    // POST api/battles 요청
-    public class StartRequest
+    public const string GameDataVersionHeader = "X-Game-Data-Version"; // 게임 데이터 버전을 서버에 전달하는 헤더 이름
+
+    public class BattleStartRequest
     {
         public readonly int stage;
 
         [JsonConstructor]
-        public StartRequest(int stage)
+        public BattleStartRequest(int stage)
         {
             this.stage = stage;
         }
     }
 
-    // POST api/battle/abandon 요청
-    public class AbandonRequest
+    public class BattleAbandonRequest
     {
         public readonly string battleId;
 
         [JsonConstructor]
-        public AbandonRequest(string battleId)
+        public BattleAbandonRequest(string battleId)
         {
             this.battleId = battleId;
         }
@@ -204,5 +205,38 @@ public static class BattleApi
         {
             return new UserArtifact(code, level, materialCount, equipSlot);
         }
+    }
+
+    // GET api/battle/session 요청. 진행 중인 세션이 없으면 서버가 빈 본문을 주고, 콜백의 result는 null이다
+    public static HttpRequestInfo<BattleSessionInfoResponse> GetActiveSession(string gameDataVersion)
+    {
+        return HttpRequestFactory.Get<BattleSessionInfoResponse>("api/battle/session",
+            headers: CreateVersionHeaders(gameDataVersion));
+    }
+
+    // POST api/battles 요청
+    public static HttpRequestInfo<BattleSessionInfoResponse> Start(int stage, string gameDataVersion)
+    {
+        return HttpRequestFactory.Post<BattleSessionInfoResponse>("api/battles", new BattleStartRequest(stage),
+            CreateVersionHeaders(gameDataVersion));
+    }
+
+    // POST api/battle/report 요청
+    public static HttpRequestInfo<BattleResultVerifyResponse> Report(BattleResultVerifyRequest request,
+        string gameDataVersion)
+    {
+        return HttpRequestFactory.Post<BattleResultVerifyResponse>("api/battle/report", request,
+            CreateVersionHeaders(gameDataVersion));
+    }
+
+    // POST api/battle/abandon 요청
+    public static HttpRequestInfo<BattleEndResponse> Abandon(string battleId)
+    {
+        return HttpRequestFactory.Post<BattleEndResponse>("api/battle/abandon", new BattleAbandonRequest(battleId));
+    }
+
+    private static Dictionary<string, string> CreateVersionHeaders(string gameDataVersion)
+    {
+        return new Dictionary<string, string> { { GameDataVersionHeader, gameDataVersion } };
     }
 }

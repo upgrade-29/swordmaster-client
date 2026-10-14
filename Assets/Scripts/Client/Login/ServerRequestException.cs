@@ -1,6 +1,6 @@
 using System;
 
-// AuthorizedServerClient의 요청이 실패했을 때 던진다
+// 전투 요청(HttpBattleSessionService)이 실패했을 때 던진다
 // 서버가 에러 응답을 줬으면 StatusCode와 서버가 보낸 code/message가 담기고, 서버에 닿지 못했으면 StatusCode는 0이다
 public class ServerRequestException : Exception
 {
