@@ -93,13 +93,13 @@ public class BattleEffectPresenter : IDisposable
     }
 
     // 처치한 적은 서버 검증을 통과한 뒤 사라진다
-    private void OnSubStageVerified(BattleSubStage subStage, BattleResultVerifyResponse response)
+    private void OnSubStageVerified(BattleSubStage subStage, BattleApi.BattleResultVerifyResponse response)
     {
         if (response.resultEnum == BattleSubStageResultEnum.EnemyDead)
             enemyView.SetVisible(false);
     }
 
-    private void OnBattleEnded(BattleEndResponse result)
+    private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         var artifactNames = result.rewards.artifactCodes.Select(code => artifactNamesByCode[code]).ToList();
         resultView.Show(result, artifactNames);

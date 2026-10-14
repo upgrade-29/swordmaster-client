@@ -17,25 +17,25 @@ public class BattleManager : MonoBehaviour
     // 세션을 받아 StartDelay 대기를 시작할 때. 새 전투와 재접속 모두. 첫 세부스테이지를 미리 넘겨서 시작 전 화면을 세팅할 수 있게 한다
     public event Action<BattleSubStage> CountdownStarted;
     public event Action<float> CountdownTicked; // 매 프레임 남은 대기 시간(초)
-    public event Action<BattleSessionInfo> BattleStarted;
+    public event Action<BattleApi.BattleSessionInfoResponse> BattleStarted;
     public event Action<BattleSubStage> SubStageStarted;
     public event Action<BattleSubStage> SubStageAdvanced; // 매 프레임 진행한 뒤. 남은 시간 표시용
     public event Action<BattleSubStage> BossWarningStarted; // 끝날 때까지 공격은 시작하지 않는다
     public event Action<BattleSubStage, BattleEvent> AttackApplied;
-    public event Action<BattleSubStage, BattleResultVerifyResponse> SubStageVerified;
-    public event Action<BattleEndResponse> BattleEnded;
+    public event Action<BattleSubStage, BattleApi.BattleResultVerifyResponse> SubStageVerified;
+    public event Action<BattleApi.BattleEndResponse> BattleEnded;
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
 
     private IBattleSessionService battleService;
     private BattleDB battleDB;
     private BattleEngine engine;
     private string gameDataVersion; // 서버가 같은 데이터로 계산하는지 확인하도록 모든 요청에 담는다
-    private BattleSessionInfo session;
+    private BattleApi.BattleSessionInfoResponse session;
     private Coroutine battleRoutine;
     private bool isBusy; // 요청을 기다리거나 전투를 진행하는 중
 
     public float Speed { get; private set; } = 1f;
-    public BattleSessionInfo Session => session;
+    public BattleApi.BattleSessionInfoResponse Session => session;
     public StageData Stage { get; private set; }
     public int SubStageCount => Stage == null ? 0 : BattleEngine.GetSubStageCount(Stage);
     public BattleSubStage CurrentSubStage { get; private set; } // 남은 시간, 체력 표시용
@@ -56,7 +56,7 @@ public class BattleManager : MonoBehaviour
             return;
 
         isBusy = true;
-        BattleSessionInfo info = await Request(async () =>
+        BattleApi.BattleSessionInfoResponse info = await Request(async () =>
             await battleService.GetActiveSessionAsync(gameDataVersion) ??
             await battleService.StartBattleAsync(stage, gameDataVersion));
         Begin(info);
@@ -69,7 +69,7 @@ public class BattleManager : MonoBehaviour
             return;
 
         isBusy = true;
-        BattleSessionInfo info = await Request(() => battleService.StartBattleAsync(session.stage, gameDataVersion));
+        BattleApi.BattleSessionInfoResponse info = await Request(() => battleService.StartBattleAsync(session.stage, gameDataVersion));
         Begin(info);
     }
 
@@ -83,7 +83,7 @@ public class BattleManager : MonoBehaviour
             StopCoroutine(battleRoutine);
         battleRoutine = null;
 
-        BattleEndResponse result = await Request(() => battleService.AbandonAsync(session.battleId));
+        BattleApi.BattleEndResponse result = await Request(() => battleService.AbandonAsync(session.battleId));
         if (result != null)
             Finish(result);
     }
@@ -133,7 +133,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void Begin(BattleSessionInfo info)
+    private void Begin(BattleApi.BattleSessionInfoResponse info)
     {
         if (info == null)
             return;
@@ -160,13 +160,13 @@ public class BattleManager : MonoBehaviour
         {
             yield return RunSubStage(subStage);
 
-            var request = BattleResultVerifyRequest.From(session.battleId, subStage);
-            Task<BattleResultVerifyResponse> verifyTask =
+            var request = BattleApi.BattleResultVerifyRequest.From(session.battleId, subStage);
+            Task<BattleApi.BattleResultVerifyResponse> verifyTask =
                 Request(() => battleService.ReportSubStageAsync(request, gameDataVersion), ReportMaxAttempts);
             yield return new WaitUntil(() => verifyTask.IsCompleted);
 
             // 거절됐다. 검증 실패면 서버가 이미 패배로 끝냈고, 데이터 버전이 다르면 세션이 남아 있어 다시 접속하면 이어서 한다
-            BattleResultVerifyResponse verified = verifyTask.Result;
+            BattleApi.BattleResultVerifyResponse verified = verifyTask.Result;
             if (verified == null)
                 yield break;
 
@@ -207,7 +207,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void Finish(BattleEndResponse result)
+    private void Finish(BattleApi.BattleEndResponse result)
     {
         battleRoutine = null;
         isBusy = false;

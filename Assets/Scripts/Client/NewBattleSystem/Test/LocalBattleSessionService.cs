@@ -37,7 +37,7 @@ public class LocalBattleSessionService : IBattleSessionService
         engine = new BattleEngine(battleDB);
     }
 
-    public async Task<BattleSessionInfo> GetActiveSessionAsync(string clientGameDataVersion)
+    public async Task<BattleApi.BattleSessionInfoResponse> GetActiveSessionAsync(string clientGameDataVersion)
     {
         await Task.Yield();
 
@@ -50,7 +50,7 @@ public class LocalBattleSessionService : IBattleSessionService
         return Clone(CreateSessionInfo());
     }
 
-    public async Task<BattleSessionInfo> StartBattleAsync(int stageNumber, string clientGameDataVersion)
+    public async Task<BattleApi.BattleSessionInfoResponse> StartBattleAsync(int stageNumber, string clientGameDataVersion)
     {
         await Task.Yield();
 
@@ -82,7 +82,7 @@ public class LocalBattleSessionService : IBattleSessionService
         return Clone(CreateSessionInfo());
     }
 
-    public async Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request,
+    public async Task<BattleApi.BattleResultVerifyResponse> ReportSubStageAsync(BattleApi.BattleResultVerifyRequest request,
         string gameDataVersion)
     {
         await Task.Yield();
@@ -112,7 +112,7 @@ public class LocalBattleSessionService : IBattleSessionService
                 $"Battle {failedBattleId} verification failed: {failReason}");
         }
 
-        BattleResultVerifyResponse response = ApplyVerifiedSubStage(subStage);
+        BattleApi.BattleResultVerifyResponse response = ApplyVerifiedSubStage(subStage);
         lastReport = new LastReport
         {
             battleId = request.battleId,
@@ -123,7 +123,7 @@ public class LocalBattleSessionService : IBattleSessionService
     }
 
     // 검증에 통과한 세부스테이지 결과를 세션에 반영한다. 마지막이거나 졌으면 전투를 끝낸다
-    private BattleResultVerifyResponse ApplyVerifiedSubStage(BattleSubStage subStage)
+    private BattleApi.BattleResultVerifyResponse ApplyVerifiedSubStage(BattleSubStage subStage)
     {
         if (subStage.ResultEnum != BattleSubStageResultEnum.EnemyDead)
             return CreateVerifyResponse(subStage, EndBattle(false));
@@ -139,7 +139,7 @@ public class LocalBattleSessionService : IBattleSessionService
         return CreateVerifyResponse(subStage, null);
     }
 
-    public async Task<BattleEndResponse> AbandonAsync(string battleId)
+    public async Task<BattleApi.BattleEndResponse> AbandonAsync(string battleId)
     {
         await Task.Yield();
 
@@ -148,7 +148,7 @@ public class LocalBattleSessionService : IBattleSessionService
     }
 
     // 다르면 이유를, 같으면 null을 돌려준다
-    private string Verify(BattleResultVerifyRequest request, BattleSubStage expected, TimeSpan elapsed)
+    private string Verify(BattleApi.BattleResultVerifyRequest request, BattleSubStage expected, TimeSpan elapsed)
     {
         if (request.subStageIndex != expected.SubStageIndex)
             return $"subStageIndex {request.subStageIndex} != {expected.SubStageIndex}";
@@ -186,7 +186,7 @@ public class LocalBattleSessionService : IBattleSessionService
     }
 
     // 세션에 모아 둔 보상을 한 번에 반영하고 세션을 지운다. 패배해도 그때까지 처치한 적의 골드는 준다
-    private BattleEndResponse EndBattle(bool isVictory)
+    private BattleApi.BattleEndResponse EndBattle(bool isVictory)
     {
         StageProgress progress = user.StageProgress;
         user.Currencies.Add(CurrencyType.Gold, session.accumulatedGold);
@@ -196,11 +196,11 @@ public class LocalBattleSessionService : IBattleSessionService
 
         // TODO: 아티팩트 드랍 시점이 정해지면 여기서 드랍하고, 바뀐 아티팩트를 changedArtifacts에 담는다
         var droppedArtifactCodes = new List<string>();
-        var changedArtifacts = new List<ArtifactResponse>();
+        var changedArtifacts = new List<BattleApi.ArtifactResponse>();
         var currencies = new UserCurrencies(user.Currencies.Gold, user.Currencies.Diamond);
 
-        var result = new BattleEndResponse(session.stage.stage, isVictory,
-            new BattleRewards(session.accumulatedGold, droppedArtifactCodes), currencies,
+        var result = new BattleApi.BattleEndResponse(session.stage.stage, isVictory,
+            new BattleApi.BattleRewardsResponse(session.accumulatedGold, droppedArtifactCodes), currencies,
             new StageProgress(progress.ClearedStage),
             changedArtifacts, utcNow());
 
@@ -223,20 +223,20 @@ public class LocalBattleSessionService : IBattleSessionService
         return BitConverter.ToUInt64(bytes, 0);
     }
 
-    private BattleSessionInfo CreateSessionInfo()
+    private BattleApi.BattleSessionInfoResponse CreateSessionInfo()
     {
-        return new BattleSessionInfo(session.battleId, session.stage.stage, session.battleSeed, session.playerStat,
+        return new BattleApi.BattleSessionInfoResponse(session.battleId, session.stage.stage, session.battleSeed, session.playerStat,
             session.subStageIndex, session.playerHp, session.accumulatedGold, utcNow());
     }
 
     // battleEnd가 있으면 세션은 이미 지워졌으므로 session을 쓰지 않는다
-    private BattleResultVerifyResponse CreateVerifyResponse(BattleSubStage subStage, BattleEndResponse battleEnd)
+    private BattleApi.BattleResultVerifyResponse CreateVerifyResponse(BattleSubStage subStage, BattleApi.BattleEndResponse battleEnd)
     {
         if (battleEnd != null)
-            return new BattleResultVerifyResponse(subStage.SubStageIndex, subStage.ResultEnum, subStage.SubStageIndex,
+            return new BattleApi.BattleResultVerifyResponse(subStage.SubStageIndex, subStage.ResultEnum, subStage.SubStageIndex,
                 subStage.PlayerHp, battleEnd.rewards.gold, battleEnd);
 
-        return new BattleResultVerifyResponse(subStage.SubStageIndex, subStage.ResultEnum, session.subStageIndex,
+        return new BattleApi.BattleResultVerifyResponse(subStage.SubStageIndex, subStage.ResultEnum, session.subStageIndex,
             session.playerHp, session.accumulatedGold, null);
     }
 
@@ -268,6 +268,6 @@ public class LocalBattleSessionService : IBattleSessionService
     {
         public string battleId;
         public int subStageIndex;
-        public BattleResultVerifyResponse response;
+        public BattleApi.BattleResultVerifyResponse response;
     }
 }

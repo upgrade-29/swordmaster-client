@@ -63,13 +63,13 @@ public class BattleHudPresenter : IDisposable
     }
 
     // 처치 골드는 서버 검증을 통과한 뒤에 늘어난다
-    private void OnSubStageVerified(BattleSubStage subStage, BattleResultVerifyResponse response)
+    private void OnSubStageVerified(BattleSubStage subStage, BattleApi.BattleResultVerifyResponse response)
     {
         hud.SetGold(response.accumulatedGold);
     }
 
     // 포기로 끝나면 검증 응답 없이 끝나므로 최종 보상으로 한 번 더 맞춘다
-    private void OnBattleEnded(BattleEndResponse result)
+    private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         hud.SetGold(result.rewards.gold);
     }

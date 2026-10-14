@@ -42,7 +42,7 @@ public class BattleLogger : IDisposable
         view.Clear();
     }
 
-    private void OnBattleStarted(BattleSessionInfo session)
+    private void OnBattleStarted(BattleApi.BattleSessionInfoResponse session)
     {
         Log($"스테이지 {session.stage} 전투 시작!",
             $" (battle {session.battleId}, seed {session.battleSeed}, subStages {manager.SubStageCount}, from {session.subStageIndex + 1})");
@@ -74,12 +74,12 @@ public class BattleLogger : IDisposable
     }
 
     // 서버 검증을 통과한 뒤에 결과를 쓴다
-    private void OnSubStageVerified(BattleSubStage subStage, BattleResultVerifyResponse response)
+    private void OnSubStageVerified(BattleSubStage subStage, BattleApi.BattleResultVerifyResponse response)
     {
         Log(GetSubStageEndText(subStage), $" ({response.resultEnum} at {subStage.Duration:0.00}s, verified)");
     }
 
-    private void OnBattleEnded(BattleEndResponse result)
+    private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         var resultText = result.isVictory ? "클리어!" : "실패...";
         Log($"스테이지 {result.stage} {resultText} 골드 +{result.rewards.gold:N0} (보유 {result.currencies.Gold:N0})");

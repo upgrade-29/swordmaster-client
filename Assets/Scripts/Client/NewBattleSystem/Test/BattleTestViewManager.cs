@@ -81,7 +81,7 @@ public class BattleTestViewManager : MonoBehaviour
     }
 
     // 서버가 확정한 재화, 진행도, 아티팩트를 유저에 반영한다. 로비로 돌아가면 이 유저로 화면을 그린다
-    private void OnBattleEnded(BattleEndResponse result)
+    private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         result.ApplyTo(user);
     }

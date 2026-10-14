@@ -19,26 +19,26 @@ public class HttpBattleSessionService : IBattleSessionService
         this.client = client;
     }
 
-    public Task<BattleSessionInfo> GetActiveSessionAsync(string gameDataVersion)
+    public Task<BattleApi.BattleSessionInfoResponse> GetActiveSessionAsync(string gameDataVersion)
     {
         // 세션이 없으면 서버가 빈 본문을 주고, client가 null로 돌려준다
-        return Send(() => client.GetAsync<BattleSessionInfo>(SessionPath, gameDataVersion));
+        return Send(() => client.GetAsync<BattleApi.BattleSessionInfoResponse>(SessionPath, gameDataVersion));
     }
 
-    public Task<BattleSessionInfo> StartBattleAsync(int stage, string gameDataVersion)
+    public Task<BattleApi.BattleSessionInfoResponse> StartBattleAsync(int stage, string gameDataVersion)
     {
-        return Send(() => client.PostAsync<BattleSessionInfo>(StartPath, new StartRequest(stage), gameDataVersion));
+        return Send(() => client.PostAsync<BattleApi.BattleSessionInfoResponse>(StartPath, new BattleApi.StartRequest(stage), gameDataVersion));
     }
 
-    public Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request,
+    public Task<BattleApi.BattleResultVerifyResponse> ReportSubStageAsync(BattleApi.BattleResultVerifyRequest request,
         string gameDataVersion)
     {
-        return Send(() => client.PostAsync<BattleResultVerifyResponse>(ReportPath, request, gameDataVersion));
+        return Send(() => client.PostAsync<BattleApi.BattleResultVerifyResponse>(ReportPath, request, gameDataVersion));
     }
 
-    public Task<BattleEndResponse> AbandonAsync(string battleId)
+    public Task<BattleApi.BattleEndResponse> AbandonAsync(string battleId)
     {
-        return Send(() => client.PostAsync<BattleEndResponse>(AbandonPath, new AbandonRequest(battleId)));
+        return Send(() => client.PostAsync<BattleApi.BattleEndResponse>(AbandonPath, new BattleApi.AbandonRequest(battleId)));
     }
 
     private static async Task<T> Send<T>(Func<Task<T>> request)
@@ -69,25 +69,5 @@ public class HttpBattleSessionService : IBattleSessionService
         }
 
         return errorEnum != BattleRequestErrorEnum.None;
-    }
-
-    private class StartRequest
-    {
-        public readonly int stage;
-
-        public StartRequest(int stage)
-        {
-            this.stage = stage;
-        }
-    }
-
-    private class AbandonRequest
-    {
-        public readonly string battleId;
-
-        public AbandonRequest(string battleId)
-        {
-            this.battleId = battleId;
-        }
     }
 }

@@ -52,7 +52,7 @@ public class BattleResultView : MonoBehaviour
     }
 
     // 보상이 없으면(0골드, 드랍 없음) 안내 문구만 보여준다
-    public void Show(BattleEndResponse result, IReadOnlyList<string> artifactNames)
+    public void Show(BattleApi.BattleEndResponse result, IReadOnlyList<string> artifactNames)
     {
         SetHeader(result.isVictory, result.stage);
         descriptionText.text = result.isVictory
@@ -102,7 +102,7 @@ public class BattleResultView : MonoBehaviour
         sequence.Join(window.DOScale(1f, ShowDuration).SetEase(Ease.OutBack));
     }
 
-    private void SetRewards(BattleRewards rewards, IReadOnlyList<string> artifactNames)
+    private void SetRewards(BattleApi.BattleRewardsResponse rewards, IReadOnlyList<string> artifactNames)
     {
         if (rewards.gold <= 0 && artifactNames.Count == 0)
         {

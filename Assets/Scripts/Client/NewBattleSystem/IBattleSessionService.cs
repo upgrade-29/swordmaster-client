@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 public interface IBattleSessionService
 {
     // 진행 중인 세션. 없으면 null. 앱을 다시 켰을 때 이어서 할 전투가 있는지 확인한다
-    Task<BattleSessionInfo> GetActiveSessionAsync(string gameDataVersion);
+    Task<BattleApi.BattleSessionInfoResponse> GetActiveSessionAsync(string gameDataVersion);
 
     // 새 전투를 시작한다. 진행 중인 세션이 있으면 거절한다
-    Task<BattleSessionInfo> StartBattleAsync(int stage, string gameDataVersion);
+    Task<BattleApi.BattleSessionInfoResponse> StartBattleAsync(int stage, string gameDataVersion);
 
     // 끝난 세부스테이지를 보고한다. 서버 계산과 다르면 거절하고 세션을 패배로 끝낸다
     // 응답을 못 받아 같은 보고를 다시 보내면, 서버는 다시 검증하지 않고 처음 응답을 그대로 돌려준다
     // gameDataVersion은 본문이 아니라 X-Game-Data-Version 헤더에 담는다
-    Task<BattleResultVerifyResponse> ReportSubStageAsync(BattleResultVerifyRequest request, string gameDataVersion);
+    Task<BattleApi.BattleResultVerifyResponse> ReportSubStageAsync(BattleApi.BattleResultVerifyRequest request, string gameDataVersion);
 
     // 전투를 포기한다. 패배로 처리하고, 그때까지 모은 골드는 반영한 뒤 세션을 끝낸다
-    Task<BattleEndResponse> AbandonAsync(string battleId);
+    Task<BattleApi.BattleEndResponse> AbandonAsync(string battleId);
 }
