@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// 임시 코드. 로비에서 BattleEntry로 받은 GameDB로 BattleManager를 초기화하고, 전투 씬의 뷰들을 연결한다
+// 전투 씬의 진입점. 로비에서 BattleEntry로 받은 GameDB로 BattleManager를 초기화하고, 전투 씬의 뷰들을 연결한다
 // 받은 값이 없으면(전투 씬을 바로 연 경우) 로비로, 로그인하지 않았으면 로그인 씬으로 돌려보낸다
 // BattleManager와 같은 오브젝트에 붙인다
-// 결과 팝업의 나가기를 받아 로비 씬으로 돌아가는 것도 임시로 여기서 한다
-public class BattleTestViewManager : MonoBehaviour
+// 결과 팝업의 나가기를 받아 전투 결과가 반영된 유저를 들고 로비 씬으로 돌아간다
+public class BattleViewManager : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
     private const string LoginSceneName = "LoginScene";
@@ -60,7 +60,7 @@ public class BattleTestViewManager : MonoBehaviour
             return;
         }
 
-        // 전투는 서버가 세션을 들고 검증하므로 로그인해야 할 수 있다
+        // 전투는 서버가 세션을 들고 검증하므로 로그인해야 한다
         if (AuthJwtToken.HasValue == false)
         {
             Debug.LogWarning("[Battle] Not logged in. Back to login");
