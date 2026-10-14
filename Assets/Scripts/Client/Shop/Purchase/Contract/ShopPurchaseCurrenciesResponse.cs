@@ -2,9 +2,9 @@
 public class ShopPurchaseCurrenciesResponse
 {
     public long Gold { get; }
-    public int Diamond { get; }
+    public long Diamond { get; }
 
-    public ShopPurchaseCurrenciesResponse(long gold, int diamond)
+    public ShopPurchaseCurrenciesResponse(long gold, long diamond)
     {
         Gold = gold;
         Diamond = diamond;

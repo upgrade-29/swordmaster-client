@@ -13,7 +13,7 @@ public static class ShopPurchaseFailureMapper
             case 404:
                 return new PurchaseFailure(PurchaseFailureKind.ProductNotFound, message);
             case 409:
-                return new PurchaseFailure(PurchaseFailureKind.InsufficientCurrency, message);
+                return FromConflictMessage(message);
             case 500:
             case 503:
                 return ResultUnknown(message);
@@ -26,5 +26,21 @@ public static class ShopPurchaseFailureMapper
     public static PurchaseFailure ResultUnknown(string message)
     {
         return new PurchaseFailure(PurchaseFailureKind.ResultUnknown, message);
+    }
+
+    // 409은 재화 부족과 결과 조회 만료가 같은 상태 코드를 공유하므로 서버 message 코드로 의미를 구분한다.
+    private static PurchaseFailure FromConflictMessage(string message)
+    {
+        if (message == "REQUEST_EXPIRED")
+        {
+            return new PurchaseFailure(PurchaseFailureKind.RequestExpired, message);
+        }
+
+        if (message == "NOT_ENOUGH_GOLD" || message == "NOT_ENOUGH_DIAMOND")
+        {
+            return new PurchaseFailure(PurchaseFailureKind.InsufficientCurrency, message);
+        }
+
+        return new PurchaseFailure(PurchaseFailureKind.ServiceUnavailable, message);
     }
 }

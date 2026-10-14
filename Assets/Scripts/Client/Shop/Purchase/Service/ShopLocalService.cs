@@ -7,6 +7,12 @@ using Newtonsoft.Json;
 // EditMode와 개발 확인에서만 서버 응답을 흉내 내는 테스트 대역이다.
 public class ShopLocalService : IShopPurchaseService
 {
+    private const string GoldGachaOneProductCode = "GOLD_GACHA_1";
+    private const string GoldGachaTenProductCode = "GOLD_GACHA_10";
+    private const long GoldGachaOnePrice = 100;
+    private const long GoldGachaTenPrice = 1000;
+    private const long LocalGachaGoldReward = 100;
+
     private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
     private User User => TestLobbyDataLoader.Instance.User;
 
@@ -25,43 +31,116 @@ public class ShopLocalService : IShopPurchaseService
         }
 
         ShopProductData product = GameDB.shopProducts.FirstOrDefault(x => x.productCode == request.ProductCode);
-        if (product == null)
+        bool isLocalGachaProduct = TryGetLocalGachaRollCount(request.ProductCode, out int gachaRollCount,
+            out long gachaPrice);
+        if (product == null && isLocalGachaProduct == false)
         {
             onFailure(new PurchaseFailure(PurchaseFailureKind.ProductNotFound, "존재하지 않는 상품입니다."));
             return;
         }
 
-        if (User.Currencies.Get(product.priceType) < product.price)
+        CurrencyType priceType = product != null ? product.priceType : CurrencyType.Diamond;
+        long price = product != null ? product.price : gachaPrice;
+        if (User.Currencies.Get(priceType) < price)
         {
-            onFailure(new PurchaseFailure(PurchaseFailureKind.InsufficientCurrency, GetNotEnoughMessage(product.priceType)));
+            onFailure(new PurchaseFailure(PurchaseFailureKind.InsufficientCurrency, GetNotEnoughMessage(priceType)));
             return;
         }
 
-        User.Currencies.Add(product.priceType, -product.price);
+        User.Currencies.Add(priceType, -price);
 
         var rewards = new List<PurchaseRewardResult>();
-        foreach (var reward in GameDB.shopProductRewards.Where(x => x.productCode == request.ProductCode))
+        var changedArtifacts = new Dictionary<string, ArtifactResponse>();
+        if (isLocalGachaProduct == true)
         {
-            GiveReward(reward);
-            rewards.Add(new PurchaseRewardResult(reward.rewardType, reward.rewardCode, reward.amount));
+            GiveLocalGachaRewards(gachaRollCount, rewards);
+        }
+        else
+        {
+            foreach (ShopProductRewardData reward in GameDB.shopProductRewards.Where(x => x.productCode == request.ProductCode))
+            {
+                ArtifactResponse changedArtifact = GiveReward(reward);
+                if (changedArtifact != null)
+                {
+                    changedArtifacts[changedArtifact.code] = changedArtifact;
+                }
+
+                rewards.Add(new PurchaseRewardResult(reward.rewardType, reward.rewardCode, reward.amount));
+            }
         }
 
         TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
 
-        var result = new PurchaseResult(rewards, User.Currencies);
+        var result = new PurchaseResult(rewards, User.Currencies, changedArtifacts.Values.ToList());
         succeededRequests[request.RequestId.ToString()] = CopyAsResponse(result);
         onSuccess(CopyAsResponse(result));
     }
 
-    // 현재 테스트 대역이 지원하는 보상만 사용자 재화에 반영한다.
-    private void GiveReward(ShopProductRewardData reward)
+    // 테스트 대역에서 서버가 확정한 결과를 만들고, 유물은 최종 스냅샷으로 응답에 보존한다.
+    private ArtifactResponse GiveReward(ShopProductRewardData reward)
     {
-        if (reward.rewardType != RewardType.Gold)
+        if (reward.rewardType == RewardType.Gold)
+        {
+            User.Currencies.Add(CurrencyType.Gold, reward.amount);
+            return null;
+        }
+
+        if (reward.rewardType != RewardType.Artifact)
         {
             throw new NotSupportedException($"{reward.rewardType.ToString()} reward is not supported yet.");
         }
 
-        User.Currencies.Add(CurrencyType.Gold, reward.amount);
+        if (string.IsNullOrEmpty(reward.rewardCode))
+        {
+            throw new InvalidOperationException("ARTIFACT 보상에는 rewardCode가 필요합니다.");
+        }
+
+        int amount = checked((int)reward.amount);
+        UserArtifact ownedArtifact = User.GetArtifact(reward.rewardCode);
+        if (ownedArtifact == null)
+        {
+            var createdArtifact = new UserArtifact(reward.rewardCode, 1, amount, null);
+            User.AddArtifact(createdArtifact);
+            return new ArtifactResponse(createdArtifact.ArtifactCode, createdArtifact.Level,
+                createdArtifact.MaterialCount, createdArtifact.EquippedSlot);
+        }
+
+        ownedArtifact.SyncFromServerSnapshot(ownedArtifact.Level,
+            checked(ownedArtifact.MaterialCount + amount), ownedArtifact.EquippedSlot);
+        return new ArtifactResponse(ownedArtifact.ArtifactCode, ownedArtifact.Level,
+            ownedArtifact.MaterialCount, ownedArtifact.EquippedSlot);
+    }
+
+    // 실제 확률을 구현하지 않고 가챠 UI와 순차 결과 처리만 확인할 수 있는 고정 결과를 만든다.
+    private void GiveLocalGachaRewards(int rollCount, List<PurchaseRewardResult> rewards)
+    {
+        for (int i = 0; i < rollCount; i++)
+        {
+            User.Currencies.Add(CurrencyType.Gold, LocalGachaGoldReward);
+            rewards.Add(new PurchaseRewardResult(RewardType.Gold, null, LocalGachaGoldReward));
+        }
+    }
+
+    // 상품 시트 반영 전에도 확정된 1회/10회 상품 코드로 테스트 대역을 실행할 수 있게 한다.
+    private static bool TryGetLocalGachaRollCount(string productCode, out int rollCount, out long price)
+    {
+        if (productCode == GoldGachaOneProductCode)
+        {
+            rollCount = 1;
+            price = GoldGachaOnePrice;
+            return true;
+        }
+
+        if (productCode == GoldGachaTenProductCode)
+        {
+            rollCount = 10;
+            price = GoldGachaTenPrice;
+            return true;
+        }
+
+        rollCount = 0;
+        price = 0;
+        return false;
     }
 
     private static string GetNotEnoughMessage(CurrencyType currencyType)

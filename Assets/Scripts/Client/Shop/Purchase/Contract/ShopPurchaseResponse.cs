@@ -6,12 +6,14 @@ public class ShopPurchaseResponse
 {
     public IReadOnlyList<ShopPurchaseRewardResponse> Rewards { get; }
     public ShopPurchaseCurrenciesResponse Currencies { get; }
+    public IReadOnlyList<ArtifactResponse> ChangedArtifacts { get; }
 
     public ShopPurchaseResponse(IReadOnlyList<ShopPurchaseRewardResponse> rewards,
-        ShopPurchaseCurrenciesResponse currencies)
+        ShopPurchaseCurrenciesResponse currencies, IReadOnlyList<ArtifactResponse> changedArtifacts = null)
     {
         Rewards = rewards ?? throw new ArgumentNullException(nameof(rewards));
         Currencies = currencies ?? throw new ArgumentNullException(nameof(currencies));
+        ChangedArtifacts = changedArtifacts;
     }
 
     // 응답의 전체 보상과 서버가 확정한 재화를 기능 모델로 보존한다.
@@ -23,6 +25,6 @@ public class ShopPurchaseResponse
             rewards.Add(reward.ToPurchaseRewardResult());
         }
 
-        return new PurchaseResult(rewards, Currencies.ToUserCurrencies());
+        return new PurchaseResult(rewards, Currencies.ToUserCurrencies(), ChangedArtifacts);
     }
 }

@@ -17,6 +17,8 @@ public class ShopTab : LobbyTab
     private ShopCatalog catalog;
     private ShopPurchaseCoordinator purchaseCoordinator;
     private ShopPurchaseSuccessApplier purchaseSuccessApplier;
+    private GachaResultPresenter gachaResultPresenter;
+    private GachaResultPopup gachaResultPopup;
 
     private bool isViewActive;
     private string pendingPurchaseProductCode;
@@ -46,7 +48,10 @@ public class ShopTab : LobbyTab
         purchaseCoordinator.OnPurchaseFailedEvent += OnPurchaseFailed;
         purchaseCoordinator.OnAuthenticationRequiredEvent += OnAuthenticationRequired;
         purchaseCoordinator.OnPurchaseResultUnknownEvent += OnPurchaseResultUnknown;
-        purchaseSuccessApplier = new ShopPurchaseSuccessApplier(User.Currencies, view.SetItemPurchaseState);
+        var rewardApplier = new ShopRewardApplier(User);
+        purchaseSuccessApplier = new ShopPurchaseSuccessApplier(User.Currencies, rewardApplier,
+            view.SetItemPurchaseState);
+        InitializeGachaResultPresenter();
 
         RenderCurrentCatalog();
     }
@@ -62,6 +67,7 @@ public class ShopTab : LobbyTab
     private void OnDisable()
     {
         isViewActive = false;
+        gachaResultPresenter?.Cancel();
 
         if (pendingReconcileProductCode != null)
         {
@@ -97,6 +103,13 @@ public class ShopTab : LobbyTab
             purchaseCoordinator.OnAuthenticationRequiredEvent -= OnAuthenticationRequired;
             purchaseCoordinator.OnPurchaseResultUnknownEvent -= OnPurchaseResultUnknown;
         }
+
+        if (gachaResultPopup != null)
+        {
+            gachaResultPopup.OnNextRequestedEvent -= OnGachaNextRequested;
+        }
+
+        gachaResultPresenter?.Cancel();
     }
 
     // 현재 탭 활성 상태와 카탈로그 내용에 맞는 화면 상태를 다시 그린다.
@@ -127,7 +140,8 @@ public class ShopTab : LobbyTab
     // 구매 확인 팝업을 먼저 거친 뒤 진행한다.
     private void OnPurchaseRequested(string productCode)
     {
-        if (purchaseCoordinator == null || purchaseCoordinator.IsPurchasing == true)
+        if (purchaseCoordinator == null || purchaseCoordinator.IsPurchasing == true ||
+            (gachaResultPresenter?.IsPlaying ?? false))
         {
             return;
         }
@@ -178,8 +192,25 @@ public class ShopTab : LobbyTab
     // 결과를 먼저 장수명 사용자 상태에 반영하고 비활성 화면은 직접 갱신하지 않는다.
     private void OnPurchaseSucceeded(string productCode, PurchaseResult result)
     {
-        purchaseSuccessApplier.Apply(productCode, result, isViewActive);
+        purchaseSuccessApplier.ApplyUserState(result);
         pendingReconcileProductCode = null;
+
+        if (IsGachaProduct(productCode) == true && isViewActive == true &&
+            gachaResultPresenter != null && gachaResultPresenter.Play(result.Rewards,
+                () => CompleteGachaPurchase(productCode)) == true)
+        {
+            return;
+        }
+
+        if (IsGachaProduct(productCode) == true && gachaResultPresenter == null)
+        {
+            Debug.LogWarning("GachaResultPopup이 없어 가챠 결과 연출을 시작하지 않습니다.");
+        }
+
+        if (isViewActive == true)
+        {
+            view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
+        }
     }
 
     // 명시적 실패 뒤 상품 입력을 복원하고 서버 안내를 사용자에게 표시한다.
@@ -192,7 +223,7 @@ public class ShopTab : LobbyTab
             view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
         }
 
-        ShowAlert("구매 실패", message);
+        ShowAlert("구매 실패", GetPurchaseFailureMessage(message));
     }
 
     // 공용 인증 처리가 필요하다는 신호 뒤에는 Shop이 자체 재전송이나 토큰 갱신을 하지 않는다.
@@ -289,5 +320,68 @@ public class ShopTab : LobbyTab
         confirmPopup.OnConfirmEvent -= OnAlertClosed;
         confirmPopup.OnCancelEvent -= OnAlertClosed;
         confirmPopup.Close();
+    }
+
+    // Popup Prefab은 STEP-05에서 연결되므로, 없는 상태에서는 기존 구매 흐름을 유지한다.
+    private void InitializeGachaResultPresenter()
+    {
+        gachaResultPopup = FindFirstObjectByType<GachaResultPopup>(FindObjectsInactive.Include);
+        if (gachaResultPopup == null)
+        {
+            return;
+        }
+
+        gachaResultPresenter = new GachaResultPresenter(ShowGachaReward, gachaResultPopup.Close);
+        gachaResultPopup.OnNextRequestedEvent += OnGachaNextRequested;
+    }
+
+    // Presenter가 보존한 결과 순서의 현재 항목만 View에 전달한다.
+    private void ShowGachaReward(PurchaseRewardResult reward, int index, int totalCount)
+    {
+        if (gachaResultPopup.IsOpened == false)
+        {
+            gachaResultPopup.Open();
+        }
+
+        gachaResultPopup.Show(reward, index, totalCount, visualCatalog, GameDB);
+    }
+
+    private void OnGachaNextRequested()
+    {
+        gachaResultPresenter?.Advance();
+    }
+
+    private void CompleteGachaPurchase(string productCode)
+    {
+        if (isViewActive == true)
+        {
+            view.SetItemPurchaseState(productCode, ShopProductPurchaseState.Ready);
+        }
+    }
+
+    private bool IsGachaProduct(string productCode)
+    {
+        return catalog?.GetProduct(productCode)?.Category == ShopCategory.Gacha;
+    }
+
+    // 서버 message는 분기 코드로만 소비하고 화면에는 클라이언트가 보유한 문구를 사용한다.
+    private static string GetPurchaseFailureMessage(string message)
+    {
+        switch (message)
+        {
+            case "NOT_ENOUGH_GOLD":
+                return "골드가 부족합니다.";
+            case "NOT_ENOUGH_DIAMOND":
+                return "다이아가 부족합니다.";
+            case "REQUEST_EXPIRED":
+                Debug.LogWarning("구매 결과 조회 기간이 만료되었습니다. 재화 재조회는 공용 HTTP 경계 준비 후 연결합니다.");
+                return "구매 결과 조회 기간이 만료되었습니다. 현재 재화를 다시 확인해 주세요.";
+            case "PRODUCT NOT FOUND":
+                return "판매 중이 아닌 상품입니다.";
+            case "Player NOT FOUND":
+                return "플레이어 정보를 찾을 수 없습니다.";
+            default:
+                return "구매를 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.";
+        }
     }
 }

@@ -5,10 +5,13 @@ public class PurchaseResult
 {
     public IReadOnlyList<PurchaseRewardResult> Rewards { get; }
     public UserCurrencies Currencies { get; }
+    public IReadOnlyList<ArtifactResponse> ChangedArtifacts { get; }
 
-    public PurchaseResult(IReadOnlyList<PurchaseRewardResult> rewards, UserCurrencies currencies)
+    public PurchaseResult(IReadOnlyList<PurchaseRewardResult> rewards, UserCurrencies currencies,
+        IReadOnlyList<ArtifactResponse> changedArtifacts = null)
     {
         Rewards = rewards ?? new List<PurchaseRewardResult>();
         Currencies = currencies;
+        ChangedArtifacts = changedArtifacts;
     }
 }
