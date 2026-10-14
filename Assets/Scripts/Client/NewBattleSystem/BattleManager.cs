@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -14,6 +15,13 @@ public class BattleManager : MonoBehaviour
     private const int ReportMaxAttempts = 3; // 통신 오류로 보고 응답을 못 받으면 다시 보낸다. 서버는 같은 보고에 같은 응답을 준다
     private const float RequestRetryDelay = 1f; // 다시 보내기 전에 기다리는 시간(초)
 
+    // 전투 규칙에 쓰는 값. 서버 검증도 같은 값을 써야 결과가 같다
+    public const double TimeEpsilon = 1e-9; // 부동소수점 오차 때문에 같은 시각의 공격이 미세하게 어긋나는 것을 같은 시각으로 본다
+    public const string CritMultiplierConfigKey = "CRIT_MULTIPLIER"; // GameDB.config 키
+    public const string HealRateConfigKey = "HEAL_RATE";
+    public const string NormalTimeLimitConfigKey = "NORMAL_BATTLE_TIME_LIMIT";
+    public const string BossTimeLimitConfigKey = "BOSS_BATTLE_TIME_LIMIT";
+
     // 세션을 받아 StartDelay 대기를 시작할 때. 새 전투와 재접속 모두. 첫 세부스테이지를 미리 넘겨서 시작 전 화면을 세팅할 수 있게 한다
     public event Action<BattleSubStage> CountdownStarted;
     public event Action<float> CountdownTicked; // 매 프레임 남은 대기 시간(초)
@@ -26,7 +34,7 @@ public class BattleManager : MonoBehaviour
     public event Action<BattleApi.BattleEndResponse> BattleEnded;
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
 
-    private BattleDB battleDB;
+    private GameDB gameDB;
     private BattleEngine engine;
     private string gameDataVersion; // 서버가 같은 데이터로 계산하는지 확인하도록 모든 요청에 담는다
     private BattleApi.BattleSessionInfoResponse session;
@@ -42,8 +50,8 @@ public class BattleManager : MonoBehaviour
 
     public void Init(GameDB gameDB)
     {
-        battleDB = new BattleDB(gameDB);
-        engine = new BattleEngine(battleDB);
+        this.gameDB = gameDB;
+        engine = new BattleEngine(gameDB);
         gameDataVersion = gameDB.version;
     }
 
@@ -162,7 +170,7 @@ public class BattleManager : MonoBehaviour
             return;
 
         session = info;
-        Stage = battleDB.GetStage(info.stage);
+        Stage = gameDB.stages.First(data => data.stage == info.stage);
         battleRoutine = StartCoroutine(RunBattle());
     }
 
