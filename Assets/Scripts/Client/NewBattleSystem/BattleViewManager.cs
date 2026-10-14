@@ -1,21 +1,16 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// 임시 코드. 로그인했으면 실제 서버(HttpBattleSessionService)를, 아니면 로비에서 BattleEntry로 받은 GameDB와 유저로
-// 가짜 서버(LocalBattleSessionService)를 만들어 BattleManager에 넘기고, 전투 씬의 뷰들을 연결한다
-// 받은 값이 없으면(전투 씬을 바로 연 경우) 로비로 돌려보낸다
+// 전투 씬의 진입점. 로비에서 BattleEntry로 받은 GameDB로 BattleManager를 초기화하고, 전투 씬의 뷰들을 연결한다
+// 받은 값이 없으면(전투 씬을 바로 연 경우) 로비로, 로그인하지 않았으면 로그인 씬으로 돌려보낸다
 // BattleManager와 같은 오브젝트에 붙인다
-// 결과 팝업의 나가기를 받아 로비 씬으로 돌아가는 것도 임시로 여기서 한다
-public class BattleTestViewManager : MonoBehaviour
+// 결과 팝업의 나가기를 받아 전투 결과가 반영된 유저를 들고 로비 씬으로 돌아간다
+public class BattleViewManager : MonoBehaviour
 {
     private const string LobbySceneName = "LobbyScene";
+    private const string LoginSceneName = "LoginScene";
     private const float ExitFadeDuration = 0.5f;
 
-    // 가짜 서버는 씬이 바뀌어도 남아 있어야 세션(Redis 역할)이 유지된다. 유저가 바뀌면 새로 만든다
-    private static LocalBattleSessionService localBattleService;
-    private static User localBattleServiceUser;
-
-    [ReadOnly(true)] [SerializeField] private int randomSeed = -1; // 0 이상이면 매번 같은 시드로 전투가 나온다
     [ReadOnly(true)] [SerializeField] private bool logToConsole = true; // 로그 창 문장을 Console에도 찍는다
     [ReadOnly(true)] [SerializeField] [Range(1f, BattleManager.MaxSpeed)] private float speed = 1f;
 
@@ -65,9 +60,18 @@ public class BattleTestViewManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[Battle] Entered from lobby. Start stage {stage} (next stage {user.StageProgress.NextStage})");
+        // 전투는 서버가 세션을 들고 검증하므로 로그인해야 한다
+        if (AuthJwtToken.HasValue == false)
+        {
+            Debug.LogWarning("[Battle] Not logged in. Back to login");
+            SceneManager.LoadScene(LoginSceneName);
+            return;
+        }
 
-        manager.Init(CreateBattleService(), gameDB);
+        Debug.Log($"[Battle] Entered from lobby. Start stage {stage} (next stage {user.StageProgress.NextStage}), " +
+                  $"server {AuthJwtToken.ServerUrl}");
+
+        manager.Init(gameDB);
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
@@ -81,28 +85,9 @@ public class BattleTestViewManager : MonoBehaviour
     }
 
     // 서버가 확정한 재화, 진행도, 아티팩트를 유저에 반영한다. 로비로 돌아가면 이 유저로 화면을 그린다
-    private void OnBattleEnded(BattleEndResponse result)
+    private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         result.ApplyTo(user);
-    }
-
-    private IBattleSessionService CreateBattleService()
-    {
-        if (AuthJwtToken.HasValue)
-        {
-            Debug.Log($"[Battle] Using server {AuthJwtToken.ServerUrl}");
-            return new HttpBattleSessionService(new AuthorizedServerClient());
-        }
-
-        if (localBattleService == null || localBattleServiceUser != user)
-        {
-            var random = randomSeed >= 0 ? new System.Random(randomSeed) : new System.Random();
-            localBattleService = new LocalBattleSessionService(gameDB, user, random);
-            localBattleServiceUser = user;
-        }
-
-        Debug.Log("[Battle] Not logged in. Using local fake server");
-        return localBattleService;
     }
 
     // 어두워진 뒤 전투 결과가 반영된 유저를 들고 로비 씬으로 돌아간다. 로비는 전투 탭에서 시작한다

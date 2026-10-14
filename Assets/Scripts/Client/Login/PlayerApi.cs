@@ -26,19 +26,19 @@ public static class PlayerApi
         public readonly string nickname;
         public readonly SwordResponse swordResponse;
         public readonly UserCurrencies currenciesResponse;
-        public readonly IReadOnlyList<ArtifactResponse> artifactResponses;
+        public readonly IReadOnlyList<BattleApi.ArtifactResponse> artifactResponses;
         public readonly StageProgress stageProgress;
 
         [JsonConstructor]
         public PlayerResponse(long userId, string nickname, SwordResponse swordResponse,
-            UserCurrencies currenciesResponse, IReadOnlyList<ArtifactResponse> artifactResponses,
+            UserCurrencies currenciesResponse, IReadOnlyList<BattleApi.ArtifactResponse> artifactResponses,
             StageProgress stageProgress)
         {
             this.userId = userId;
             this.nickname = nickname;
             this.swordResponse = swordResponse;
             this.currenciesResponse = currenciesResponse;
-            this.artifactResponses = artifactResponses ?? new List<ArtifactResponse>();
+            this.artifactResponses = artifactResponses ?? new List<BattleApi.ArtifactResponse>();
             this.stageProgress = stageProgress ?? new StageProgress(0);
         }
 

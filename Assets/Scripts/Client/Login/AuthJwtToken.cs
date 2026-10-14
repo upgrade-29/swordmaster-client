@@ -1,6 +1,6 @@
 // 로그인으로 받은 JWT 토큰과, 그 토큰을 발급한 서버 주소. 씬이 바뀌어도 유지되도록 정적으로 들고 있는다
 // 토큰은 HttpConfig의 Authorization 공통 헤더에도 같이 넣어서, HttpRequest로 보내는 요청에 붙게 한다
-// 전투(AuthorizedServerClient)와 채팅은 여기서 토큰과 서버 주소를 직접 꺼내 쓴다
+// 채팅은 여기서 토큰과 서버 주소를 직접 꺼내 쓴다
 public static class AuthJwtToken
 {
     private const string AuthorizationHeader = "Authorization";

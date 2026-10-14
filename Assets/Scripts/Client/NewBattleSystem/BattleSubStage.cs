@@ -5,9 +5,6 @@ using System;
 // 몇 번에 나눠 진행하든 공격 순서와 난수 사용 순서가 같으므로 결과는 항상 같다
 public class BattleSubStage
 {
-    // 부동소수점 오차 때문에 같은 시각의 공격이 미세하게 어긋나는 것을 같은 시각으로 본다
-    private const double TimeEpsilon = 1e-9;
-
     public event Action<BattleEvent> AttackApplied; // 공격 한 번이 끝날 때마다. 서버는 구독하지 않는다
 
     private readonly BattleEngine engine;
@@ -70,10 +67,10 @@ public class BattleSubStage
             // 같은 시각이면 플레이어가 먼저 공격한다
             var nextPlayerTime = BattleEngine.GetAttackTime(playerStat, playerAttackCount + 1);
             var nextEnemyTime = BattleEngine.GetAttackTime(EnemyStat, enemyAttackCount + 1);
-            var isPlayerTurn = nextPlayerTime <= nextEnemyTime + TimeEpsilon;
+            var isPlayerTurn = nextPlayerTime <= nextEnemyTime + BattleManager.TimeEpsilon;
             var time = isPlayerTurn ? nextPlayerTime : nextEnemyTime;
 
-            if (time > TimeLimit + TimeEpsilon)
+            if (time > TimeLimit + BattleManager.TimeEpsilon)
             {
                 // 제한 시간 안에 더 이상 공격이 없다. 제한 시간까지 흘렀으면 시간 초과로 끝낸다
                 if (Elapsed >= TimeLimit)
@@ -81,7 +78,7 @@ public class BattleSubStage
                 return;
             }
 
-            if (time > Elapsed + TimeEpsilon)
+            if (time > Elapsed + BattleManager.TimeEpsilon)
                 return;
 
             ApplyAttack(isPlayerTurn, time);
