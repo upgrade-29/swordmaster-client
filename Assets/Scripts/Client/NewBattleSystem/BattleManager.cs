@@ -32,7 +32,7 @@ public class BattleManager : MonoBehaviour
     public event Action<BattleSubStage, BattleEvent> AttackApplied;
     public event Action<BattleSubStage, BattleApi.BattleResultVerifyResponse> SubStageVerified;
     public event Action<BattleApi.BattleEndResponse> BattleEnded;
-    public event Action<string> RequestRejected; // 유저에게 보여 줄 거절 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
+    public event Action<string> RequestRejected; // 유저에게 보여 줄 거절·실패 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
 
     private GameDB gameDB;
     private BattleEngine engine;
@@ -99,19 +99,19 @@ public class BattleManager : MonoBehaviour
         Speed = Mathf.Clamp(speed, 1f, MaxSpeed);
     }
 
-    // 서버 연결이 불안정할 경우 maxAttempts번까지 다시 보내고, 서버가 거절하면 바로 끝낸다. 401은 HttpErrorHandler가 로그인 씬으로 보낸다
-    // 에러코드가 BattleRequestErrorEnum에 정의되어 있으면 RequestRejected 이벤트를 호출한다.
-    // 성공적인 응답이 오면 onSuccess를 호출한다. onSuccess에서 다음 요청을 보내면 된다.
-    // 전투 중 세부스테이지마다 보내므로 로딩 표시는 하지 않는다.
-  
+    // 성공하면 onSuccess를 호출한다. onSuccess에서 다음 요청을 보내면 된다
+    // 서버가 전투 에러 코드로 거절하면 바로 끝내고, 결과를 알 수 없거나 서버가 이전 요청을 처리 중이면 maxAttempts번까지 다시 보낸다
+    // 끝내 실패하면 거절과 같은 팝업으로 알려 나갈 수 있게 한다. 401은 HttpErrorHandler가 로그인 씬으로 보내므로 알리지 않는다
+    // 전투 중 세부스테이지마다 보내므로 로딩 표시는 하지 않는다
     private void Request<T>(HttpRequestInfo<T> requestInfo, Action<T> onSuccess, int maxAttempts = 1, int attempt = 1)
         where T : class
     {
-        // 전투 중 세부스테이지마다 보내므로 로딩 표시는 하지 않는다
         HttpRequest.Request(requestInfo, (error, result) =>
         {
             if (this == null)
+            {
                 return;
+            }
 
             if (error == null)
             {
@@ -119,7 +119,9 @@ public class BattleManager : MonoBehaviour
                 return;
             }
 
-            if (TryParseErrorEnum(error.Code, out BattleRequestErrorEnum errorEnum))
+            bool isKnownError = TryParseErrorEnum(error.Code, out BattleRequestErrorEnum errorEnum);
+            bool isInProgress = errorEnum == BattleRequestErrorEnum.RequestInProgress;
+            if (isKnownError && isInProgress == false)
             {
                 Debug.LogWarning($"[Battle] Request rejected: {errorEnum} {error}");
                 isBusy = false;
@@ -127,7 +129,8 @@ public class BattleManager : MonoBehaviour
                 return;
             }
 
-            if (error.IsHandled == false && attempt < maxAttempts)
+            bool canRetry = HttpErrorUtil.IsResultUnknown(error) || isInProgress;
+            if (canRetry && attempt < maxAttempts)
             {
                 Debug.LogWarning($"[Battle] Request failed, retry {attempt}/{maxAttempts - 1}: {error}");
                 StartCoroutine(RequestAfterDelay(requestInfo, onSuccess, maxAttempts, attempt + 1));
@@ -135,6 +138,10 @@ public class BattleManager : MonoBehaviour
             }
 
             isBusy = false;
+            if (error.IsHandled == false)
+            {
+                RequestRejected?.Invoke(error.Message);
+            }
         }, showLoading: false);
     }
 
