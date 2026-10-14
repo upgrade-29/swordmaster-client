@@ -10,8 +10,8 @@ public class BattleTab : LobbyTab
 
     [ReadOnly] [SerializeField] private StageSelectController stageSelectController;
 
-    private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
-    private User User => TestLobbyDataLoader.Instance.User;
+    private GameDB GameDB => GameSession.Instance.GameDB;
+    private User User => GameSession.Instance.User;
 
     protected override void Awake()
     {
@@ -55,7 +55,7 @@ public class BattleTab : LobbyTab
 
     private void OnStageEntered(int stage)
     {
-        BattleEntry.Set(GameDB, User, stage);
+        BattleEntry.Set(stage);
         SceneManager.LoadScene(BattleSceneName);
     }
 }

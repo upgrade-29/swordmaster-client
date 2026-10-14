@@ -19,8 +19,8 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private ArtifactChangePopup artifactChangePopup;
     [ReadOnly] [SerializeField] private ConfirmPopupView confirmPopup;
 
-    private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
-    private User User => TestLobbyDataLoader.Instance.User;
+    private GameDB GameDB => GameSession.Instance.GameDB;
+    private User User => GameSession.Instance.User;
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
@@ -425,7 +425,7 @@ public class EnhanceTab : LobbyTab
     private void SyncCurrencies(UserCurrencies currencies)
     {
         User.Currencies.SyncFrom(currencies);
-        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
+        GameSession.Instance.NotifyChangeCurrencies();
     }
 
     // 재전송을 기다리는 요청이 있으면 재전송 팝업을 다시 열고 true를 돌려준다

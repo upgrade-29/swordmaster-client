@@ -1,9 +1,11 @@
 using System;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LobbyController : MonoBehaviour
 {
+    private const string LoginSceneName = "LoginScene";
     private static readonly int LastTabIndex = Enum.GetValues(typeof(LobbyTabType)).Length - 1;
 
     [ReadOnly] [SerializeField] private LobbyView view;
@@ -11,12 +13,21 @@ public class LobbyController : MonoBehaviour
     [ReadOnly(true)] [SerializeField] private LobbyTabType startTab = LobbyTabType.Battle;
     [ReadOnly(true)] [SerializeField] private float swipeThresholdRatio = 0.2f; // 이 값보다 많이 움직이면 탭 전환
 
-    private User User => TestLobbyDataLoader.Instance.User;
+    private User User => GameSession.Instance.User;
 
     private LobbyTabType currentTab;
 
     private void Awake()
     {
+        // 로그인하지 않고 로비 씬을 바로 열었으면 로그인 씬으로 보낸다. 탭들이 Start에서 유저를 읽으므로 그 전에 로비 UI를 끈다
+        if (User == null)
+        {
+            Debug.LogWarning("[Lobby] Not logged in. Back to login");
+            gameObject.SetActive(false);
+            SceneManager.LoadScene(LoginSceneName);
+            return;
+        }
+
         GameUtil.Bind(gameObject, ref view);
         currentTab = startTab;
 
@@ -30,16 +41,16 @@ public class LobbyController : MonoBehaviour
         view.SetSelectedTab(currentTab);
         view.SetTrackPosition(GetTrackPosition(currentTab));
 
-        TestLobbyDataLoader.Instance.OnChangeCurrenciesEvent += OnChangeCurrencies;
+        GameSession.Instance.OnChangeCurrenciesEvent += OnChangeCurrencies;
         RefreshCurrencies();
     }
 
     private void OnDestroy()
     {
-        // 씬을 닫을 때 로더가 먼저 사라졌으면 Instance가 새 로더를 만들기 때문에 확인한다
-        if (TestLobbyDataLoader.IsInitialize())
+        // 플레이를 끝낼 때 세션이 먼저 사라졌으면 Instance가 새 세션을 만들기 때문에 확인한다
+        if (GameSession.IsInitialize())
         {
-            TestLobbyDataLoader.Instance.OnChangeCurrenciesEvent -= OnChangeCurrencies;
+            GameSession.Instance.OnChangeCurrenciesEvent -= OnChangeCurrencies;
         }
 
         if (view == null)

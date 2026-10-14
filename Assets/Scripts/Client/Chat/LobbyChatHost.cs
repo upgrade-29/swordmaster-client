@@ -33,10 +33,10 @@ public sealed class LobbyChatHost : MonoBehaviour
     // 로그인 없이 연 경우 Editor PlayMode에서만 환경 변수로 전달된 일회성 연결 정보로 실제 서버 테스트를 시작한다.
     private void Start()
     {
-        if (AuthJwtToken.HasValue)
+        if (GameSession.Instance.IsLoggedIn)
         {
-            var serverUri = new Uri(AuthJwtToken.ServerUrl);
-            ConfigureAndConnect(ToWebSocketUrl(serverUri), serverUri.Host, AuthJwtToken.Value);
+            var serverUri = new Uri(ServerSettings.BaseUrl);
+            ConfigureAndConnect(ToWebSocketUrl(serverUri), serverUri.Host, GameSession.Instance.AccessToken);
             return;
         }
 

@@ -16,8 +16,8 @@ public class ShopTab : LobbyTab
     [SerializeField] private ShopSection sectionPrefab;
     [SerializeField] private ShopProductItem itemPrefab;
 
-    private GameDB GameDB => TestLobbyDataLoader.Instance.GameDB;
-    private User User => TestLobbyDataLoader.Instance.User;
+    private GameDB GameDB => GameSession.Instance.GameDB;
+    private User User => GameSession.Instance.User;
 
     // 구매 확인부터 결과를 받을 때까지의 상품. 한 번에 하나만 구매한다
     private ShopProductItem purchasingItem;
@@ -269,7 +269,7 @@ public class ShopTab : LobbyTab
     {
         User.Currencies.SyncFrom(response.currencies.ToUserCurrencies());
         ApplyChangedArtifacts(response.changedArtifacts);
-        TestLobbyDataLoader.Instance.NotifyChangeCurrencies();
+        GameSession.Instance.NotifyChangeCurrencies();
     }
 
     // null은 서버가 필드를 보내지 않은 경우이고 빈 배열은 변경 항목이 없음을 뜻한다. 둘 다 사용자 상태는 바꾸지 않는다.

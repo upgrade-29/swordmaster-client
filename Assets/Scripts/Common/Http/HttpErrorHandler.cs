@@ -18,18 +18,26 @@ public static class HttpErrorHandler
             return false;
         }
 
-        // 동시에 보낸 요청의 401이 뒤따라 도착해도 한 번만 처리한다
-        if (AuthJwtToken.IsExpired)
-        {
-            return true;
-        }
-
-        if (AuthJwtToken.HasValue == false)
+        // 세션이 없으면 로그인한 적이 없거나 플레이를 끝내는 중이다. Instance로 새 세션을 만들지 않도록 먼저 확인한다
+        if (GameSession.IsInitialize() == false)
         {
             return false;
         }
 
-        AuthJwtToken.Expire();
+        GameSession session = GameSession.Instance;
+
+        // 동시에 보낸 요청의 401이 뒤따라 도착해도 한 번만 처리한다
+        if (session.IsExpired)
+        {
+            return true;
+        }
+
+        if (session.IsLoggedIn == false)
+        {
+            return false;
+        }
+
+        session.Expire();
         SceneManager.LoadScene(LoginSceneName);
         return true;
     }

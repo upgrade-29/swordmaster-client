@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 요청은 AuthApi, PlayerApi로 만들어 HttpRequest로 보낸다.
-// 로그인에 성공하면 서버의 플레이어 정보를 받아 로비에 넘기고 로비 씬으로 넘어간다.
+// 로그인에 성공하면 서버의 플레이어 정보를 받아 GameSession에 넣고 로비 씬으로 넘어간다.
 // 플레이어가 없으면 닉네임 팝업을 띄워 닉네임을 받아 만든다
 public class LoginController : MonoBehaviour
 {
@@ -13,9 +13,6 @@ public class LoginController : MonoBehaviour
     [ReadOnly] [SerializeField] private SignupView signupView;
     [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
 
-    [ReadOnly(true)] [SerializeField] private string baseUrl = "http://localhost:8080"; // 임시 값. HttpConfig의 BaseUrl로 쓰고, 로그인하면 AuthJwtToken에도 저장된다
-    [ReadOnly(true)] [SerializeField] private int timeoutSeconds = 10;
-
     private bool isRequesting;
 
     private void Awake()
@@ -23,8 +20,6 @@ public class LoginController : MonoBehaviour
         GameUtil.Bind(gameObject, ref view);
         GameUtil.Bind(gameObject, ref signupView);
         nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
-        HttpConfig.SetBaseUrl(baseUrl);
-        HttpConfig.SetTimeoutSeconds(timeoutSeconds);
 
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
@@ -39,9 +34,9 @@ public class LoginController : MonoBehaviour
         signupView.Hide();
 
         // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우
-        if (AuthJwtToken.IsExpired)
+        if (GameSession.Instance.IsExpired)
         {
-            AuthJwtToken.ClearExpired();
+            GameSession.Instance.ClearExpired();
             view.SetResult(false, SessionExpiredMessage);
         }
     }
@@ -169,7 +164,7 @@ public class LoginController : MonoBehaviour
             return;
         }
 
-        AuthJwtToken.Set(response.accessToken, baseUrl);
+        GameSession.Instance.SetLogin(response.accessToken);
         HttpRequest.Request(PlayerApi.GetMe(), OnLoadPlayerResponse);
     }
 
@@ -245,7 +240,7 @@ public class LoginController : MonoBehaviour
 
     private static void EnterLobby(PlayerApi.PlayerResponse player)
     {
-        LoginEntry.Set(player.ToUser());
+        GameSession.Instance.SetUser(player.ToUser());
         SceneManager.LoadScene(LobbySceneName);
     }
 }
