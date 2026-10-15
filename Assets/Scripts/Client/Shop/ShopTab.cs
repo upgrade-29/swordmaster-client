@@ -10,7 +10,6 @@ public class ShopTab : LobbyTab
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private Transform comingSoonPanel;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
-    [ReadOnly] [SerializeField] private ConfirmPopup confirmPopup;
 
     [SerializeField] private ShopVisualCatalogSO visualCatalog;
     [SerializeField] private ShopSection sectionPrefab;
@@ -18,6 +17,8 @@ public class ShopTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
+    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
+    private GachaResultPopup GachaResultPopup => LobbyPopupUI.Instance.Get<GachaResultPopup>();
 
     // 구매 확인부터 결과를 받을 때까지의 상품. 한 번에 하나만 구매한다
     private ShopProductItem purchasingItem;
@@ -25,7 +26,6 @@ public class ShopTab : LobbyTab
     private Guid purchaseRequestId;
     private bool isWaitingRetry;
     private GachaResultPresenter gachaResultPresenter;
-    private GachaResultPopup gachaResultPopup;
 
     protected override void Awake()
     {
@@ -39,7 +39,6 @@ public class ShopTab : LobbyTab
 
     private void Start()
     {
-        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopup>();
         InitializeGachaResultPresenter();
 
         InitProductList();
@@ -53,18 +52,6 @@ public class ShopTab : LobbyTab
     protected override void OnDestroy()
     {
         base.OnDestroy();
-
-        if (confirmPopup != null)
-        {
-            UnsubscribePurchasePopup();
-            UnsubscribeRetryPopup();
-            UnsubscribeAlertPopup();
-        }
-
-        if (gachaResultPopup != null)
-        {
-            gachaResultPopup.OnNextRequestedEvent -= OnGachaNextRequested;
-        }
 
         gachaResultPresenter?.Cancel();
     }
@@ -114,47 +101,22 @@ public class ShopTab : LobbyTab
 
     private void ShowPurchasePopup(ShopProductData product)
     {
-        confirmPopup.Open();
-        confirmPopup.SetTitle("구매 확인");
-        confirmPopup.SetMessage($"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?");
-        confirmPopup.OnConfirmEvent += OnConfirmPurchase;
-        confirmPopup.OnCancelEvent += OnCancelPurchase;
-    }
-
-    private void UnsubscribePurchasePopup()
-    {
-        confirmPopup.OnConfirmEvent -= OnConfirmPurchase;
-        confirmPopup.OnCancelEvent -= OnCancelPurchase;
+        ConfirmPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?",
+            OnConfirmPurchase, OnCancelPurchase);
+        ConfirmPopup.Open();
     }
 
     private void ShowRetryPopup()
     {
-        confirmPopup.Open();
-        confirmPopup.SetTitle("구매 결과 확인 필요");
-        confirmPopup.SetMessage("구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?");
-        confirmPopup.OnConfirmEvent += OnConfirmRetry;
-        confirmPopup.OnCancelEvent += OnCancelRetry;
-    }
-
-    private void UnsubscribeRetryPopup()
-    {
-        confirmPopup.OnConfirmEvent -= OnConfirmRetry;
-        confirmPopup.OnCancelEvent -= OnCancelRetry;
+        ConfirmPopup.Setup("구매 결과 확인 필요", "구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
+            OnConfirmRetry, OnCancelRetry);
+        ConfirmPopup.Open();
     }
 
     private void ShowAlert(string title, string message)
     {
-        confirmPopup.Open();
-        confirmPopup.SetTitle(title);
-        confirmPopup.SetMessage(message);
-        confirmPopup.OnConfirmEvent += OnCloseAlert;
-        confirmPopup.OnCancelEvent += OnCloseAlert;
-    }
-
-    private void UnsubscribeAlertPopup()
-    {
-        confirmPopup.OnConfirmEvent -= OnCloseAlert;
-        confirmPopup.OnCancelEvent -= OnCloseAlert;
+        ConfirmPopup.Setup(title, message, OnCloseAlert, OnCloseAlert);
+        ConfirmPopup.Open();
     }
 
     private void OnClickPurchase(ShopProductItem item)
@@ -186,8 +148,7 @@ public class ShopTab : LobbyTab
 
     private void OnConfirmPurchase()
     {
-        UnsubscribePurchasePopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
 
         purchaseRequestId = Guid.NewGuid();
         SendPurchase();
@@ -195,8 +156,7 @@ public class ShopTab : LobbyTab
 
     private void OnCancelPurchase()
     {
-        UnsubscribePurchasePopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
 
         purchasingItem = null;
     }
@@ -245,8 +205,7 @@ public class ShopTab : LobbyTab
 
     private void OnConfirmRetry()
     {
-        UnsubscribeRetryPopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
 
         SendPurchase();
     }
@@ -254,14 +213,12 @@ public class ShopTab : LobbyTab
     // 구매 중 상태와 requestId는 그대로 둔다
     private void OnCancelRetry()
     {
-        UnsubscribeRetryPopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
     }
 
     private void OnCloseAlert()
     {
-        UnsubscribeAlertPopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
     }
 
     // 서버가 확정한 최종 재화와 유물 스냅샷을 연출 시작 전에 한 번만 반영한다.
@@ -301,19 +258,13 @@ public class ShopTab : LobbyTab
 
     private void InitializeGachaResultPresenter()
     {
-        gachaResultPopup = LobbyPopupUI.Instance.Get<GachaResultPopup>();
-        gachaResultPresenter = new GachaResultPresenter(ShowGachaReward, gachaResultPopup.Close);
-        gachaResultPopup.OnNextRequestedEvent += OnGachaNextRequested;
+        gachaResultPresenter = new GachaResultPresenter(ShowGachaReward, GachaResultPopup.Close);
     }
 
     private void ShowGachaReward(RewardResponse reward, int index, int totalCount)
     {
-        if (gachaResultPopup.IsOpened == false)
-        {
-            gachaResultPopup.Open();
-        }
-
-        gachaResultPopup.Show(reward, index, totalCount, visualCatalog, GameDB);
+        GachaResultPopup.Setup(reward, index, totalCount, visualCatalog, GameDB, OnGachaNextRequested);
+        GachaResultPopup.Open();
     }
 
     private void OnGachaNextRequested()

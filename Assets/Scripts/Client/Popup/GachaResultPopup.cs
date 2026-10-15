@@ -15,7 +15,12 @@ public class GachaResultPopup : BasePopup
     [ReadOnly] [SerializeField] private Button nextButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI nextButtonLabel;
 
-    public event Action OnNextRequestedEvent = delegate { };
+    private RewardResponse reward;
+    private int index;
+    private int totalCount;
+    private ShopVisualCatalogSO visualCatalog;
+    private GameDB gameDB;
+    private Action onNext;
 
     protected override void Awake()
     {
@@ -40,10 +45,23 @@ public class GachaResultPopup : BasePopup
         }
     }
 
-    // 보상 타입 아이콘을 재사용하고 개별 유물 Sprite 매핑 없이 이름 또는 코드 문자열을 표시한다.
-    public void Show(RewardResponse reward, int index, int totalCount,
-        ShopVisualCatalogSO visualCatalog, GameDB gameDB)
+    // 보상 한 건마다 다시 Setup하고 Open한다. 이미 열려 있으면 Open이 새 보상만 다시 반영한다
+    public void Setup(RewardResponse reward, int index, int totalCount, ShopVisualCatalogSO visualCatalog, GameDB gameDB,
+        Action onNext)
     {
+        this.reward = reward;
+        this.index = index;
+        this.totalCount = totalCount;
+        this.visualCatalog = visualCatalog;
+        this.gameDB = gameDB;
+        this.onNext = onNext;
+    }
+
+    // 보상 타입 아이콘을 재사용하고 개별 유물 Sprite 매핑 없이 이름 또는 코드 문자열을 표시한다.
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+
         titleText.text = "가챠 결과";
         rewardIcon.sprite = visualCatalog.GetRewardTypeIcon(reward.rewardType);
         rewardNameText.text = GetRewardName(reward, gameDB);
@@ -66,6 +84,6 @@ public class GachaResultPopup : BasePopup
 
     private void OnClickNext()
     {
-        OnNextRequestedEvent.Invoke();
+        onNext?.Invoke();
     }
 }

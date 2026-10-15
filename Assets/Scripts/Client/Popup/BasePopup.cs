@@ -21,16 +21,17 @@ public class BasePopup : MonoBehaviour
         btnDimmed.onClick.AddListener(OnClickDimmed);
     }
 
+    // 내용이 있는 팝업은 Setup으로 내용을 받은 뒤에 연다. 이미 열려 있으면 켜지 않고 새 내용만 다시 반영한다
     public void Open()
     {
-        if (IsOpened)
+        if (IsOpened == false)
         {
-            return;
+            transform.SetAsLastSibling();
+            gameObject.SetActive(true);
+            OnOpenEvent.Invoke(this);
         }
 
-        transform.SetAsLastSibling();
-        gameObject.SetActive(true);
-        OnOpenEvent.Invoke(this);
+        OnOpen();
     }
 
     public void Close()
@@ -42,6 +43,11 @@ public class BasePopup : MonoBehaviour
 
         gameObject.SetActive(false);
         OnCloseEvent.Invoke(this);
+    }
+
+    // 켜진 뒤에 호출되므로 처음 열 때도 Awake의 바인딩이 끝나 있다. Setup으로 받아 둔 내용을 여기서 화면에 반영한다
+    protected virtual void OnOpen()
+    {
     }
 
     private void OnClickDimmed()

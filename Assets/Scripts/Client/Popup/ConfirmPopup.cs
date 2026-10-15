@@ -11,8 +11,10 @@ public class ConfirmPopup : BasePopup
     [ReadOnly] [SerializeField] private Button confirmButton;
     [ReadOnly] [SerializeField] private Button cancelButton;
 
-    public event Action OnConfirmEvent = delegate { };
-    public event Action OnCancelEvent = delegate { };
+    private string title;
+    private string message;
+    private Action onConfirm;
+    private Action onCancel;
 
     protected override void Awake()
     {
@@ -27,23 +29,30 @@ public class ConfirmPopup : BasePopup
         cancelButton.onClick.AddListener(OnClickCancel);
     }
 
-    public void SetTitle(string title)
+    // 여는 쪽마다 확인/취소에서 할 일이 다르므로, 열 때마다 콜백을 바꿔 끼운다
+    public void Setup(string title, string message, Action onConfirm, Action onCancel)
     {
-        titleText.text = title;
+        this.title = title;
+        this.message = message;
+        this.onConfirm = onConfirm;
+        this.onCancel = onCancel;
     }
 
-    public void SetMessage(string message)
+    protected override void OnOpen()
     {
+        base.OnOpen();
+
+        titleText.text = title;
         messageText.text = message;
     }
 
     private void OnClickConfirm()
     {
-        OnConfirmEvent.Invoke();
+        onConfirm?.Invoke();
     }
 
     private void OnClickCancel()
     {
-        OnCancelEvent.Invoke();
+        onCancel?.Invoke();
     }
 }

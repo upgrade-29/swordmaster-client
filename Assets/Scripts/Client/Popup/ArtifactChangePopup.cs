@@ -1,18 +1,40 @@
 using System;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ArtifactChangePopup : BasePopup
 {
+    // 목록 한 줄에 표시할 내용
+    public readonly struct ItemInfo
+    {
+        public readonly string grade;
+        public readonly string level;
+        public readonly string name;
+        public readonly string stat;
+        public readonly string status;
+        public readonly bool interactable;
+
+        public ItemInfo(string grade, string level, string name, string stat, string status, bool interactable)
+        {
+            this.grade = grade;
+            this.level = level;
+            this.name = name;
+            this.stat = stat;
+            this.status = status;
+            this.interactable = interactable;
+        }
+    }
+
     [ReadOnly] [SerializeField] private Button btnClose;
     [ReadOnly] [SerializeField] private Button btnUnequip;
     [ReadOnly] [SerializeField] private RectTransform rectItemContent;
     [ReadOnly] [SerializeField] private List<ArtifactChangeItem> listArtifactChangeItem = new List<ArtifactChangeItem>();
 
-    public event Action<int> OnClickArtifactEvent = delegate { };
-    public event Action OnClickUnequipEvent = delegate { };
+    private IReadOnlyList<ItemInfo> items = new List<ItemInfo>();
+    private bool canUnequip;
+    private Action<int> onSelectArtifact; // 고른 항목의 순서를 넘긴다
+    private Action onUnequip;
 
     protected override void Awake()
     {
@@ -40,12 +62,29 @@ public class ArtifactChangePopup : BasePopup
         }
     }
 
-    public void SetUnequipInteractable(bool interactable)
+    public void Setup(IReadOnlyList<ItemInfo> items, bool canUnequip, Action<int> onSelectArtifact, Action onUnequip)
     {
-        btnUnequip.interactable = interactable;
+        this.items = items;
+        this.canUnequip = canUnequip;
+        this.onSelectArtifact = onSelectArtifact;
+        this.onUnequip = onUnequip;
     }
 
-    public void ShowItems(int count)
+    protected override void OnOpen()
+    {
+        base.OnOpen();
+
+        ShowItems(items.Count);
+        for (int i = 0; i < items.Count; i++)
+        {
+            ItemInfo item = items[i];
+            listArtifactChangeItem[i].Set(item.grade, item.level, item.name, item.stat, item.status, item.interactable);
+        }
+
+        btnUnequip.interactable = canUnequip;
+    }
+
+    private void ShowItems(int count)
     {
         while (listArtifactChangeItem.Count < count)
         {
@@ -58,11 +97,6 @@ public class ArtifactChangePopup : BasePopup
         }
     }
 
-    public void SetItem(int index, string grade, string level, string name, string stat, string status, bool interactable)
-    {
-        listArtifactChangeItem[index].Set(grade, level, name, stat, status, interactable);
-    }
-
     private void AddItem(ArtifactChangeItem artifactChangeItem)
     {
         artifactChangeItem.OnClickItemEvent += OnClickItem;
@@ -71,12 +105,12 @@ public class ArtifactChangePopup : BasePopup
 
     private void OnClickItem(ArtifactChangeItem artifactChangeItem)
     {
-        OnClickArtifactEvent.Invoke(listArtifactChangeItem.IndexOf(artifactChangeItem));
+        onSelectArtifact?.Invoke(listArtifactChangeItem.IndexOf(artifactChangeItem));
     }
 
     private void OnClickUnequip()
     {
-        OnClickUnequipEvent.Invoke();
+        onUnequip?.Invoke();
     }
 
     private void OnClickClose()

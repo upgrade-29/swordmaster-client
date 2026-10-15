@@ -6,7 +6,6 @@ public class BattleTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private StageSelectController stageSelectController;
     [ReadOnly] [SerializeField] private Button btnChat;
-    [ReadOnly] [SerializeField] private ChatOverlayView chatOverlayView;
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
@@ -24,7 +23,6 @@ public class BattleTab : LobbyTab
 
     private void Start()
     {
-        chatOverlayView = LobbyPopupUI.Instance.Get<ChatOverlayView>();
         stageSelectController.Init(GameDB.stages, User.StageProgress, CalculateCombatPower());
     }
 
@@ -57,6 +55,6 @@ public class BattleTab : LobbyTab
 
     private void OnClickChat()
     {
-        chatOverlayView.Open();
+        LobbyPopupUI.Instance.Get<ChatOverlayView>().Open();
     }
 }

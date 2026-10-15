@@ -16,11 +16,11 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentInfo enhanceEquipmentInfo;
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
-    [ReadOnly] [SerializeField] private ArtifactChangePopup artifactChangePopup;
-    [ReadOnly] [SerializeField] private ConfirmPopup confirmPopup;
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
+    private ArtifactChangePopup ArtifactChangePopup => LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
+    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
@@ -51,11 +51,6 @@ public class EnhanceTab : LobbyTab
 
     private void Start()
     {
-        artifactChangePopup = LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
-        artifactChangePopup.OnClickArtifactEvent += OnClickChangeArtifact;
-        artifactChangePopup.OnClickUnequipEvent += OnClickUnequip;
-        confirmPopup = LobbyPopupUI.Instance.Get<ConfirmPopup>();
-
         RefreshCombatStats();
         RefreshEquipmentNames();
         SelectSword();
@@ -82,17 +77,6 @@ public class EnhanceTab : LobbyTab
             enhanceEquipmentAction.OnClickEnhanceEvent -= OnClickEnhance;
             enhanceEquipmentAction.OnClickSellEvent -= OnClickSell;
             enhanceEquipmentAction.OnClickChangeEvent -= OnClickChange;
-        }
-
-        if (artifactChangePopup != null)
-        {
-            artifactChangePopup.OnClickArtifactEvent -= OnClickChangeArtifact;
-            artifactChangePopup.OnClickUnequipEvent -= OnClickUnequip;
-        }
-
-        if (confirmPopup != null)
-        {
-            UnsubscribeRetryPopup();
         }
     }
 
@@ -325,24 +309,19 @@ public class EnhanceTab : LobbyTab
 
     private void OpenArtifactChangePopup()
     {
-        IReadOnlyList<UserArtifact> artifacts = User.Artifacts;
+        var items = User.Artifacts.Select(CreateArtifactChangeItem).ToList();
+        bool canUnequip = GetEquippedArtifact(selectedArtifactSlot) != null;
 
-        artifactChangePopup.Open();
-        artifactChangePopup.ShowItems(artifacts.Count);
-        for (int i = 0; i < artifacts.Count; i++)
-        {
-            SetArtifactChangeItem(i, artifacts[i]);
-        }
-
-        artifactChangePopup.SetUnequipInteractable(GetEquippedArtifact(selectedArtifactSlot) != null);
+        ArtifactChangePopup.Setup(items, canUnequip, OnClickChangeArtifact, OnClickUnequip);
+        ArtifactChangePopup.Open();
     }
 
-    private void SetArtifactChangeItem(int index, UserArtifact artifact)
+    private ArtifactChangePopup.ItemInfo CreateArtifactChangeItem(UserArtifact artifact)
     {
         ArtifactData data = GetArtifactData(artifact.ArtifactCode);
         string value = GetStatFormat(data.statType)(StatCalculator.GetArtifactValue(data, artifact.Level));
 
-        artifactChangePopup.SetItem(index,
+        return new ArtifactChangePopup.ItemInfo(
             GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
@@ -432,17 +411,9 @@ public class EnhanceTab : LobbyTab
 
     private void ShowRetryPopup()
     {
-        confirmPopup.Open();
-        confirmPopup.SetTitle("요청 결과 확인 필요");
-        confirmPopup.SetMessage("요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?");
-        confirmPopup.OnConfirmEvent += OnConfirmRetry;
-        confirmPopup.OnCancelEvent += OnCancelRetry;
-    }
-
-    private void UnsubscribeRetryPopup()
-    {
-        confirmPopup.OnConfirmEvent -= OnConfirmRetry;
-        confirmPopup.OnCancelEvent -= OnCancelRetry;
+        ConfirmPopup.Setup("요청 결과 확인 필요", "요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
+            OnConfirmRetry, OnCancelRetry);
+        ConfirmPopup.Open();
     }
 
     private void RefreshAfterRequest()
@@ -526,7 +497,7 @@ public class EnhanceTab : LobbyTab
     private void OnClickChangeArtifact(int index)
     {
         string artifactCode = User.Artifacts[index].ArtifactCode;
-        artifactChangePopup.Close();
+        ArtifactChangePopup.Close();
 
         if (TryReopenRetryPopup() || isRequesting)
         {
@@ -538,7 +509,7 @@ public class EnhanceTab : LobbyTab
 
     private void OnClickUnequip()
     {
-        artifactChangePopup.Close();
+        ArtifactChangePopup.Close();
 
         if (TryReopenRetryPopup() || isRequesting)
         {
@@ -550,8 +521,7 @@ public class EnhanceTab : LobbyTab
 
     private void OnConfirmRetry()
     {
-        UnsubscribeRetryPopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
 
         Action retry = retryRequest;
         retryRequest = null;
@@ -561,8 +531,7 @@ public class EnhanceTab : LobbyTab
     // 요청은 그대로 두고, 강화 화면의 버튼을 누르면 재전송 팝업을 다시 연다
     private void OnCancelRetry()
     {
-        UnsubscribeRetryPopup();
-        confirmPopup.Close();
+        ConfirmPopup.Close();
     }
 
     private void OnClickCombatPower()
