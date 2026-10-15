@@ -115,3 +115,6 @@ InitTestScene*.unity*
 
 # Claude Code skills installed by `unity skill install --local`
 /.claude/skills/
+# Claude Code 개인 설정
+/.claude/settings.local.json
+CLAUDE.md
