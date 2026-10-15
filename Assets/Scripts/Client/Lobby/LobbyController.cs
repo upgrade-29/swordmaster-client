@@ -16,6 +16,8 @@ public class LobbyController : MonoBehaviour
 
     private LobbyTabType currentTab;
 
+    public event Action<LobbyTabType> OnChangeTabEvent = delegate { };
+
     private void Awake()
     {
         // 로그인하지 않고 로비 씬을 바로 열었으면 로그인 씬으로 보낸다. 탭들이 Start에서 유저를 읽으므로 그 전에 로비 UI를 끈다
@@ -67,6 +69,7 @@ public class LobbyController : MonoBehaviour
         currentTab = tab;
         view.AnimateSelectedTab(tab);
         view.AnimateTrackPosition(GetTrackPosition(tab));
+        OnChangeTabEvent.Invoke(tab);
     }
 
     private void RefreshCurrencies()

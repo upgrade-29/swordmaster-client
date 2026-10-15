@@ -46,6 +46,13 @@ public class StageSelectController : MonoBehaviour
         Refresh();
     }
 
+    // 보고 있는 스테이지는 그대로 두고 내 전투력만 바꾼다
+    public void SetMyPower(long myPower)
+    {
+        this.myPower = myPower;
+        Refresh();
+    }
+
     private void Refresh()
     {
         StageData stage = stages[index];

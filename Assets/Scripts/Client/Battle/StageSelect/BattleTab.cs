@@ -6,6 +6,7 @@ public class BattleTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private StageSelectController stageSelectController;
     [ReadOnly] [SerializeField] private Button btnChat;
+    [ReadOnly] [SerializeField] private LobbyController lobbyController;
 
     private bool isEntering; // 세션 요청을 기다리는 중. 입장 버튼을 여러 번 눌러도 한 번만 보낸다
 
@@ -22,6 +23,9 @@ public class BattleTab : LobbyTab
 
         btnChat = GameUtil.Bind<Button>(transform, "Viewport/Content/StageSelectView/ChatUI/ChatButton");
         btnChat.onClick.AddListener(OnClickChat);
+
+        lobbyController = GetComponentInParent<LobbyController>();
+        lobbyController.OnChangeTabEvent += OnChangeTab;
     }
 
     private void Start()
@@ -42,6 +46,22 @@ public class BattleTab : LobbyTab
         {
             btnChat.onClick.RemoveListener(OnClickChat);
         }
+
+        if (lobbyController != null)
+        {
+            lobbyController.OnChangeTabEvent -= OnChangeTab;
+        }
+    }
+
+    // 다른 탭에서 강화나 장착으로 능력치가 바뀌었을 수 있어 이 탭을 고를 때마다 다시 계산한다
+    private void OnChangeTab(LobbyTabType tab)
+    {
+        if (tab != LobbyTabType.Battle)
+        {
+            return;
+        }
+
+        stageSelectController.SetMyPower(CalculateCombatPower());
     }
 
     private long CalculateCombatPower()
