@@ -17,12 +17,12 @@ public class BattleEffectPresenter : IDisposable
     private readonly BattleUnitView playerView;
     private readonly BattleUnitView enemyView;
     private readonly BossWarningView bossWarningView;
-    private readonly BattleResultView resultView;
+    private readonly BattleResultPopup resultView;
     private readonly Dictionary<string, string> artifactNamesByCode;
     private readonly DamageFloaterPool damageFloaters = new DamageFloaterPool();
 
     public BattleEffectPresenter(BattleManager manager, BattleUnitView playerView, BattleUnitView enemyView,
-        BossWarningView bossWarningView, BattleResultView resultView, GameDB gameDB)
+        BossWarningView bossWarningView, BattleResultPopup resultView, GameDB gameDB)
     {
         this.manager = manager;
         this.playerView = playerView;
@@ -55,7 +55,7 @@ public class BattleEffectPresenter : IDisposable
     // 재도전이 받아들여져 시작 대기에 들어가면 팝업을 닫고, 지난 전투에서 쓰러진 적을 다시 보여준다
     private void OnCountdownStarted(BattleSubStage subStage)
     {
-        resultView.Hide();
+        resultView.Close();
         enemyView.SetVisible(true);
     }
 

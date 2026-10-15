@@ -29,6 +29,7 @@ public class BattleManager : MonoBehaviour
     public event Action<BattleSubStage, BattleApi.BattleResultVerifyResponse> SubStageVerified;
     public event Action<BattleApi.BattleEndResponse> BattleEnded;
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절·실패 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
+    public event Action<bool> BusyChanged; // 결과(BattleEnd)나 거절·실패 응답을 받으면 false가 된다. 그때부터 다시 전투에 들어갈 수 있다
 
     private GameDB gameDB;
     private BattleEngine engine;
@@ -51,20 +52,14 @@ public class BattleManager : MonoBehaviour
         gameDataVersion = gameDB.version;
     }
 
-    // 진행 중인 세션이 있으면 이어서 하고, 없으면 새로 시작한다
-    public void EnterBattle(int stage)
+    // 로비가 받아 온 세션으로 전투를 시작한다. 진행 중이던 세션이면 이어서, 새 세션이면 처음부터 한다
+    public void EnterBattle(BattleApi.BattleSessionInfoResponse info)
     {
         if (isBusy)
             return;
 
-        isBusy = true;
-        Request(BattleApi.GetActiveSession(gameDataVersion), info =>
-        {
-            if (info != null)
-                Begin(info);
-            else
-                Request(BattleApi.Start(stage, gameDataVersion), Begin);
-        });
+        SetBusy(true);
+        Begin(info);
     }
 
     // 결과 팝업의 재도전. 방금 한 스테이지를 새로 시작한다
@@ -73,7 +68,7 @@ public class BattleManager : MonoBehaviour
         if (isBusy || session == null)
             return;
 
-        isBusy = true;
+        SetBusy(true);
         Request(BattleApi.Start(session.stage, gameDataVersion), Begin);
     }
 
@@ -120,7 +115,7 @@ public class BattleManager : MonoBehaviour
             if (isKnownError && isInProgress == false)
             {
                 Debug.LogWarning($"[Battle] Request rejected: {errorEnum} {error}");
-                isBusy = false;
+                SetBusy(false);
                 RequestRejected?.Invoke(error.Message); // 서버가 보낸 문구
                 return;
             }
@@ -133,7 +128,7 @@ public class BattleManager : MonoBehaviour
                 return;
             }
 
-            isBusy = false;
+            SetBusy(false);
             if (error.IsHandled == false)
             {
                 RequestRejected?.Invoke(error.Message);
@@ -165,6 +160,15 @@ public class BattleManager : MonoBehaviour
         }
 
         return errorEnum != BattleRequestErrorEnum.None;
+    }
+
+    private void SetBusy(bool isBusy)
+    {
+        if (this.isBusy == isBusy)
+            return;
+
+        this.isBusy = isBusy;
+        BusyChanged?.Invoke(isBusy);
     }
 
     private void Begin(BattleApi.BattleSessionInfoResponse info)
@@ -247,7 +251,7 @@ public class BattleManager : MonoBehaviour
     private void Finish(BattleApi.BattleEndResponse result)
     {
         battleRoutine = null;
-        isBusy = false;
+        SetBusy(false);
         BattleEnded?.Invoke(result);
     }
 }
