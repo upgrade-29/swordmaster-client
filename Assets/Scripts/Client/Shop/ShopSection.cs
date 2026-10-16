@@ -11,7 +11,7 @@ public class ShopSection : MonoBehaviour
 
     private void Awake()
     {
-        headerText = GameUtil.Bind<TextMeshProUGUI>(transform, "Header");
+        headerText = GameUtil.Bind<TextMeshProUGUI>(transform, "Header/Label");
         itemsContainer = GameUtil.Bind<RectTransform>(transform, "ItemsContainer");
     }
 
