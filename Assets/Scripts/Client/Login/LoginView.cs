@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // 아이디/비밀번호 입력, 로그인/회원가입 버튼 입력 전달, 결과 문구 표시만 담당한다. 인증 로직은 갖지 않는다.
-// Tab으로 입력칸을 오가고, Enter로 로그인한다
+// Tab으로 입력칸을 오가고, 아이디에서 Enter(모바일 키보드 완료)를 누르면 비밀번호로, 비밀번호에서 누르면 로그인한다
 public class LoginView : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private GameObject objRoot;
@@ -14,6 +14,9 @@ public class LoginView : MonoBehaviour
     [ReadOnly] [SerializeField] private Button loginButton;
     [ReadOnly] [SerializeField] private Button signupButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI resultText;
+
+    // onSubmit 직후 입력칸이 스스로 비활성화되므로, 다음 칸 포커스는 다음 프레임에 준다
+    private TMP_InputField pendingFocusInput;
 
     public event Action<string, string> OnClickLoginEvent = delegate { };
     public event Action OnClickSignupEvent = delegate { };
@@ -29,14 +32,20 @@ public class LoginView : MonoBehaviour
 
         loginButton.onClick.AddListener(OnClickLogin);
         signupButton.onClick.AddListener(OnClickSignup);
-        idInput.onSubmit.AddListener(OnSubmitInput);
-        passwordInput.onSubmit.AddListener(OnSubmitInput);
+        idInput.onSubmit.AddListener(OnSubmitId);
+        passwordInput.onSubmit.AddListener(OnSubmitPassword);
         resultText.text = string.Empty;
     }
 
-    // Tab을 누르면 아이디와 비밀번호 입력칸을 오간다
+    // 예약된 포커스를 주고, Tab을 누르면 아이디와 비밀번호 입력칸을 오간다
     private void Update()
     {
+        if (pendingFocusInput != null)
+        {
+            Focus(pendingFocusInput);
+            pendingFocusInput = null;
+        }
+
         if (objRoot.activeInHierarchy == false || Keyboard.current == null)
         {
             return;
@@ -44,9 +53,7 @@ public class LoginView : MonoBehaviour
 
         if (Keyboard.current.tabKey.wasPressedThisFrame)
         {
-            TMP_InputField next = idInput.isFocused ? passwordInput : idInput;
-            next.Select();
-            next.ActivateInputField();
+            Focus(idInput.isFocused ? passwordInput : idInput);
         }
     }
 
@@ -59,12 +66,12 @@ public class LoginView : MonoBehaviour
 
         if (idInput != null)
         {
-            idInput.onSubmit.RemoveListener(OnSubmitInput);
+            idInput.onSubmit.RemoveListener(OnSubmitId);
         }
 
         if (passwordInput != null)
         {
-            passwordInput.onSubmit.RemoveListener(OnSubmitInput);
+            passwordInput.onSubmit.RemoveListener(OnSubmitPassword);
         }
 
         if (signupButton != null)
@@ -115,8 +122,23 @@ public class LoginView : MonoBehaviour
         OnClickLoginEvent.Invoke(idInput.text, passwordInput.text);
     }
 
-    // 입력칸에서 Enter를 누르면 로그인 버튼을 누른 것과 같다
-    private void OnSubmitInput(string _)
+    private void Focus(TMP_InputField input)
+    {
+        input.Select();
+        input.ActivateInputField();
+    }
+
+    // 아이디에서 Enter(모바일 키보드 완료)를 누르면 비밀번호 입력칸으로 넘어간다
+    private void OnSubmitId(string _)
+    {
+        if (passwordInput.interactable)
+        {
+            pendingFocusInput = passwordInput;
+        }
+    }
+
+    // 비밀번호에서 Enter(모바일 키보드 완료)를 누르면 로그인 버튼을 누른 것과 같다
+    private void OnSubmitPassword(string _)
     {
         if (loginButton.interactable)
         {
