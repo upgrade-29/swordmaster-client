@@ -4,6 +4,12 @@ using UnityEngine;
 // BattleManager가 알려주는 전투 진행을 문장으로 만들어서 로그 창에 쓴다. 진행 타이밍이나 HP바는 모른다
 public class BattleLogger : IDisposable
 {
+    // 로그 창 글자가 가장 작게 줄어드는 크기를 정하는 기준 줄. 나올 수 있는 줄 중 가장 긴 것:
+    // 가장 긴 몬스터 이름(저주받은 대검)이 최대 길이(10자) 이름의 플레이어에게 치명타를 넣은 줄.
+    // 이름 끝 글자가 한글이 아니면 "이(가)"가 붙어서 더 길어지므로 9자는 한글, 마지막 1자는 영문으로 잡는다. 데미지도 넉넉하게 잡는다
+    private static readonly string LongestLineSample =
+        GetAttackText("저주받은 대검", "가나다라마바사아자W", true, 9999.99);
+
     private readonly BattleManager manager;
     private readonly BattleLogView view;
     private readonly string playerName;
@@ -23,6 +29,8 @@ public class BattleLogger : IDisposable
         manager.SubStageVerified += OnSubStageVerified;
         manager.BattleEnded += OnBattleEnded;
         manager.RequestRejected += OnRequestRejected;
+
+        view.FitFontSizeMin(LongestLineSample);
     }
 
     public void Dispose()
@@ -62,10 +70,7 @@ public class BattleLogger : IDisposable
         var isPlayerAttack = battleEvent.attacker == BattleSide.Player;
         var attackerName = isPlayerAttack ? playerName : enemyName;
         var targetName = isPlayerAttack ? enemyName : playerName;
-        var attackText = battleEvent.isCrit ? "치명적인 공격" : "공격";
-
-        Log($"{attackerName}의 {attackText}!! {AddParticle(targetName, "이", "가")} {attackText}을 받아 " +
-            $"{battleEvent.damage:#,0.##}의 데미지를 입었다.",
+        Log(GetAttackText(attackerName, targetName, battleEvent.isCrit, battleEvent.damage),
             $" (t={battleEvent.time:0.00}, Player {battleEvent.playerHp:0.##} / Enemy {battleEvent.enemyHp:0.##})");
 
         // 예: "테스트유저가 체력을 3.75 흡혈했다." 체력이 가득 차서 회복하지 못했으면 쓰지 않는다
@@ -88,6 +93,13 @@ public class BattleLogger : IDisposable
     private void OnRequestRejected(string message)
     {
         Log(message);
+    }
+
+    private static string GetAttackText(string attackerName, string targetName, bool isCrit, double damage)
+    {
+        var attackText = isCrit ? "치명적인 공격" : "공격";
+        return $"{attackerName}의 {attackText}!! {AddParticle(targetName, "이", "가")} {attackText}을 받아 " +
+               $"{damage:#,0.##}의 데미지를 입었다.";
     }
 
     private string GetSubStageEndText(BattleSubStage subStage)
