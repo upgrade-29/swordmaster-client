@@ -19,8 +19,8 @@ public class EnhanceTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ArtifactChangePopup ArtifactChangePopup => LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
-    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
+    private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
+    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;

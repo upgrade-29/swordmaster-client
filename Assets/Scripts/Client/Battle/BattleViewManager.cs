@@ -22,16 +22,17 @@ public class BattleViewManager : MonoBehaviour
     private BattleUnitView playerView;
     private BattleUnitView enemyView;
     private BossWarningView bossWarningView;
-    private BattleResultPopup resultView;
     private ScreenFader screenFader;
     private Button optionButton;
-    private BattleOptionPopup optionPopup;
-    private ConfirmPopup confirmPopup;
     private BattleHudPresenter hudPresenter;
     private BattleLogger battleLogger;
     private BattleEffectPresenter effectPresenter;
     private GameDB gameDB;
     private User user;
+
+    private BattleResultPopup ResultPopup => Popup.Instance.Get<BattleResultPopup>();
+    private BattleOptionPopup OptionPopup => Popup.Instance.Get<BattleOptionPopup>();
+    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
 
     private void Awake()
     {
@@ -41,26 +42,27 @@ public class BattleViewManager : MonoBehaviour
         playerView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Player"));
         enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
-        resultView = GameUtil.Bind<BattleResultPopup>(GameObject.Find("BattleCanvas"), "ResultPopup");
         screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
         optionButton = GameUtil.Bind<Button>(GameObject.Find("BattleCanvas"), "Hud/OptionButton");
-        optionPopup = GameUtil.Bind<BattleOptionPopup>(GameObject.Find("BattleCanvas"), "OptionPopup");
-        confirmPopup = GameUtil.Bind<ConfirmPopup>(GameObject.Find("BattleCanvas"), "ConfirmPopup");
     }
 
     private void OnDestroy()
     {
         Time.timeScale = 1f; // 멈춘 채로 씬을 떠나도 다음 씬은 정상 속도로 돈다
         optionButton.onClick.RemoveListener(OnClickOption);
-        optionPopup.AbandonClicked -= OnAbandonClicked;
-        optionPopup.OnOpenEvent -= OnPausePopupChanged;
-        optionPopup.OnCloseEvent -= OnPausePopupChanged;
-        confirmPopup.OnOpenEvent -= OnPausePopupChanged;
-        confirmPopup.OnCloseEvent -= OnPausePopupChanged;
-        resultView.RetryClicked -= manager.Retry;
+
+        // 씬을 닫을 때 Popup이 먼저 파괴됐으면 Instance로 새로 만들지 않는다. 팝업도 함께 파괴되므로 구독을 풀 필요가 없다
+        if (Popup.IsInitialize())
+        {
+            OptionPopup.AbandonClicked -= OnAbandonClicked;
+            OptionPopup.OnOpenEvent -= OnPausePopupChanged;
+            OptionPopup.OnCloseEvent -= OnPausePopupChanged;
+            ConfirmPopup.OnOpenEvent -= OnPausePopupChanged;
+            ConfirmPopup.OnCloseEvent -= OnPausePopupChanged;
+        }
+
         manager.BusyChanged -= OnBusyChanged;
         manager.BattleEnded -= OnBattleEnded;
-        resultView.ExitClicked -= OnExitClicked;
         hudPresenter?.Dispose();
         battleLogger?.Dispose();
         effectPresenter?.Dispose();
@@ -95,20 +97,18 @@ public class BattleViewManager : MonoBehaviour
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
-        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, resultView, gameDB);
+        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, gameDB, manager.Retry, OnExitClicked);
 
-        resultView.RetryClicked += manager.Retry;
         manager.BusyChanged += OnBusyChanged;
         manager.BattleEnded += OnBattleEnded;
-        resultView.ExitClicked += OnExitClicked;
 
         optionButton.interactable = false; // 전투가 시작되면 OnBusyChanged에서 켠다
         optionButton.onClick.AddListener(OnClickOption);
-        optionPopup.AbandonClicked += OnAbandonClicked;
-        optionPopup.OnOpenEvent += OnPausePopupChanged;
-        optionPopup.OnCloseEvent += OnPausePopupChanged;
-        confirmPopup.OnOpenEvent += OnPausePopupChanged;
-        confirmPopup.OnCloseEvent += OnPausePopupChanged;
+        OptionPopup.AbandonClicked += OnAbandonClicked;
+        OptionPopup.OnOpenEvent += OnPausePopupChanged;
+        OptionPopup.OnCloseEvent += OnPausePopupChanged;
+        ConfirmPopup.OnOpenEvent += OnPausePopupChanged;
+        ConfirmPopup.OnCloseEvent += OnPausePopupChanged;
 
         manager.EnterBattle(session);
     }
@@ -123,13 +123,13 @@ public class BattleViewManager : MonoBehaviour
     // 옵션(포기)은 반대로 전투 중에만 쓸 수 있다. 전투가 끝나면 열려 있던 옵션 팝업도 닫는다
     private void OnBusyChanged(bool isBusy)
     {
-        resultView.SetRetryInteractable(isBusy == false);
+        ResultPopup.SetRetryInteractable(isBusy == false);
         optionButton.interactable = isBusy;
 
         if (isBusy == false)
         {
-            optionPopup.Close();
-            confirmPopup.Close();
+            OptionPopup.Close();
+            ConfirmPopup.Close();
         }
     }
 
@@ -140,27 +140,27 @@ public class BattleViewManager : MonoBehaviour
             return;
         }
 
-        optionPopup.Open();
+        OptionPopup.Open();
     }
 
     private void OnAbandonClicked()
     {
-        optionPopup.Close();
-        confirmPopup.Setup(AbandonTitle, AbandonMessage, OnConfirmAbandon, confirmPopup.Close);
-        confirmPopup.Open();
+        OptionPopup.Close();
+        ConfirmPopup.Setup(AbandonTitle, AbandonMessage, OnConfirmAbandon, ConfirmPopup.Close);
+        ConfirmPopup.Open();
     }
 
     // 포기 응답이 오면 BattleEnded로 패배 결과 팝업이 뜬다
     private void OnConfirmAbandon()
     {
-        confirmPopup.Close();
+        ConfirmPopup.Close();
         manager.Abandon();
     }
 
     // 둘 중 하나라도 떠 있으면 카운트다운, 보스 경고, 전투 진행, 연출을 모두 멈춘다
     private void OnPausePopupChanged(BasePopup popup)
     {
-        bool isPaused = optionPopup.IsOpened || confirmPopup.IsOpened;
+        bool isPaused = OptionPopup.IsOpened || ConfirmPopup.IsOpened;
         Time.timeScale = isPaused ? 0f : 1f;
     }
 

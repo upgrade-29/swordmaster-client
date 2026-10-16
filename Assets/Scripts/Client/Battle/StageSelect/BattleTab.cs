@@ -17,7 +17,7 @@ public class BattleTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
+    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
 
     protected override void Awake()
     {
@@ -33,12 +33,12 @@ public class BattleTab : LobbyTab
         lobbyController.OnChangeTabEvent += OnChangeTab;
     }
 
-    // 팝업은 LobbyPopupUI가 Awake에서 모으므로 Start에서 꺼낸다
+    // 팝업은 Popup이 Awake에서 모으므로 Start에서 꺼낸다
     private void Start()
     {
         stageSelectController.Init(GameDB.stages, User.StageProgress, CalculateCombatPower());
 
-        resumePopup = LobbyPopupUI.Instance.Get<BattleResumePopup>();
+        resumePopup = Popup.Instance.Get<BattleResumePopup>();
         resumePopup.ContinueClicked += OnContinueClicked;
         resumePopup.RestartClicked += OnRestartClicked;
         resumePopup.CancelClicked += OnResumeCanceled;
@@ -197,6 +197,6 @@ public class BattleTab : LobbyTab
 
     private void OnClickChat()
     {
-        LobbyPopupUI.Instance.Get<ChatOverlayView>().Open();
+        Popup.Instance.Get<ChatOverlayView>().Open();
     }
 }

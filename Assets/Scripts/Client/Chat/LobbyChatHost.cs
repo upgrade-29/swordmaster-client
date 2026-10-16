@@ -16,7 +16,7 @@ public sealed class LobbyChatHost : MonoBehaviour
     [Header("연결 대상")]
     [SerializeField] private TopNoticeView _topNoticeView;
 
-    private ChatOverlayView _chatOverlayView; // PopupUI에 있으므로 Start에서 LobbyPopupUI로 가져온다
+    private ChatOverlayView _chatOverlayView; // PopupUI에 있으므로 Start에서 Popup으로 가져온다
 
     // 로그인하고 로비에 들어왔으면 로그인한 서버의 채팅에 연결한다. 이미 연결되어 있으면 ChatClient가 아무것도 하지 않는다.
     // 로그인 없이 연 경우 Editor PlayMode에서만 환경 변수로 전달된 일회성 연결 정보로 실제 서버 테스트를 시작한다.
@@ -24,7 +24,7 @@ public sealed class LobbyChatHost : MonoBehaviour
     {
         ChatClient chatClient = ChatClient.Instance;
 
-        _chatOverlayView = LobbyPopupUI.Instance.Get<ChatOverlayView>();
+        _chatOverlayView = Popup.Instance.Get<ChatOverlayView>();
         _chatOverlayView.Bind(chatClient);
 
         if (_topNoticeView != null)

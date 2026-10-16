@@ -17,18 +17,23 @@ public class BattleEffectPresenter : IDisposable
     private readonly BattleUnitView playerView;
     private readonly BattleUnitView enemyView;
     private readonly BossWarningView bossWarningView;
-    private readonly BattleResultPopup resultView;
+    private readonly Action onRetry;
+    private readonly Action onExit;
     private readonly Dictionary<string, string> artifactNamesByCode;
     private readonly DamageFloaterPool damageFloaters = new DamageFloaterPool();
 
+    private BattleResultPopup ResultPopup => Popup.Instance.Get<BattleResultPopup>();
+
+    // 결과 팝업의 재도전과 나가기에서 할 일은 여는 쪽(BattleViewManager)이 정해서 넘긴다
     public BattleEffectPresenter(BattleManager manager, BattleUnitView playerView, BattleUnitView enemyView,
-        BossWarningView bossWarningView, BattleResultPopup resultView, GameDB gameDB)
+        BossWarningView bossWarningView, GameDB gameDB, Action onRetry, Action onExit)
     {
         this.manager = manager;
         this.playerView = playerView;
         this.enemyView = enemyView;
         this.bossWarningView = bossWarningView;
-        this.resultView = resultView;
+        this.onRetry = onRetry;
+        this.onExit = onExit;
         artifactNamesByCode = gameDB.artifacts.ToDictionary(data => data.code, data => data.name);
 
         manager.CountdownStarted += OnCountdownStarted;
@@ -55,7 +60,7 @@ public class BattleEffectPresenter : IDisposable
     // 재도전이 받아들여져 시작 대기에 들어가면 팝업을 닫고, 지난 전투에서 쓰러진 적을 다시 보여준다
     private void OnCountdownStarted(BattleSubStage subStage)
     {
-        resultView.Close();
+        ResultPopup.Close();
         enemyView.SetVisible(true);
     }
 
@@ -102,12 +107,14 @@ public class BattleEffectPresenter : IDisposable
     private void OnBattleEnded(BattleApi.BattleEndResponse result)
     {
         var artifactNames = result.rewards.artifactCodes.Select(code => artifactNamesByCode[code]).ToList();
-        resultView.Show(result, artifactNames);
+        ResultPopup.Setup(result, artifactNames, onRetry, onExit);
+        ResultPopup.Open();
     }
 
     // 재도전이 거절되면 열려 있는 팝업에 문구만 바꾸고, 전투 중 검증에 실패했으면 실패 팝업을 띄운다
     private void OnRequestRejected(string message)
     {
-        resultView.ShowRejected(manager.Session?.stage ?? 0, message);
+        ResultPopup.SetupRejected(manager.Session?.stage ?? 0, message, onRetry, onExit);
+        ResultPopup.Open();
     }
 }

@@ -16,8 +16,8 @@ public class ShopTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
-    private GachaResultPopup GachaResultPopup => LobbyPopupUI.Instance.Get<GachaResultPopup>();
+    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
+    private GachaResultPopup GachaResultPopup => Popup.Instance.Get<GachaResultPopup>();
 
     // 구매 확인부터 결과를 받을 때까지의 상품. 한 번에 하나만 구매한다
     private ShopProductItem purchasingItem;
