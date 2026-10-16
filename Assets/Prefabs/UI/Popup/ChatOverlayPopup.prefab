@@ -174,7 +174,7 @@ MonoBehaviour:
   btnDimmed: {fileID: 0}
   closeOnOutsideTouch: 1
   _closeButton: {fileID: 5479065320827107269}
-  _messagesText: {fileID: 3074083510443305983}
+  _messageItemTemplate: {fileID: 3074083510443305983}
   _messagesScrollRect: {fileID: 2210510009712498711}
   _publicChatColor: {r: 1, g: 1, b: 1, a: 1}
   _systemNoticeColor: {r: 1, g: 0.8352941, b: 0.30980393, a: 1}
@@ -1247,7 +1247,7 @@ MonoBehaviour:
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
-  m_ChildControlHeight: 0
+  m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
@@ -1277,12 +1277,12 @@ GameObject:
   - component: {fileID: 9129022740590484098}
   - component: {fileID: 3074083510443305983}
   m_Layer: 0
-  m_Name: MessagesText
+  m_Name: MessageItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &956733565686876545
 RectTransform:
   m_ObjectHideFlags: 0

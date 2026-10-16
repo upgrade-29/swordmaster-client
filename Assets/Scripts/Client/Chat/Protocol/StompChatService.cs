@@ -34,6 +34,7 @@ public sealed class StompChatService : IDisposable
 
     public StompChatConnectionState State { get; private set; } = StompChatConnectionState.Disconnected;
     public bool IsNormalDisconnectRequested { get; private set; }
+    public bool IsRejectedByServer { get; private set; }
 
     public event Action<StompChatConnectionState> StateChanged;
     public event Action<string, ChatMessageDto> MessageReceived;
@@ -56,6 +57,7 @@ public sealed class StompChatService : IDisposable
         _closeRequestedConnectionId = 0;
         _closeTask = null;
         IsNormalDisconnectRequested = false;
+        IsRejectedByServer = false;
         _host = host;
         _accessToken = accessToken;
         _codec.Reset();
@@ -302,10 +304,23 @@ public sealed class StompChatService : IDisposable
     }
 
     // STOMP ERROR는 application 오류와 달리 종료 상태로 전환하고 transport 종료를 요청한다.
+    // 서버는 인증 실패나 허용되지 않은 주소처럼 다시 연결해도 같은 결과인 경우에만 ERROR를 보내므로 재연결하지 않게 표시한다.
     private void HandleStompError(int connectionId, StompFrame frame)
     {
+        IsRejectedByServer = true;
         frame.TryGetHeader("message", out string headerMessage);
-        string errorMessage = string.IsNullOrEmpty(headerMessage) ? frame.Body : $"{headerMessage}: {frame.Body}";
+
+        // header와 body 중 비어 있는 쪽은 빼고 이어 붙인다
+        string errorMessage = headerMessage;
+        if (string.IsNullOrEmpty(headerMessage))
+        {
+            errorMessage = frame.Body;
+        }
+        else if (string.IsNullOrWhiteSpace(frame.Body) == false)
+        {
+            errorMessage = $"{headerMessage}: {frame.Body}";
+        }
+
         ProtocolErrorReceived?.Invoke(errorMessage);
         _ = CloseAfterFailureAsync(connectionId);
     }

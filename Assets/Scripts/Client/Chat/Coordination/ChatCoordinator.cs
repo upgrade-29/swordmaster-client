@@ -8,6 +8,8 @@ public sealed class ChatCoordinator : IDisposable
     private const string NoticesDestination = "/topic/notices";
     private const string UserSystemDestination = "/user/queue/system";
 
+    public const int MaximumMessageCount = 200;
+
     private readonly StompChatService _chatService;
     private readonly List<ChatMessage> _messages = new List<ChatMessage>();
 
@@ -51,7 +53,7 @@ public sealed class ChatCoordinator : IDisposable
         _chatService.ProtocolErrorReceived -= OnConnectionErrorReceived;
     }
 
-    // destination과 type 조합이 계약에 맞는 경우에만 단일 목록과 공지 표시를 갱신한다.
+    // destination과 type 조합이 계약에 맞는 경우에만 메시지 목록과 공지 표시를 갱신한다.
     private void OnMessageReceived(string destination, ChatMessageDto messageDto)
     {
         if (messageDto.TryToChatMessage(out ChatMessage message) == false)
@@ -67,6 +69,11 @@ public sealed class ChatCoordinator : IDisposable
         }
 
         ChatMessageOrdering.InsertBySentAt(_messages, message);
+        if (_messages.Count > MaximumMessageCount)
+        {
+            _messages.RemoveAt(0);
+        }
+
         MessageAdded?.Invoke(message);
 
         if (message.Type == "SYSTEM_NOTICE" || message.Type == "SWORD_ENHANCEMENT")
