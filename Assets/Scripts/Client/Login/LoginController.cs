@@ -34,11 +34,11 @@ public class LoginController : MonoBehaviour
     {
         signupView.Hide();
 
-        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 없이 바로 로그인 화면을 띄운다
+        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 터치 없이 바로 로그인 화면을 띄운다
         if (GameSession.Instance.IsExpired)
         {
             GameSession.Instance.ClearExpired();
-            titleView.Hide();
+            titleView.ShowDimmed();
             view.Show();
             view.SetResult(false, SessionExpiredMessage);
             return;
@@ -76,7 +76,7 @@ public class LoginController : MonoBehaviour
     // TODO: 기존 유저면 플레이어 정보를 받아 바로 로비로 가고, 아니면 로그인 화면을 띄운다. 지금은 판별 없이 로그인 화면을 띄운다
     private void OnClickTitle()
     {
-        titleView.Hide();
+        titleView.ShowDimmed();
         view.Show();
     }
 
