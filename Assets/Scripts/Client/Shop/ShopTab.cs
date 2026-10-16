@@ -8,7 +8,6 @@ public class ShopTab : LobbyTab
 {
     [ReadOnly] [SerializeField] private GameObject objViewport;
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
-    [ReadOnly] [SerializeField] private Transform comingSoonPanel;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
 
     [SerializeField] private ShopVisualCatalogSO visualCatalog;
@@ -33,7 +32,6 @@ public class ShopTab : LobbyTab
 
         objViewport = GameUtil.Bind<RectTransform>(transform, "Viewport").gameObject;
         contentTransform = GameUtil.Bind<RectTransform>(transform, "Viewport/Content");
-        comingSoonPanel = GameUtil.Bind<RectTransform>(transform, "Viewport/Content/ComingSoonPanel");
         objEmptyPanel = GameUtil.Bind<RectTransform>(transform, "EmptyPanel").gameObject;
     }
 
@@ -74,9 +72,6 @@ public class ShopTab : LobbyTab
                 item.OnClickPurchaseEvent += OnClickPurchase;
             }
         }
-
-        // Instantiate한 섹션은 마지막 자식으로 붙으므로, ComingSoonPanel을 다시 맨 아래로 보낸다.
-        comingSoonPanel.SetAsLastSibling();
     }
 
     // 상품 카드에는 첫 번째 보상만 표시한다.

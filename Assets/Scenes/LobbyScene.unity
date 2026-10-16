@@ -2608,6 +2608,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4535987566674691546, guid: d8b991ca7e2ef3f4ea2bfa9cbc9aeddc, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4535987566674691546, guid: d8b991ca7e2ef3f4ea2bfa9cbc9aeddc, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -2719,8 +2723,13 @@ PrefabInstance:
       propertyPath: m_Name
       value: ShopTab
       objectReference: {fileID: 0}
+    - target: {fileID: 8160842040267339608, guid: d8b991ca7e2ef3f4ea2bfa9cbc9aeddc, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 4826787196598324169, guid: d8b991ca7e2ef3f4ea2bfa9cbc9aeddc, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d8b991ca7e2ef3f4ea2bfa9cbc9aeddc, type: 3}
