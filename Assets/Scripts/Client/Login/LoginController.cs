@@ -8,6 +8,7 @@ public class LoginController : MonoBehaviour
 {
     private const string SessionExpiredMessage = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
+    [ReadOnly] [SerializeField] private TitleView titleView;
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
     [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
@@ -16,10 +17,12 @@ public class LoginController : MonoBehaviour
 
     private void Awake()
     {
+        GameUtil.Bind(gameObject, ref titleView);
         GameUtil.Bind(gameObject, ref view);
         GameUtil.Bind(gameObject, ref signupView);
         nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
 
+        titleView.OnClickTouchEvent += OnClickTitle;
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
         signupView.OnClickSignupEvent += OnClickSignup;
@@ -29,19 +32,29 @@ public class LoginController : MonoBehaviour
 
     private void Start()
     {
-        view.Show();
         signupView.Hide();
 
-        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우
+        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 없이 바로 로그인 화면을 띄운다
         if (GameSession.Instance.IsExpired)
         {
             GameSession.Instance.ClearExpired();
+            titleView.Hide();
+            view.Show();
             view.SetResult(false, SessionExpiredMessage);
+            return;
         }
+
+        view.Hide();
+        titleView.Show();
     }
 
     private void OnDestroy()
     {
+        if (titleView != null)
+        {
+            titleView.OnClickTouchEvent -= OnClickTitle;
+        }
+
         if (view != null)
         {
             view.OnClickLoginEvent -= OnClickLogin;
@@ -58,6 +71,13 @@ public class LoginController : MonoBehaviour
         {
             nicknamePopup.OnClickConfirmEvent -= OnClickNicknameConfirm;
         }
+    }
+
+    // TODO: 기존 유저면 플레이어 정보를 받아 바로 로비로 가고, 아니면 로그인 화면을 띄운다. 지금은 판별 없이 로그인 화면을 띄운다
+    private void OnClickTitle()
+    {
+        titleView.Hide();
+        view.Show();
     }
 
     private void OnClickOpenSignup()
