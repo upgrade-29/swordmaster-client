@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 public sealed class StompFrameCodec
 {
     private const char FrameTerminator = '\0';
+    private const int MaximumBufferedTextLength = 256 * 1024;
 
     private readonly StringBuilder _receivedText = new StringBuilder();
 
@@ -80,13 +81,33 @@ public sealed class StompFrameCodec
             return Array.Empty<StompFrame>();
         }
 
+        if (ContainsOnlyHeartbeat(_receivedText) == true)
+        {
+            _receivedText.Clear();
+        }
+
+        if (_receivedText.Length == 0)
+        {
+            text = text.TrimStart('\r', '\n');
+            if (text.Length == 0)
+            {
+                return Array.Empty<StompFrame>();
+            }
+        }
+
+        if (_receivedText.Length + text.Length > MaximumBufferedTextLength)
+        {
+            Reset();
+            throw new InvalidOperationException("STOMP 수신 버퍼가 허용 크기를 초과했습니다.");
+        }
+
         _receivedText.Append(text);
         List<StompFrame> frames = new List<StompFrame>();
         int frameEndIndex;
 
         while ((frameEndIndex = IndexOfFrameTerminator(_receivedText)) >= 0)
         {
-            string rawFrame = _receivedText.ToString(0, frameEndIndex);
+            string rawFrame = _receivedText.ToString(0, frameEndIndex).TrimStart('\r', '\n');
             _receivedText.Remove(0, frameEndIndex + 1);
 
             if (string.IsNullOrWhiteSpace(rawFrame))
@@ -98,6 +119,12 @@ public sealed class StompFrameCodec
         }
 
         return frames;
+    }
+
+    // 새 연결은 이전 연결의 미완성 frame과 결합되지 않도록 수신 버퍼를 비운다.
+    public void Reset()
+    {
+        _receivedText.Clear();
     }
 
     // 지원 범위 밖 command가 전송되지 않도록 최소 송신 frame 형식을 한 곳에서 구성한다.
@@ -133,12 +160,18 @@ public sealed class StompFrameCodec
     }
 
     // 수신으로 허용한 CONNECTED, MESSAGE, ERROR만 구조화된 frame으로 변환한다.
+    // 현재 MVP는 NUL 종료 text frame만 지원하므로 content-length 기반 binary body의 NUL 포함은 지원하지 않는다.
     private static StompFrame ParseIncomingFrame(string rawFrame)
     {
-        int headerBodySeparatorIndex = rawFrame.IndexOf("\n\n", StringComparison.Ordinal);
+        int crlfHeaderBodySeparatorIndex = rawFrame.IndexOf("\r\n\r\n", StringComparison.Ordinal);
+        int lfHeaderBodySeparatorIndex = rawFrame.IndexOf("\n\n", StringComparison.Ordinal);
+        int headerBodySeparatorIndex = crlfHeaderBodySeparatorIndex >= 0
+            ? crlfHeaderBodySeparatorIndex
+            : lfHeaderBodySeparatorIndex;
+        int separatorLength = crlfHeaderBodySeparatorIndex >= 0 ? 4 : 2;
         string headerSection = headerBodySeparatorIndex >= 0 ? rawFrame.Substring(0, headerBodySeparatorIndex) : rawFrame;
-        string body = headerBodySeparatorIndex >= 0 ? rawFrame.Substring(headerBodySeparatorIndex + 2) : string.Empty;
-        string[] headerLines = headerSection.Split('\n');
+        string body = headerBodySeparatorIndex >= 0 ? rawFrame.Substring(headerBodySeparatorIndex + separatorLength) : string.Empty;
+        string[] headerLines = headerSection.Replace("\r\n", "\n").Split('\n');
 
         if (headerLines.Length == 0 || TryParseIncomingCommand(headerLines[0], out StompCommand command) == false)
         {
@@ -176,6 +209,25 @@ public sealed class StompFrameCodec
         }
 
         return -1;
+    }
+
+    // frame 경계 밖의 CRLF/LF heartbeat는 다음 frame의 command에 결합하지 않도록 따로 소비한다.
+    private static bool ContainsOnlyHeartbeat(StringBuilder value)
+    {
+        if (value.Length == 0)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < value.Length; index++)
+        {
+            if (value[index] != '\r' && value[index] != '\n')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // 수신 전용 command를 생성 API에서 사용하지 못하게 제한한다.

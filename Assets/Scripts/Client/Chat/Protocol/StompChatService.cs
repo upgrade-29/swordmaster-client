@@ -15,6 +15,10 @@ public sealed class StompChatService : IDisposable
 
     private string _host;
     private string _accessToken;
+    private int _nextConnectionId;
+    private int _activeConnectionId;
+    private int _closeRequestedConnectionId;
+    private Task _closeTask;
     private bool _disposed;
 
     public StompChatService(IStompSocket socket, StompFrameCodec codec)
@@ -29,6 +33,7 @@ public sealed class StompChatService : IDisposable
     }
 
     public StompChatConnectionState State { get; private set; } = StompChatConnectionState.Disconnected;
+    public bool IsNormalDisconnectRequested { get; private set; }
 
     public event Action<StompChatConnectionState> StateChanged;
     public event Action<string, ChatMessageDto> MessageReceived;
@@ -37,7 +42,7 @@ public sealed class StompChatService : IDisposable
     public event Action<string> ProtocolErrorReceived;
 
     // Lobby가 제공한 URL·host·token을 보관하고 WebSocket 연결을 시작한다.
-    public Task ConnectAsync(string url, string host, string accessToken)
+    public async Task ConnectAsync(string url, string host, string accessToken)
     {
         ThrowIfDisposed();
 
@@ -46,10 +51,32 @@ public sealed class StompChatService : IDisposable
             throw new InvalidOperationException("이미 채팅 연결을 진행 중이거나 연결되어 있습니다.");
         }
 
+        int connectionId = ++_nextConnectionId;
+        _activeConnectionId = connectionId;
+        _closeRequestedConnectionId = 0;
+        _closeTask = null;
+        IsNormalDisconnectRequested = false;
         _host = host;
         _accessToken = accessToken;
+        _codec.Reset();
         SetState(StompChatConnectionState.WebSocketConnecting);
-        return _socket.ConnectAsync(url);
+
+        try
+        {
+            await _socket.ConnectAsync(url, connectionId);
+        }
+        catch (Exception exception)
+        {
+            if (IsActiveConnection(connectionId) == true
+                && State != StompChatConnectionState.Disconnecting
+                && State != StompChatConnectionState.Disconnected)
+            {
+                TransportErrorReceived?.Invoke(exception.Message);
+                CompleteDisconnected(connectionId);
+            }
+
+            throw;
+        }
     }
 
     // 서버가 되돌려 줄 PUBLIC_CHAT만 목록에 반영한다는 계약으로 공개 채팅을 전송한다.
@@ -59,29 +86,28 @@ public sealed class StompChatService : IDisposable
 
         if (State != StompChatConnectionState.Connected)
         {
-            throw new InvalidOperationException("STOMP 연결 완료 후에만 채팅을 전송할 수 있습니다.");
+            throw new InvalidOperationException("필수 STOMP 구독 완료 후에만 채팅을 전송할 수 있습니다.");
         }
 
         return _socket.SendTextAsync(_codec.CreateSendPublicChat(content));
     }
 
     // Lobby 종료 시 DISCONNECT를 먼저 보내고 transport를 닫는다.
-    public async Task DisconnectAsync()
+    public Task DisconnectAsync()
     {
         if (_disposed == true || State == StompChatConnectionState.Disconnected)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        SetState(StompChatConnectionState.Disconnecting);
-
-        if (_socket.IsOpen == true)
+        if (_closeTask != null)
         {
-            await _socket.SendTextAsync(_codec.CreateDisconnect());
+            return _closeTask;
         }
 
-        await _socket.CloseAsync();
-        SetState(StompChatConnectionState.Disconnected);
+        IsNormalDisconnectRequested = true;
+        _closeTask = CloseConnectionAsync(_activeConnectionId, true);
+        return _closeTask;
     }
 
     // socket callback 구독을 해제해 Lobby 수명 종료 뒤의 수신을 막는다.
@@ -93,15 +119,36 @@ public sealed class StompChatService : IDisposable
         }
 
         _disposed = true;
+        IsNormalDisconnectRequested = true;
+        _closeRequestedConnectionId = _activeConnectionId;
+        _codec.Reset();
         _socket.Opened -= OnSocketOpened;
         _socket.MessageReceived -= OnSocketMessageReceived;
         _socket.ErrorReceived -= OnSocketErrorReceived;
         _socket.Closed -= OnSocketClosed;
+
+        if (State != StompChatConnectionState.Disconnected)
+        {
+            SetState(StompChatConnectionState.Disconnected);
+        }
+
+        _ = CloseAfterDisposeAsync();
+    }
+
+    // WebSocket open event는 Action 시그니처라 Task 작업을 시작하되 내부 예외를 모두 처리한다.
+    private void OnSocketOpened(int connectionId)
+    {
+        _ = SendConnectAsync(connectionId);
     }
 
     // WebSocket open 직후에는 구독 대신 STOMP CONNECT부터 보낸다.
-    private async void OnSocketOpened()
+    private async Task SendConnectAsync(int connectionId)
     {
+        if (IsActiveConnection(connectionId) == false || State != StompChatConnectionState.WebSocketConnecting)
+        {
+            return;
+        }
+
         try
         {
             SetState(StompChatConnectionState.WebSocketConnected);
@@ -110,28 +157,44 @@ public sealed class StompChatService : IDisposable
         }
         catch (Exception exception)
         {
+            if (IsActiveConnection(connectionId) == false
+                || State == StompChatConnectionState.Disconnecting
+                || State == StompChatConnectionState.Disconnected)
+            {
+                return;
+            }
+
             ProtocolErrorReceived?.Invoke(exception.Message);
+            await CloseAfterFailureAsync(connectionId);
         }
     }
 
     // 누적 codec 결과를 command별로 분기하되 transport는 frame 내용을 알지 못하게 유지한다.
-    private void OnSocketMessageReceived(string text)
+    private void OnSocketMessageReceived(int connectionId, string text)
     {
+        if (IsActiveConnection(connectionId) == false
+            || State == StompChatConnectionState.Disconnecting
+            || State == StompChatConnectionState.Disconnected)
+        {
+            return;
+        }
+
         try
         {
             foreach (StompFrame frame in _codec.AppendReceivedText(text))
             {
-                HandleFrame(frame);
+                HandleFrame(connectionId, frame);
             }
         }
         catch (Exception exception)
         {
             ProtocolErrorReceived?.Invoke(exception.Message);
+            _ = CloseAfterFailureAsync(connectionId);
         }
     }
 
-    // CONNECTED 이후에만 고정된 네 destination을 구독하고 수신 command를 처리한다.
-    private void HandleFrame(StompFrame frame)
+    // CONNECTED 이후에는 필수 SUBSCRIBE 전송이 모두 끝난 다음에만 Connected 상태가 된다.
+    private void HandleFrame(int connectionId, StompFrame frame)
     {
         if (frame.Command == StompCommand.Connected)
         {
@@ -141,8 +204,8 @@ public sealed class StompChatService : IDisposable
                 return;
             }
 
-            SetState(StompChatConnectionState.Connected);
-            SubscribeRequiredDestinations();
+            SetState(StompChatConnectionState.Subscribing);
+            _ = SubscribeRequiredDestinationsAsync(connectionId);
             return;
         }
 
@@ -154,24 +217,54 @@ public sealed class StompChatService : IDisposable
 
         if (frame.Command == StompCommand.Error)
         {
-            HandleStompError(frame);
+            HandleStompError(connectionId, frame);
         }
     }
 
     // 서버 계약의 네 destination을 중복되지 않는 고정 ID로 순서대로 구독한다.
-    private async void SubscribeRequiredDestinations()
+    private async Task SubscribeRequiredDestinationsAsync(int connectionId)
     {
         try
         {
-            await _socket.SendTextAsync(_codec.CreateSubscribe(PublicChatDestination, "sub-public-chat"));
-            await _socket.SendTextAsync(_codec.CreateSubscribe(NoticesDestination, "sub-notices"));
-            await _socket.SendTextAsync(_codec.CreateSubscribe(UserSystemDestination, "sub-system"));
-            await _socket.SendTextAsync(_codec.CreateSubscribe(UserErrorDestination, "sub-errors"));
+            await SendSubscribeAsync(connectionId, PublicChatDestination, "sub-public-chat");
+            await SendSubscribeAsync(connectionId, NoticesDestination, "sub-notices");
+            await SendSubscribeAsync(connectionId, UserSystemDestination, "sub-system");
+            await SendSubscribeAsync(connectionId, UserErrorDestination, "sub-errors");
+
+            if (IsActiveConnection(connectionId) == true && State == StompChatConnectionState.Subscribing)
+            {
+                SetState(StompChatConnectionState.Connected);
+            }
+        }
+        catch (OperationCanceledException) when (IsActiveConnection(connectionId) == false
+                                                 || State == StompChatConnectionState.Disconnecting
+                                                 || State == StompChatConnectionState.Disconnected)
+        {
+            // 종료 요청이 들어온 뒤에는 아직 보내지 않은 SUBSCRIBE frame을 전송하지 않는다.
         }
         catch (Exception exception)
         {
+            if (IsActiveConnection(connectionId) == false
+                || State == StompChatConnectionState.Disconnecting
+                || State == StompChatConnectionState.Disconnected)
+            {
+                return;
+            }
+
             TransportErrorReceived?.Invoke(exception.Message);
+            await CloseAfterFailureAsync(connectionId);
         }
+    }
+
+    // 종료 또는 다른 연결 시도가 시작되면 남은 구독 전송을 중단한다.
+    private Task SendSubscribeAsync(int connectionId, string destination, string subscriptionId)
+    {
+        if (IsActiveConnection(connectionId) == false || State != StompChatConnectionState.Subscribing)
+        {
+            throw new OperationCanceledException("채팅 구독 전송이 중단되었습니다.");
+        }
+
+        return _socket.SendTextAsync(_codec.CreateSubscribe(destination, subscriptionId));
     }
 
     // destination에 따라 application error와 공통 채팅 DTO를 서로 다른 이벤트로 전달한다.
@@ -209,13 +302,121 @@ public sealed class StompChatService : IDisposable
     }
 
     // STOMP ERROR는 application 오류와 달리 종료 상태로 전환하고 transport 종료를 요청한다.
-    private async void HandleStompError(StompFrame frame)
+    private void HandleStompError(int connectionId, StompFrame frame)
     {
         frame.TryGetHeader("message", out string headerMessage);
         string errorMessage = string.IsNullOrEmpty(headerMessage) ? frame.Body : $"{headerMessage}: {frame.Body}";
         ProtocolErrorReceived?.Invoke(errorMessage);
-        SetState(StompChatConnectionState.Disconnected);
+        _ = CloseAfterFailureAsync(connectionId);
+    }
 
+    // transport 오류는 STOMP protocol 오류와 섞지 않고 상위 표시 계층에 전달한다.
+    private void OnSocketErrorReceived(int connectionId, string errorMessage)
+    {
+        if (IsActiveConnection(connectionId) == true
+            && State != StompChatConnectionState.Disconnecting
+            && State != StompChatConnectionState.Disconnected)
+        {
+            TransportErrorReceived?.Invoke(errorMessage);
+        }
+    }
+
+    // 원격 종료는 상위에 오류를 알린 뒤 재연결 가능한 최종 끊김 상태로 바꾼다.
+    private void OnSocketClosed(int connectionId)
+    {
+        if (IsActiveConnection(connectionId) == false)
+        {
+            return;
+        }
+
+        bool wasUnexpected = _closeRequestedConnectionId != connectionId;
+        if (wasUnexpected == true && _disposed == false)
+        {
+            TransportErrorReceived?.Invoke("채팅 연결이 끊겼습니다.");
+        }
+
+        CompleteDisconnected(connectionId);
+    }
+
+    // CONNECT 또는 SUBSCRIBE 실패는 같은 close 작업을 공유해 종료 요청을 중복하지 않는다.
+    private async Task CloseAfterFailureAsync(int connectionId)
+    {
+        if (IsActiveConnection(connectionId) == false
+            || State == StompChatConnectionState.Disconnecting
+            || State == StompChatConnectionState.Disconnected)
+        {
+            return;
+        }
+
+        Task closeTask = _closeTask;
+        if (closeTask == null)
+        {
+            closeTask = CloseConnectionAsync(connectionId, false);
+            _closeTask = closeTask;
+        }
+
+        try
+        {
+            await closeTask;
+        }
+        catch (Exception)
+        {
+            // CloseConnectionAsync가 이미 transport 오류 이벤트를 전달했다.
+        }
+    }
+
+    // DISCONNECT 실패와 Close 실패를 모두 전달하되, 어떤 경우에도 transport 종료를 시도한다.
+    private async Task CloseConnectionAsync(int connectionId, bool sendDisconnect)
+    {
+        Exception firstException = null;
+
+        _closeRequestedConnectionId = connectionId;
+
+        if (IsActiveConnection(connectionId) == true)
+        {
+            SetState(StompChatConnectionState.Disconnecting);
+        }
+
+        if (sendDisconnect == true && _socket.IsOpen == true)
+        {
+            try
+            {
+                await _socket.SendTextAsync(_codec.CreateDisconnect());
+            }
+            catch (Exception exception)
+            {
+                firstException = exception;
+                TransportErrorReceived?.Invoke(exception.Message);
+            }
+        }
+
+        try
+        {
+            await _socket.CloseAsync();
+        }
+        catch (Exception exception)
+        {
+            if (firstException == null)
+            {
+                firstException = exception;
+            }
+
+            TransportErrorReceived?.Invoke(exception.Message);
+        }
+        finally
+        {
+            CompleteDisconnected(connectionId);
+        }
+
+        if (firstException != null)
+        {
+            throw firstException;
+        }
+    }
+
+    // Dispose 중에는 예외를 관찰하고, 이미 해제된 상위 계층을 다시 호출하지 않는다.
+    private async Task CloseAfterDisposeAsync()
+    {
         try
         {
             await _socket.CloseAsync();
@@ -226,15 +427,15 @@ public sealed class StompChatService : IDisposable
         }
     }
 
-    // transport 오류는 STOMP protocol 오류와 섞지 않고 상위 표시 계층에 전달한다.
-    private void OnSocketErrorReceived(string errorMessage)
+    // 현재 연결의 종료만 상태와 codec 버퍼에 반영한다.
+    private void CompleteDisconnected(int connectionId)
     {
-        TransportErrorReceived?.Invoke(errorMessage);
-    }
+        if (IsActiveConnection(connectionId) == false)
+        {
+            return;
+        }
 
-    // 원격 종료와 로컬 종료 모두 최종 연결 상태를 끊김으로 맞춘다.
-    private void OnSocketClosed()
-    {
+        _codec.Reset();
         SetState(StompChatConnectionState.Disconnected);
     }
 
@@ -248,6 +449,11 @@ public sealed class StompChatService : IDisposable
 
         State = state;
         StateChanged?.Invoke(State);
+    }
+
+    private bool IsActiveConnection(int connectionId)
+    {
+        return _disposed == false && _activeConnectionId == connectionId;
     }
 
     // 해제된 service가 transport callback을 다시 조정하지 못하게 막는다.
