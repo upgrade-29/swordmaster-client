@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Newtonsoft.Json;
 
 // 서버 계약에 필요한 STOMP frame을 만들고 NUL 경계 수신 데이터를 누적 해석한다.
 public sealed class StompFrameCodec
@@ -49,25 +48,20 @@ public sealed class StompFrameCodec
             string.Empty);
     }
 
-    // 서버가 허용한 공개 채팅 destination과 content 단일 필드만 SEND body에 담는다.
-    public string CreateSendPublicChat(string content)
+    // 호출한 기능이 만든 JSON body를 destination으로 보내는 SEND frame을 만든다.
+    public string CreateSend(string destination, string body)
     {
-        if (ChatInputValidator.TryValidate(content, out string errorMessage) == false)
-        {
-            throw new ArgumentException(errorMessage, nameof(content));
-        }
-
         return CreateOutgoingFrame(
             StompCommand.Send,
             new[]
             {
-                new KeyValuePair<string, string>("destination", "/app/chat/public"),
+                new KeyValuePair<string, string>("destination", destination),
                 new KeyValuePair<string, string>("content-type", "application/json")
             },
-            JsonConvert.SerializeObject(new PublicChatSendDto(content)));
+            body);
     }
 
-    // Lobby 수명 종료 전에 STOMP 종료 의사를 먼저 전달하는 frame을 만든다.
+    // 연결을 끝내기 전에 STOMP 종료 의사를 먼저 전달하는 frame을 만든다.
     public string CreateDisconnect()
     {
         return CreateOutgoingFrame(StompCommand.Disconnect, Array.Empty<KeyValuePair<string, string>>(), string.Empty);
@@ -313,17 +307,5 @@ public sealed class StompFrameCodec
         }
 
         return unescaped.ToString();
-    }
-
-    // 공개 채팅 SEND body가 서버 계약의 content 단일 필드만 갖도록 고정한다.
-    private sealed class PublicChatSendDto
-    {
-        public PublicChatSendDto(string content)
-        {
-            Content = content;
-        }
-
-        [JsonProperty("content")]
-        public string Content { get; }
     }
 }

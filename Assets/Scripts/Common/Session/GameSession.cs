@@ -37,13 +37,19 @@ public class GameSession : SingletonMonoBehaviour<GameSession>
         HttpConfig.SetHeader(AuthorizationHeader, $"Bearer {accessToken}");
     }
 
-    // 로그인한 상태에서 서버가 401로 토큰을 거절했을 때. 토큰과 유저를 지운다
+    // 로그인한 상태에서 서버가 401로 토큰을 거절했을 때. 토큰과 유저를 지우고, 같은 토큰으로 맺은 실시간 연결도 끊는다
     public void Expire()
     {
         accessToken = null;
         user = null;
         isExpired = true;
         HttpConfig.RemoveHeader(AuthorizationHeader);
+
+        // 연결한 적이 없으면 StompClient를 새로 만들지 않는다
+        if (StompClient.IsInitialize())
+        {
+            StompClient.Instance.Disconnect();
+        }
     }
 
     public void ClearExpired()
