@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ public sealed class ChatOverlayView : BasePopup
     [SerializeField] private TMP_Text _errorText;
 
     private const float AutoScrollThreshold = 0.1f;
+    private const int MaximumMessageCount = 200;
 
     private readonly List<ChatMessage> _messages = new List<ChatMessage>();
 
@@ -57,6 +59,7 @@ public sealed class ChatOverlayView : BasePopup
             _messages.Add(message);
         }
 
+        TrimOldestMessages();
         RefreshMessages();
     }
 
@@ -97,11 +100,11 @@ public sealed class ChatOverlayView : BasePopup
             return;
         }
 
-        SendAsync(_inputField.text);
+        _ = SendAsync(_inputField.text);
     }
 
     // 연결 상태 오류를 입력 오류 영역에 표시하고 성공 요청 뒤에만 입력을 비운다.
-    private async void SendAsync(string content)
+    private async Task SendAsync(string content)
     {
         try
         {
@@ -115,11 +118,22 @@ public sealed class ChatOverlayView : BasePopup
         }
     }
 
-    // 모든 정상 서버 메시지를 도착 순서 목록에 보관하고 text list를 다시 그린다.
+    // 모든 정상 서버 메시지를 coordinator와 같은 sentAt 순서로 보관하고 text list를 다시 그린다.
     private void AddMessage(ChatMessage message)
     {
-        _messages.Add(message);
+        ChatMessageOrdering.InsertBySentAt(_messages, message);
+        TrimOldestMessages();
         RefreshMessages();
+    }
+
+    // 장시간 로비 접속 중에도 UI 목록과 문자열 결합 비용이 무한히 늘지 않게 가장 오래된 메시지부터 버린다.
+    private void TrimOldestMessages()
+    {
+        int excessCount = _messages.Count - MaximumMessageCount;
+        if (excessCount > 0)
+        {
+            _messages.RemoveRange(0, excessCount);
+        }
     }
 
     // `/user/queue/errors`의 application 오류는 연결 상태와 분리해 표시한다.
@@ -148,11 +162,20 @@ public sealed class ChatOverlayView : BasePopup
     private string FormatMessage(ChatMessage message)
     {
         string body = string.IsNullOrWhiteSpace(message.SenderNickname)
-            ? message.Content
-            : $"{message.SenderNickname}: {message.Content}";
+            ? EscapeRichText(message.Content)
+            : $"{EscapeRichText(message.SenderNickname)}: {EscapeRichText(message.Content)}";
 
         Color color = GetMessageColor(message.Type);
         return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{body}</color>";
+    }
+
+    // 서버가 중계한 사용자 입력이 메시지 색상 wrapper 밖의 TMP rich text tag로 해석되지 않게 만든다.
+    private static string EscapeRichText(string value)
+    {
+        return (value ?? string.Empty)
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;");
     }
 
     private Color GetMessageColor(string messageType)
