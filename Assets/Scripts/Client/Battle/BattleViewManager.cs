@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 // 전투 씬의 진입점. 로비에서 BattleEntry로 받은 배틀 세션과 GameSession의 GameDB로 BattleManager를 초기화하고, 전투 씬의 뷰들을 연결한다
 // 받은 값이 없으면(전투 씬을 바로 연 경우) 로비로, 로그인하지 않았으면 로그인 씬으로 돌려보낸다
 // BattleManager와 같은 오브젝트에 붙인다
 // 결과 팝업의 나가기를 받아 로비 씬으로 돌아간다. 전투 결과는 GameSession의 유저에 이미 반영되어 있다
+// 옵션 팝업이나 포기 확인 팝업이 떠 있는 동안은 전투를 멈춘다
 public class BattleViewManager : MonoBehaviour
 {
     private const float ExitFadeDuration = 0.5f;
+    private const string AbandonTitle = "전투 포기";
+    private const string AbandonMessage = "전투를 포기하시겠습니까?\n지금까지 모은 골드만 받고 패배 처리됩니다.";
 
     [ReadOnly(true)] [SerializeField] private bool logToConsole = true; // 로그 창 문장을 Console에도 찍는다
     [ReadOnly(true)] [SerializeField] [Range(1f, BattleManager.MaxSpeed)] private float speed = 1f;
@@ -20,6 +24,9 @@ public class BattleViewManager : MonoBehaviour
     private BossWarningView bossWarningView;
     private BattleResultPopup resultView;
     private ScreenFader screenFader;
+    private Button optionButton;
+    private BattleOptionPopup optionPopup;
+    private ConfirmPopup confirmPopup;
     private BattleHudPresenter hudPresenter;
     private BattleLogger battleLogger;
     private BattleEffectPresenter effectPresenter;
@@ -36,10 +43,20 @@ public class BattleViewManager : MonoBehaviour
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
         resultView = GameUtil.Bind<BattleResultPopup>(GameObject.Find("BattleCanvas"), "ResultPopup");
         screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
+        optionButton = GameUtil.Bind<Button>(GameObject.Find("BattleCanvas"), "Hud/OptionButton");
+        optionPopup = GameUtil.Bind<BattleOptionPopup>(GameObject.Find("BattleCanvas"), "OptionPopup");
+        confirmPopup = GameUtil.Bind<ConfirmPopup>(GameObject.Find("BattleCanvas"), "ConfirmPopup");
     }
 
     private void OnDestroy()
     {
+        Time.timeScale = 1f; // 멈춘 채로 씬을 떠나도 다음 씬은 정상 속도로 돈다
+        optionButton.onClick.RemoveListener(OnClickOption);
+        optionPopup.AbandonClicked -= OnAbandonClicked;
+        optionPopup.OnOpenEvent -= OnPausePopupChanged;
+        optionPopup.OnCloseEvent -= OnPausePopupChanged;
+        confirmPopup.OnOpenEvent -= OnPausePopupChanged;
+        confirmPopup.OnCloseEvent -= OnPausePopupChanged;
         resultView.RetryClicked -= manager.Retry;
         manager.BusyChanged -= OnBusyChanged;
         manager.BattleEnded -= OnBattleEnded;
@@ -85,6 +102,14 @@ public class BattleViewManager : MonoBehaviour
         manager.BattleEnded += OnBattleEnded;
         resultView.ExitClicked += OnExitClicked;
 
+        optionButton.interactable = false; // 전투가 시작되면 OnBusyChanged에서 켠다
+        optionButton.onClick.AddListener(OnClickOption);
+        optionPopup.AbandonClicked += OnAbandonClicked;
+        optionPopup.OnOpenEvent += OnPausePopupChanged;
+        optionPopup.OnCloseEvent += OnPausePopupChanged;
+        confirmPopup.OnOpenEvent += OnPausePopupChanged;
+        confirmPopup.OnCloseEvent += OnPausePopupChanged;
+
         manager.EnterBattle(session);
     }
 
@@ -95,9 +120,48 @@ public class BattleViewManager : MonoBehaviour
     }
 
     // 요청을 기다리거나 전투 중이면 재도전을 막는다. 결과나 거절·실패 응답을 받으면 다시 누를 수 있다
+    // 옵션(포기)은 반대로 전투 중에만 쓸 수 있다. 전투가 끝나면 열려 있던 옵션 팝업도 닫는다
     private void OnBusyChanged(bool isBusy)
     {
         resultView.SetRetryInteractable(isBusy == false);
+        optionButton.interactable = isBusy;
+
+        if (isBusy == false)
+        {
+            optionPopup.Close();
+            confirmPopup.Close();
+        }
+    }
+
+    private void OnClickOption()
+    {
+        if (manager.IsBusy == false)
+        {
+            return;
+        }
+
+        optionPopup.Open();
+    }
+
+    private void OnAbandonClicked()
+    {
+        optionPopup.Close();
+        confirmPopup.Setup(AbandonTitle, AbandonMessage, OnConfirmAbandon, confirmPopup.Close);
+        confirmPopup.Open();
+    }
+
+    // 포기 응답이 오면 BattleEnded로 패배 결과 팝업이 뜬다
+    private void OnConfirmAbandon()
+    {
+        confirmPopup.Close();
+        manager.Abandon();
+    }
+
+    // 둘 중 하나라도 떠 있으면 카운트다운, 보스 경고, 전투 진행, 연출을 모두 멈춘다
+    private void OnPausePopupChanged(BasePopup popup)
+    {
+        bool isPaused = optionPopup.IsOpened || confirmPopup.IsOpened;
+        Time.timeScale = isPaused ? 0f : 1f;
     }
 
     // 어두워진 뒤 로비 씬으로 돌아간다. 로비는 전투 탭에서 시작한다
