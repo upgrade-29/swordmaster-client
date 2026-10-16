@@ -6,13 +6,13 @@ public interface IStompSocket
 {
     bool IsOpen { get; }
 
-    event Action Opened;
-    event Action<string> MessageReceived;
-    event Action<string> ErrorReceived;
-    event Action Closed;
+    event Action<int> Opened;
+    event Action<int, string> MessageReceived;
+    event Action<int, string> ErrorReceived;
+    event Action<int> Closed;
 
     // 지정한 WebSocket 주소 연결을 시작한다.
-    Task ConnectAsync(string url);
+    Task ConnectAsync(string url, int connectionId);
 
     // 이미 구성된 STOMP frame 문자열을 WebSocket text message로 보낸다.
     Task SendTextAsync(string message);

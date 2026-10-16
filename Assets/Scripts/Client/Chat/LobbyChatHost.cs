@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -6,6 +7,7 @@ using UnityEngine;
 public sealed class LobbyChatHost : MonoBehaviour
 {
     private const string WebSocketPath = "/ws";
+    private const int MaximumReconnectAttempts = 3;
 
 #if UNITY_EDITOR
     private const string EditorTestWebSocketUrlEnvironmentVariableName = "SWORDMASTER_CHAT_WS_URL";
@@ -16,15 +18,26 @@ public sealed class LobbyChatHost : MonoBehaviour
     [Header("연결 대상")]
     [SerializeField] private TopNoticeView _topNoticeView;
 
+    private readonly CancellationTokenSource _lifetimeCancellation = new CancellationTokenSource();
+
     private ChatOverlayView _chatOverlayView; // PopupUI에 있으므로 Start에서 LobbyPopupUI로 가져온다
     private StompChatService _chatService;
     private ChatCoordinator _chatCoordinator;
-    private bool _isDestroying;
+    private Task _reconnectTask;
+    private Task _shutdownTask;
+    private bool _isShuttingDown;
+    private bool _resourcesDisposed;
+    private bool _hasReportedReconnectFailure;
+    private int _reconnectAttemptCount;
+    private string _webSocketUrl;
+    private string _stompHost;
+    private string _accessToken;
 
     // Lobby 수명 Prefab이 채팅·공지 view를 조립하되 인증 정보가 주입되기 전에는 연결을 시작하지 않는다.
     private void Awake()
     {
         _chatService = new StompChatService(new NativeWebSocketStompSocket(), new StompFrameCodec());
+        _chatService.StateChanged += OnChatServiceStateChanged;
         _chatCoordinator = new ChatCoordinator(_chatService);
         BindViews();
     }
@@ -62,7 +75,7 @@ public sealed class LobbyChatHost : MonoBehaviour
     // 로그인 성공 경계가 제공한 WebSocket URL, STOMP host, access token으로 연결을 시작한다.
     public void ConfigureAndConnect(string webSocketUrl, string stompHost, string accessToken)
     {
-        if (_isDestroying == true)
+        if (_isShuttingDown == true)
         {
             return;
         }
@@ -75,45 +88,194 @@ public sealed class LobbyChatHost : MonoBehaviour
             return;
         }
 
-        ConnectAsync(webSocketUrl, stompHost, accessToken);
-    }
-
-    // DISCONNECT와 transport close 순서를 마친 뒤 coordinator와 view callback을 해제한다.
-    private async void OnDestroy()
-    {
-        _isDestroying = true;
-        UnbindViews();
-
-        if (_chatService != null)
+        if (_chatService.State != StompChatConnectionState.Disconnected)
         {
-            try
-            {
-                await _chatService.DisconnectAsync();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarning($"채팅 종료 중 오류가 발생했습니다. {exception.Message}");
-            }
+            ShowChatOverlayError("이미 채팅 연결을 진행 중이거나 연결되어 있습니다.");
+            return;
         }
 
-        _chatCoordinator?.Dispose();
-        _chatService?.Dispose();
+        _webSocketUrl = webSocketUrl;
+        _stompHost = stompHost;
+        _accessToken = accessToken;
+        _reconnectAttemptCount = 0;
+        _hasReportedReconnectFailure = false;
+        StartConnection();
     }
 
-    // 연결 중 발생한 transport·protocol 오류는 view가 이미 구독한 coordinator 이벤트로 전달한다.
-    private async void ConnectAsync(string webSocketUrl, string stompHost, string accessToken)
+    // 로비가 아직 살아 있는 정상 종료 경로는 이 Task를 await해 DISCONNECT와 close 완료를 기다릴 수 있다.
+    public Task ShutdownAsync()
     {
+        if (_shutdownTask == null)
+        {
+            _shutdownTask = ShutdownCoreAsync();
+        }
+
+        return _shutdownTask;
+    }
+
+    // Unity는 OnDestroy의 Task 완료를 기다리지 않으므로 동기적으로 callback·재연결·socket 정리만 시작한다.
+    private void OnDestroy()
+    {
+        BeginShutdown();
+        DisposeResources();
+    }
+
+    // 정상 종료에서는 먼저 DISCONNECT/close를 기다리고, 완료 뒤 event와 coordinator를 해제한다.
+    private async Task ShutdownCoreAsync()
+    {
+        BeginShutdown();
+
         try
         {
-            await _chatService.ConnectAsync(webSocketUrl, stompHost, accessToken);
+            await _chatService.DisconnectAsync();
         }
         catch (Exception exception)
         {
-            if (_isDestroying == false)
+            Debug.LogWarning($"채팅 종료 중 오류가 발생했습니다. {exception.Message}");
+        }
+        finally
+        {
+            DisposeResources();
+        }
+    }
+
+    // 예외를 내부에서 UI 오류로 변환해 호출자가 관찰하지 않는 연결 Task를 남기지 않는다.
+    private async Task ConnectAsync()
+    {
+        try
+        {
+            await _chatService.ConnectAsync(_webSocketUrl, _stompHost, _accessToken);
+        }
+        catch (Exception exception)
+        {
+            if (_isShuttingDown == false)
             {
                 ShowChatOverlayError(exception.Message);
             }
         }
+    }
+
+    // service 연결은 socket close까지 오래 유지될 수 있으므로 재연결 대기 Task와 별도로 소유한다.
+    private void StartConnection()
+    {
+        if (_isShuttingDown == false && _chatService.State == StompChatConnectionState.Disconnected)
+        {
+            _ = ConnectAsync();
+        }
+    }
+
+    // 비정상 종료 뒤에는 보관한 로그인 연결 정보로 제한된 횟수만 재연결한다.
+    private void OnChatServiceStateChanged(StompChatConnectionState state)
+    {
+        if (state == StompChatConnectionState.Connected)
+        {
+            _reconnectAttemptCount = 0;
+            _hasReportedReconnectFailure = false;
+            return;
+        }
+
+        if (state == StompChatConnectionState.Disconnected && _chatService.IsNormalDisconnectRequested == false)
+        {
+            StartReconnect();
+        }
+    }
+
+    // 이벤트 callback에서는 Task를 시작만 하고, 실제 예외·취소 처리는 Task 반환 메서드에서 끝낸다.
+    private void StartReconnect()
+    {
+        if (_isShuttingDown == true
+            || _reconnectTask != null
+            || string.IsNullOrWhiteSpace(_webSocketUrl))
+        {
+            return;
+        }
+
+        _reconnectTask = ScheduleReconnectAsync();
+    }
+
+    // 이전 시도와 겹치지 않게 1초, 2초, 4초 backoff로 최대 세 번만 다시 연결한다.
+    private async Task ScheduleReconnectAsync()
+    {
+        try
+        {
+            if (_reconnectAttemptCount >= MaximumReconnectAttempts)
+            {
+                ReportReconnectFailure();
+                return;
+            }
+
+            _reconnectAttemptCount++;
+            int delaySeconds = 1 << (_reconnectAttemptCount - 1);
+            ShowChatOverlayError($"채팅 연결이 끊겼습니다. 재연결을 시도합니다. ({_reconnectAttemptCount}/{MaximumReconnectAttempts})");
+            await Task.Delay(TimeSpan.FromSeconds(delaySeconds), _lifetimeCancellation.Token);
+
+            if (_isShuttingDown == false && _chatService.State == StompChatConnectionState.Disconnected)
+            {
+                StartConnection();
+            }
+        }
+        catch (OperationCanceledException) when (_lifetimeCancellation.IsCancellationRequested)
+        {
+            // Lobby 종료가 대기 중인 재연결을 취소한 정상 경로다.
+        }
+        finally
+        {
+            _reconnectTask = null;
+
+            if (_isShuttingDown == false && _chatService.State == StompChatConnectionState.Disconnected)
+            {
+                if (_reconnectAttemptCount >= MaximumReconnectAttempts)
+                {
+                    ReportReconnectFailure();
+                }
+                else
+                {
+                    StartReconnect();
+                }
+            }
+        }
+    }
+
+    // 실패한 연결 Task가 동기적으로 Disconnected로 돌아온 경우 다음 backoff를 예약한다.
+    private void ReportReconnectFailure()
+    {
+        if (_hasReportedReconnectFailure == false)
+        {
+            _hasReportedReconnectFailure = true;
+            ShowChatOverlayError("채팅 재연결에 실패했습니다.");
+        }
+    }
+
+    // 종료 시작 시 이후 continuation이 Unity view에 접근하지 못하게 먼저 callback과 대기를 끊는다.
+    private void BeginShutdown()
+    {
+        if (_isShuttingDown == true)
+        {
+            return;
+        }
+
+        _isShuttingDown = true;
+        _lifetimeCancellation.Cancel();
+        UnbindViews();
+
+        if (_chatService != null)
+        {
+            _chatService.StateChanged -= OnChatServiceStateChanged;
+        }
+    }
+
+    // 정상 종료 완료 또는 Unity 파괴 중복 호출에도 coordinator와 service를 한 번만 해제한다.
+    private void DisposeResources()
+    {
+        if (_resourcesDisposed == true)
+        {
+            return;
+        }
+
+        _resourcesDisposed = true;
+        _chatCoordinator?.Dispose();
+        _chatService?.Dispose();
+        _lifetimeCancellation.Dispose();
     }
 
     // Lobby 상단 공지를 coordinator에 연결한다. 채팅창은 PopupUI에 있으므로 Start에서 연결한다.
@@ -142,6 +304,11 @@ public sealed class LobbyChatHost : MonoBehaviour
     // BattleTab 채팅 UI가 아직 연결되지 않은 상태에서도 연결 실패가 예외로 번지지 않게 한다.
     private void ShowChatOverlayError(string errorMessage)
     {
+        if (_isShuttingDown == true)
+        {
+            return;
+        }
+
         if (_chatOverlayView != null)
         {
             _chatOverlayView.ShowConnectionError(errorMessage);

@@ -5,6 +5,7 @@ public enum StompChatConnectionState
     WebSocketConnecting,
     WebSocketConnected,
     StompConnecting,
+    Subscribing,
     Connected,
     Disconnecting
 }
