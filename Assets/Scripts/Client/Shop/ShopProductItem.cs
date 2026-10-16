@@ -22,13 +22,14 @@ public class ShopProductItem : MonoBehaviour
 
     private void Awake()
     {
-        productVisual = GameUtil.Bind<Image>(transform, "ProductVisual");
-        productName = GameUtil.Bind<TextMeshProUGUI>(transform, "Info/ProductName");
-        rewardItem = GameUtil.Bind<ShopRewardItem>(transform, "Info/ShopRewardItem");
-        actionButton = GameUtil.Bind<Button>(transform, "ActionButton");
-        actionIcon = GameUtil.Bind<Image>(transform, "ActionButton/Icon");
-        actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "ActionButton/Label");
-        objActionLoading = GameUtil.Bind<RectTransform>(transform, "ActionButton/Loading").gameObject;
+        // 카드 전체가 구매 버튼이다
+        GameUtil.Bind(gameObject, ref actionButton);
+        productName = GameUtil.Bind<TextMeshProUGUI>(transform, "ProductName");
+        productVisual = GameUtil.Bind<Image>(transform, "VisualFrame/ProductVisual");
+        rewardItem = GameUtil.Bind<ShopRewardItem>(transform, "VisualFrame/ShopRewardItem");
+        actionIcon = GameUtil.Bind<Image>(transform, "Price/Icon");
+        actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Price/Label");
+        objActionLoading = GameUtil.Bind<RectTransform>(transform, "Loading").gameObject;
 
         actionButton.onClick.AddListener(OnClickActionButton);
     }
