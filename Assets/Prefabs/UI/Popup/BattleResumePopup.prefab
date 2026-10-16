@@ -360,7 +360,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleResumePopup
   btnDimmed: {fileID: 0}
-  closeOnOutsideTouch: 0
+  closeOnOutsideTouch: 1
   titleText: {fileID: 0}
   messageText: {fileID: 0}
   confirmButton: {fileID: 0}

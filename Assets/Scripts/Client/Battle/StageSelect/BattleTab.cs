@@ -41,6 +41,7 @@ public class BattleTab : LobbyTab
         resumePopup = LobbyPopupUI.Instance.Get<BattleResumePopup>();
         resumePopup.ContinueClicked += OnContinueClicked;
         resumePopup.RestartClicked += OnRestartClicked;
+        resumePopup.CancelClicked += OnResumeCanceled;
     }
 
     protected override void OnDestroy()
@@ -66,6 +67,7 @@ public class BattleTab : LobbyTab
         {
             resumePopup.ContinueClicked -= OnContinueClicked;
             resumePopup.RestartClicked -= OnRestartClicked;
+            resumePopup.CancelClicked -= OnResumeCanceled;
         }
     }
 
@@ -146,6 +148,13 @@ public class BattleTab : LobbyTab
             result.ApplyTo(User);
             StartBattle();
         });
+    }
+
+    // 아무것도 고르지 않고 닫았다. 서버의 세션은 그대로 두고 다시 입장할 수 있게 한다
+    private void OnResumeCanceled()
+    {
+        activeSession = null;
+        isEntering = false;
     }
 
     private void StartBattle()

@@ -11,6 +11,7 @@ public class BattleResumePopup : ConfirmPopup
 
     public event Action ContinueClicked;
     public event Action RestartClicked;
+    public event Action CancelClicked; // 바깥을 눌러 닫았을 때. 아무것도 고르지 않고 로비에 남는다
 
     protected override void Awake()
     {
@@ -39,6 +40,16 @@ public class BattleResumePopup : ConfirmPopup
 
         continueLabelText.text = "이어하기";
         restartLabelText.text = "새로 시작";
+    }
+
+    protected override void OnClickDimmed()
+    {
+        base.OnClickDimmed();
+
+        if (IsOpened == false)
+        {
+            CancelClicked?.Invoke();
+        }
     }
 
     private void OnClickContinue() => ContinueClicked?.Invoke();

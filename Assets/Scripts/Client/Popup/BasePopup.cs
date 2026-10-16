@@ -50,7 +50,8 @@ public class BasePopup : MonoBehaviour
     {
     }
 
-    private void OnClickDimmed()
+    // 바깥 터치로 닫힐 때 따로 할 일이 있는 팝업은 재정의한다
+    protected virtual void OnClickDimmed()
     {
         if (closeOnOutsideTouch == false)
         {
