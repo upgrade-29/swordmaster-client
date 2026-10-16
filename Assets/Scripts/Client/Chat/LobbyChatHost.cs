@@ -72,8 +72,8 @@ public sealed class LobbyChatHost : MonoBehaviour
         return builder.Uri.ToString();
     }
 
-    // 로그인 성공 경계가 제공한 WebSocket URL, STOMP host, access token으로 연결을 시작한다.
-    public void ConfigureAndConnect(string webSocketUrl, string stompHost, string accessToken)
+    // Start에서 받은 WebSocket URL, STOMP host, access token으로 연결을 시작한다.
+    private void ConfigureAndConnect(string webSocketUrl, string stompHost, string accessToken)
     {
         if (_isShuttingDown == true)
         {
@@ -164,17 +164,25 @@ public sealed class LobbyChatHost : MonoBehaviour
         }
     }
 
-    // 비정상 종료 뒤에는 보관한 로그인 연결 정보로 제한된 횟수만 재연결한다.
+    // 비정상 종료 뒤에는 보관한 로그인 연결 정보로 제한된 횟수만 재연결한다. 서버가 거절한 연결은 다시 시도하지 않는다.
     private void OnChatServiceStateChanged(StompChatConnectionState state)
     {
         if (state == StompChatConnectionState.Connected)
         {
             _reconnectAttemptCount = 0;
             _hasReportedReconnectFailure = false;
+
+            if (_chatOverlayView != null)
+            {
+                _chatOverlayView.ClearConnectionError();
+            }
+
             return;
         }
 
-        if (state == StompChatConnectionState.Disconnected && _chatService.IsNormalDisconnectRequested == false)
+        if (state == StompChatConnectionState.Disconnected
+            && _chatService.IsNormalDisconnectRequested == false
+            && _chatService.IsRejectedByServer == false)
         {
             StartReconnect();
         }
@@ -190,6 +198,13 @@ public sealed class LobbyChatHost : MonoBehaviour
             return;
         }
 
+        // 대기 없이 끝나는 Task를 _reconnectTask에 남기지 않도록 횟수 초과는 Task를 만들기 전에 거른다
+        if (_reconnectAttemptCount >= MaximumReconnectAttempts)
+        {
+            ReportReconnectFailure();
+            return;
+        }
+
         _reconnectTask = ScheduleReconnectAsync();
     }
 
@@ -198,12 +213,6 @@ public sealed class LobbyChatHost : MonoBehaviour
     {
         try
         {
-            if (_reconnectAttemptCount >= MaximumReconnectAttempts)
-            {
-                ReportReconnectFailure();
-                return;
-            }
-
             _reconnectAttemptCount++;
             int delaySeconds = 1 << (_reconnectAttemptCount - 1);
             ShowChatOverlayError($"채팅 연결이 끊겼습니다. 재연결을 시도합니다. ({_reconnectAttemptCount}/{MaximumReconnectAttempts})");
@@ -236,7 +245,7 @@ public sealed class LobbyChatHost : MonoBehaviour
         }
     }
 
-    // 실패한 연결 Task가 동기적으로 Disconnected로 돌아온 경우 다음 backoff를 예약한다.
+    // 재연결 횟수를 모두 쓰면 실패 문구를 한 번만 표시한다.
     private void ReportReconnectFailure()
     {
         if (_hasReportedReconnectFailure == false)
@@ -301,7 +310,7 @@ public sealed class LobbyChatHost : MonoBehaviour
         }
     }
 
-    // BattleTab 채팅 UI가 아직 연결되지 않은 상태에서도 연결 실패가 예외로 번지지 않게 한다.
+    // 채팅창을 가져오기 전에 오류가 나면 예외 대신 경고 로그만 남긴다.
     private void ShowChatOverlayError(string errorMessage)
     {
         if (_isShuttingDown == true)
