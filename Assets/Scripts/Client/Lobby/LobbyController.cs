@@ -41,6 +41,7 @@ public class LobbyController : MonoBehaviour
     {
         view.SetSelectedTab(currentTab);
         view.SetTrackPosition(GetTrackPosition(currentTab));
+        view.SetNickname(User.Nickname);
 
         GameSession.Instance.OnChangeCurrenciesEvent += OnChangeCurrencies;
         RefreshCurrencies();

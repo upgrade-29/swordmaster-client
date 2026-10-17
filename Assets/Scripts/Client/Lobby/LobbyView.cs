@@ -85,6 +85,11 @@ public class LobbyView : MonoBehaviour
         UpdateTabLayout();
     }
 
+    public void SetNickname(string nickname)
+    {
+        playerInfo.SetNickname(nickname);
+    }
+
     public void SetCurrencies(string gold, string diamond)
     {
         playerInfo.SetCurrencies(gold, diamond);
