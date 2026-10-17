@@ -14,8 +14,8 @@ public class BattleOptionPopup : BasePopup
     {
         base.Awake();
 
-        abandonButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/AbandonButton");
-        closeButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/CloseButton");
+        abandonButton = GameUtil.Bind<Button>(transform, "Panel/Footer/AbandonButton");
+        closeButton = GameUtil.Bind<Button>(transform, "Panel/Footer/CloseButton");
 
         abandonButton.onClick.AddListener(OnClickAbandon);
         closeButton.onClick.AddListener(Close);

@@ -24,7 +24,7 @@ public class NicknamePopup : BasePopup
         base.Awake();
 
         nicknameInput = GameUtil.Bind<TMP_InputField>(transform, "Panel/NicknameInput");
-        confirmButton = GameUtil.Bind<Button>(transform, "Panel/ConfirmButton");
+        confirmButton = GameUtil.Bind<Button>(transform, "Panel/Footer/ConfirmButton");
         errorText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/ErrorText");
 
         nicknameInput.characterLimit = NicknameMaxLength;

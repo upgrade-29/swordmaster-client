@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,12 +7,9 @@ using UnityEngine.UI;
 // 전투가 끝난 뒤 뜨는 결과 팝업. Setup으로 받은 결과를 보여주고, 재도전과 나가기 입력은 Setup으로 받은 콜백으로 돌려준다
 public class BattleResultPopup : BasePopup
 {
-    private const float ShowDuration = 0.3f;
-    private static readonly Color VictoryColor = new Color(1f, 0.85f, 0.2f);
-    private static readonly Color DefeatColor = new Color(1f, 0.4f, 0.4f);
+    private static readonly Color VictoryColor = new Color(0.75f, 0.5f, 0f);
+    private static readonly Color DefeatColor = new Color(0.75f, 0.15f, 0.15f);
 
-    [ReadOnly] [SerializeField] private CanvasGroup canvasGroup;
-    [ReadOnly] [SerializeField] private RectTransform panel;
     [ReadOnly] [SerializeField] private TextMeshProUGUI titleText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI descriptionText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI stageText;
@@ -31,33 +27,21 @@ public class BattleResultPopup : BasePopup
     private bool playOpenAnimation;
     private Action onRetry;
     private Action onExit;
-    private Sequence seqOpen;
 
     protected override void Awake()
     {
         base.Awake();
 
-        GameUtil.Bind(gameObject, ref canvasGroup);
-        panel = GameUtil.Bind<RectTransform>(transform, "Panel");
-        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/TitleBar/Title");
+        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Header/Title");
         descriptionText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Message");
         stageText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/StageText");
         rewardLabelText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardLabelText");
         rewardValueText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardValueText");
-        retryButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/ConfirmButton");
-        exitButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/CancelButton");
+        retryButton = GameUtil.Bind<Button>(transform, "Panel/Footer/ConfirmButton");
+        exitButton = GameUtil.Bind<Button>(transform, "Panel/Footer/CancelButton");
 
         retryButton.onClick.AddListener(OnClickRetry);
         exitButton.onClick.AddListener(OnClickExit);
-    }
-
-    private void OnDisable()
-    {
-        if (seqOpen != null)
-        {
-            seqOpen.Kill();
-            seqOpen = null;
-        }
     }
 
     private void OnDestroy()
@@ -130,28 +114,13 @@ public class BattleResultPopup : BasePopup
         rewardValueText.text = rewardValue;
         retryButton.interactable = canRetry;
 
-        // 결과를 새로 받았을 때만 연출한다. 열려 있는 팝업에 거절 문구만 바꿀 때는 연출하지 않는다
+        // 닫힌 팝업을 열 때는 BasePopup이 이미 공통 연출을 재생한다. 열려 있어도 새 결과를 받았으면 같은 연출을 다시 보여 주고,
+        // 열려 있는 팝업에 거절 문구만 바꿀 때는 연출하지 않는다
         if (playOpenAnimation)
         {
             playOpenAnimation = false;
             PlayOpenAnimation();
         }
-    }
-
-    private void PlayOpenAnimation()
-    {
-        if (seqOpen != null)
-        {
-            seqOpen.Kill();
-            seqOpen = null;
-        }
-
-        canvasGroup.alpha = 0f;
-        panel.localScale = Vector3.one * 0.8f;
-
-        seqOpen = DOTween.Sequence();
-        seqOpen.Append(canvasGroup.DOFade(1f, ShowDuration));
-        seqOpen.Join(panel.DOScale(1f, ShowDuration).SetEase(Ease.OutBack));
     }
 
     private void SetRewards(BattleApi.BattleRewardsResponse rewards, IReadOnlyList<string> artifactNames)

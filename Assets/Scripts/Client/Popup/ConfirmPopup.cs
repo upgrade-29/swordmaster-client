@@ -20,10 +20,10 @@ public class ConfirmPopup : BasePopup
     {
         base.Awake();
 
-        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/TitleBar/Title");
+        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Header/Title");
         messageText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Message");
-        confirmButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/ConfirmButton");
-        cancelButton = GameUtil.Bind<Button>(transform, "Panel/Buttons/CancelButton");
+        confirmButton = GameUtil.Bind<Button>(transform, "Panel/Footer/ConfirmButton");
+        cancelButton = GameUtil.Bind<Button>(transform, "Panel/Footer/CancelButton");
 
         confirmButton.onClick.AddListener(OnClickConfirm);
         cancelButton.onClick.AddListener(OnClickCancel);

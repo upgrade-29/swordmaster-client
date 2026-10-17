@@ -17,8 +17,8 @@ public class BattleResumePopup : ConfirmPopup
     {
         base.Awake();
 
-        continueLabelText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Buttons/ConfirmButton/Label");
-        restartLabelText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Buttons/CancelButton/Label");
+        continueLabelText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/ConfirmButton/Label");
+        restartLabelText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/CancelButton/Label");
     }
 
     // subStageNumber는 1부터 센다
