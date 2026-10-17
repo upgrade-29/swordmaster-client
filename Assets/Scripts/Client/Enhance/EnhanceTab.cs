@@ -21,6 +21,7 @@ public class EnhanceTab : LobbyTab
     private User User => GameSession.Instance.User;
     private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
     private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
+    private EnhancePopup EnhancePopup => Popup.Instance.Get<EnhancePopup>();
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
@@ -359,26 +360,75 @@ public class EnhanceTab : LobbyTab
         HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, error, response));
     }
 
+    // 연출보다 먼저 강화 결과가 탭에 드러나지 않도록, 탭 갱신은 강화 팝업의 확인을 누른 뒤에 한다
     private void ApplySwordEnhance(EnhanceApi.SwordEnhanceResponse response)
     {
+        int levelBefore = User.Sword.Level;
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
+
+        bool isSuccess = response.result == EnhanceApi.EnhanceResultType.Success;
+        EnhancePopup.Setup(CreateSwordResult(isSuccess, levelBefore, User.Sword.Level), OnConfirmSwordEnhance);
+        EnhancePopup.Open();
     }
 
     private void ApplySwordSell(EnhanceApi.SwordSellResponse response)
     {
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
+        RefreshAfterRequest();
     }
 
     private void ApplyArtifactEnhance(EnhanceApi.ArtifactEnhanceResponse response)
     {
+        ArtifactResponse enhanced = response.artifactResponses.FirstOrDefault();
+        int levelBefore = enhanced != null ? User.GetArtifact(enhanced.code).Level : 0;
+
         foreach (ArtifactResponse artifact in response.artifactResponses)
         {
             User.GetArtifact(artifact.code)?.SyncFrom(artifact.ToUserArtifact());
         }
 
         SyncCurrencies(response.currenciesResponse);
+        RefreshAfterRequest();
+
+        if (enhanced == null)
+        {
+            return;
+        }
+
+        EnhancePopup.Setup(CreateArtifactResult(User.GetArtifact(enhanced.code), levelBefore), OnConfirmArtifactEnhance);
+        EnhancePopup.Open();
+    }
+
+    private EnhancePopup.ResultInfo CreateSwordResult(bool isSuccess, int levelBefore, int levelAfter)
+    {
+        SwordData before = GetSwordData(levelBefore);
+        SwordData after = GetSwordData(levelAfter);
+        var stats = new List<EnhancePopup.StatInfo>
+        {
+            new EnhancePopup.StatInfo("공격력", FormatInteger(before.attackPower), FormatInteger(after.attackPower)),
+            new EnhancePopup.StatInfo("공격 속도", FormatAttackSpeed(before.attackSpeed), FormatAttackSpeed(after.attackSpeed)),
+            new EnhancePopup.StatInfo("최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
+        };
+        string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
+
+        return new EnhancePopup.ResultInfo(isSuccess, $"+{levelBefore.ToString()}", $"+{levelAfter.ToString()}", after.name, message, stats);
+    }
+
+    private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
+    {
+        ArtifactData data = GetArtifactData(artifact.ArtifactCode);
+        Func<double, string> format = GetStatFormat(data.statType);
+        var stats = new List<EnhancePopup.StatInfo>
+        {
+            new EnhancePopup.StatInfo(GetStatName(data.statType),
+                format(StatCalculator.GetArtifactValue(data, levelBefore)),
+                format(StatCalculator.GetArtifactValue(data, artifact.Level))),
+        };
+
+        return new EnhancePopup.ResultInfo(true, $"Lv. {levelBefore.ToString()}", $"Lv. {artifact.Level.ToString()}", data.name,
+            string.Empty, stats);
     }
 
     // 응답에는 장착한 아티팩트만 들어 있으므로, 응답에 없는 아티팩트는 장착 해제된 것이다
@@ -389,6 +439,8 @@ public class EnhanceTab : LobbyTab
             ArtifactResponse equipped = equippedArtifacts.FirstOrDefault(x => x.code == artifact.ArtifactCode);
             artifact.SetEquippedSlot(equipped?.equipSlot);
         }
+
+        RefreshAfterRequest();
     }
 
     private void SyncCurrencies(UserCurrencies currencies)
@@ -443,7 +495,6 @@ public class EnhanceTab : LobbyTab
         {
             isRequesting = false;
             applyResponse(response);
-            RefreshAfterRequest();
             return;
         }
 
@@ -533,6 +584,17 @@ public class EnhanceTab : LobbyTab
     private void OnCancelRetry()
     {
         DialogPopup.Close();
+    }
+
+    private void OnConfirmSwordEnhance()
+    {
+        EnhancePopup.Close();
+        RefreshAfterRequest();
+    }
+
+    private void OnConfirmArtifactEnhance()
+    {
+        EnhancePopup.Close();
     }
 
     private void OnClickCombatPower()
