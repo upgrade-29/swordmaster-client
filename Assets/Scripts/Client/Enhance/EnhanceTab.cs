@@ -20,7 +20,7 @@ public class EnhanceTab : LobbyTab
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
     private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
-    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
@@ -411,9 +411,10 @@ public class EnhanceTab : LobbyTab
 
     private void ShowRetryPopup()
     {
-        ConfirmPopup.Setup("요청 결과 확인 필요", "요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
-            OnConfirmRetry, OnCancelRetry);
-        ConfirmPopup.Open();
+        DialogPopup.Setup("요청 결과 확인 필요", "요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmRetry),
+            new DialogPopup.DialogPopupButtonInfo("취소", OnCancelRetry));
+        DialogPopup.Open();
     }
 
     private void RefreshAfterRequest()
@@ -521,7 +522,7 @@ public class EnhanceTab : LobbyTab
 
     private void OnConfirmRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
 
         Action retry = retryRequest;
         retryRequest = null;
@@ -531,7 +532,7 @@ public class EnhanceTab : LobbyTab
     // 요청은 그대로 두고, 강화 화면의 버튼을 누르면 재전송 팝업을 다시 연다
     private void OnCancelRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
     }
 
     private void OnClickCombatPower()

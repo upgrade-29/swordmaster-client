@@ -1497,7 +1497,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2565328274878526050, guid: dae8a4f020971e74db59b4f28a69f170, type: 3}
       propertyPath: m_Name
-      value: ConfirmPopup
+      value: DialogPopup
       objectReference: {fileID: 0}
     - target: {fileID: 2565328274878526050, guid: dae8a4f020971e74db59b4f28a69f170, type: 3}
       propertyPath: m_IsActive

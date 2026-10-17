@@ -407,8 +407,8 @@ MonoBehaviour:
   closeOnOutsideTouch: 1
   titleText: {fileID: 0}
   messageText: {fileID: 0}
-  confirmButton: {fileID: 0}
-  cancelButton: {fileID: 0}
+  continueButton: {fileID: 0}
+  restartButton: {fileID: 0}
   continueLabelText: {fileID: 0}
   restartLabelText: {fileID: 0}
 --- !u!1 &4440328316390103110

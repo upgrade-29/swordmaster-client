@@ -17,7 +17,7 @@ public class BattleTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
 
     protected override void Awake()
     {
@@ -186,13 +186,13 @@ public class BattleTab : LobbyTab
             return;
         }
 
-        ConfirmPopup.Setup("전투 시작 실패", error.Message, OnCloseAlert, OnCloseAlert);
-        ConfirmPopup.Open();
+        DialogPopup.Setup("전투 시작 실패", error.Message, new DialogPopup.DialogPopupButtonInfo("확인", OnCloseAlert));
+        DialogPopup.Open();
     }
 
     private void OnCloseAlert()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
     }
 
     private void OnClickChat()

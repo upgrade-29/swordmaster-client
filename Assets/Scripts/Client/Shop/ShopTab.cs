@@ -16,7 +16,7 @@ public class ShopTab : LobbyTab
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
     private GachaResultPopup GachaResultPopup => Popup.Instance.Get<GachaResultPopup>();
 
     // 구매 확인부터 결과를 받을 때까지의 상품. 한 번에 하나만 구매한다
@@ -96,22 +96,24 @@ public class ShopTab : LobbyTab
 
     private void ShowPurchasePopup(ShopProductData product)
     {
-        ConfirmPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?",
-            OnConfirmPurchase, OnCancelPurchase);
-        ConfirmPopup.Open();
+        DialogPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?",
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmPurchase),
+            new DialogPopup.DialogPopupButtonInfo("취소", OnCancelPurchase));
+        DialogPopup.Open();
     }
 
     private void ShowRetryPopup()
     {
-        ConfirmPopup.Setup("구매 결과 확인 필요", "구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
-            OnConfirmRetry, OnCancelRetry);
-        ConfirmPopup.Open();
+        DialogPopup.Setup("구매 결과 확인 필요", "구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmRetry),
+            new DialogPopup.DialogPopupButtonInfo("취소", OnCancelRetry));
+        DialogPopup.Open();
     }
 
     private void ShowAlert(string title, string message)
     {
-        ConfirmPopup.Setup(title, message, OnCloseAlert, OnCloseAlert);
-        ConfirmPopup.Open();
+        DialogPopup.Setup(title, message, new DialogPopup.DialogPopupButtonInfo("확인", OnCloseAlert));
+        DialogPopup.Open();
     }
 
     private void OnClickPurchase(ShopProductItem item)
@@ -143,7 +145,7 @@ public class ShopTab : LobbyTab
 
     private void OnConfirmPurchase()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
 
         purchaseRequestId = Guid.NewGuid();
         SendPurchase();
@@ -151,7 +153,7 @@ public class ShopTab : LobbyTab
 
     private void OnCancelPurchase()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
 
         purchasingItem = null;
     }
@@ -200,7 +202,7 @@ public class ShopTab : LobbyTab
 
     private void OnConfirmRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
 
         SendPurchase();
     }
@@ -208,12 +210,12 @@ public class ShopTab : LobbyTab
     // 구매 중 상태와 requestId는 그대로 둔다
     private void OnCancelRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
     }
 
     private void OnCloseAlert()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
     }
 
     // 서버가 확정한 최종 재화와 유물 스냅샷을 연출 시작 전에 한 번만 반영한다.

@@ -32,7 +32,7 @@ public class BattleViewManager : MonoBehaviour
 
     private BattleResultPopup ResultPopup => Popup.Instance.Get<BattleResultPopup>();
     private BattleOptionPopup OptionPopup => Popup.Instance.Get<BattleOptionPopup>();
-    private ConfirmPopup ConfirmPopup => Popup.Instance.Get<ConfirmPopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
 
     private void Awake()
     {
@@ -57,8 +57,8 @@ public class BattleViewManager : MonoBehaviour
             OptionPopup.AbandonClicked -= OnAbandonClicked;
             OptionPopup.OnOpenEvent -= OnPausePopupChanged;
             OptionPopup.OnCloseEvent -= OnPausePopupChanged;
-            ConfirmPopup.OnOpenEvent -= OnPausePopupChanged;
-            ConfirmPopup.OnCloseEvent -= OnPausePopupChanged;
+            DialogPopup.OnOpenEvent -= OnPausePopupChanged;
+            DialogPopup.OnCloseEvent -= OnPausePopupChanged;
         }
 
         manager.BusyChanged -= OnBusyChanged;
@@ -107,8 +107,8 @@ public class BattleViewManager : MonoBehaviour
         OptionPopup.AbandonClicked += OnAbandonClicked;
         OptionPopup.OnOpenEvent += OnPausePopupChanged;
         OptionPopup.OnCloseEvent += OnPausePopupChanged;
-        ConfirmPopup.OnOpenEvent += OnPausePopupChanged;
-        ConfirmPopup.OnCloseEvent += OnPausePopupChanged;
+        DialogPopup.OnOpenEvent += OnPausePopupChanged;
+        DialogPopup.OnCloseEvent += OnPausePopupChanged;
 
         manager.EnterBattle(session);
     }
@@ -129,7 +129,7 @@ public class BattleViewManager : MonoBehaviour
         if (isBusy == false)
         {
             OptionPopup.Close();
-            ConfirmPopup.Close();
+            DialogPopup.Close();
         }
     }
 
@@ -146,21 +146,23 @@ public class BattleViewManager : MonoBehaviour
     private void OnAbandonClicked()
     {
         OptionPopup.Close();
-        ConfirmPopup.Setup(AbandonTitle, AbandonMessage, OnConfirmAbandon, ConfirmPopup.Close);
-        ConfirmPopup.Open();
+        DialogPopup.Setup(AbandonTitle, AbandonMessage,
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmAbandon),
+            new DialogPopup.DialogPopupButtonInfo("취소", DialogPopup.Close));
+        DialogPopup.Open();
     }
 
     // 포기 응답이 오면 BattleEnded로 패배 결과 팝업이 뜬다
     private void OnConfirmAbandon()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
         manager.Abandon();
     }
 
     // 둘 중 하나라도 떠 있으면 카운트다운, 보스 경고, 전투 진행, 연출을 모두 멈춘다
     private void OnPausePopupChanged(BasePopup popup)
     {
-        bool isPaused = OptionPopup.IsOpened || ConfirmPopup.IsOpened;
+        bool isPaused = OptionPopup.IsOpened || DialogPopup.IsOpened;
         Time.timeScale = isPaused ? 0f : 1f;
     }
 
