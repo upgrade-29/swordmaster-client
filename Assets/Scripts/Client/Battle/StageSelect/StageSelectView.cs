@@ -26,8 +26,8 @@ public class StageSelectView : MonoBehaviour
         statusText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StatusLabel");
         enemyInfoText = GameUtil.Bind<TMP_Text>(gameObject, "Card/EnemyInfoText");
         rewardValueText = GameUtil.Bind<TMP_Text>(gameObject, "Card/RewardRow/RewardValue");
-        myPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/MyPowerText");
-        recommendedPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/RecommendedPowerText");
+        myPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/MyPower/Value");
+        recommendedPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/RecommendedPower/Value");
         prevButton = GameUtil.Bind<Button>(gameObject, "Card/ImageArea/PrevButton");
         nextButton = GameUtil.Bind<Button>(gameObject, "Card/ImageArea/NextButton");
         startButton = GameUtil.Bind<Button>(gameObject, "Card/StartButton");
@@ -50,8 +50,8 @@ public class StageSelectView : MonoBehaviour
         statusText.text = GetStatusLabel(state);
         enemyInfoText.text = $"일반 적 {stage.enemyCount}기 + 보스";
         rewardValueText.text = GetRewardLabel(stage);
-        myPowerText.text = $"내 전투력 {myPower:N0}";
-        recommendedPowerText.text = $"권장 {stage.recommendedPower:N0}";
+        myPowerText.text = myPower.ToString("N0");
+        recommendedPowerText.text = stage.recommendedPower.ToString("N0");
         startButton.interactable = state != StageState.Locked;
     }
 

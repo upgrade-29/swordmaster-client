@@ -25,6 +25,9 @@ MonoBehaviour:
     icon: {fileID: 0}
   categoryLabels:
   - category: 1
-    label: "<b>\uB354 \uAC15\uD55C \uAC80\uC744 \uC704\uD55C \uC900\uBE44</b>\n\uB2E4\uC774\uC544\uB97C
-      \uACE8\uB4DC\uB85C \uAD50\uD658"
+    label: "\uACE8\uB4DC"
+  - category: 2
+    label: "\uAC00\uCC60"
+  - category: 5
+    label: "\uC544\uD2F0\uD329\uD2B8"
   fallbackIcon: {fileID: 187011020156873885, guid: 584c78c9720d8364bbe736400374032a, type: 3}
