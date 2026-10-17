@@ -39,7 +39,6 @@ public class EnhancePopup : BasePopup
     private static readonly Color FailGlowColor = new Color32(0x60, 0x60, 0x60, 0x00);
     private static readonly Color FailSwordColor = new Color32(0x60, 0x60, 0x60, 0xFF);
 
-    // 능력치 한 줄에 표시할 이름과 강화 전후 값
     public readonly struct StatInfo
     {
         public readonly string name;
@@ -54,7 +53,7 @@ public class EnhancePopup : BasePopup
         }
     }
 
-    // 강화 결과 한 건. 값은 화면에 표시할 문자열로 받는다
+    // 값은 화면에 표시할 문자열로 받는다
     public readonly struct ResultInfo
     {
         public readonly bool isSuccess;
@@ -174,7 +173,6 @@ public class EnhancePopup : BasePopup
         base.OnClickDimmed();
     }
 
-    // 모자라는 줄만 템플릿에서 복제하고, 남는 줄은 끈다
     private void ShowStats(IReadOnlyList<StatInfo> stats)
     {
         while (listStatRow.Count < stats.Count)
@@ -250,7 +248,6 @@ public class EnhancePopup : BasePopup
         canvasGroupResult.blocksRaycasts = false;
     }
 
-    // 검 뒤의 빛이 커지고 빛줄기가 돌며 퍼지는 동안 검이 떨린다
     private void AppendCharge(Sequence sequence)
     {
         float start = sequence.Duration();
@@ -262,7 +259,6 @@ public class EnhancePopup : BasePopup
         sequence.Insert(start, imgSword.rectTransform.DOShakeAnchorPos(ChargeDuration, SwordShakeStrength, SwordShakeVibrato, 90f, false, false));
     }
 
-    // 섬광이 터지고 빛이 퍼지며 사라지는 동안, 성공 문구가 가로 빛줄기와 함께 커졌다가 제자리로 줄어든다
     private void AppendSuccess(Sequence sequence)
     {
         float start = sequence.Duration();
@@ -281,7 +277,6 @@ public class EnhancePopup : BasePopup
         sequence.Insert(burstStart, imgTitleStreak.DOFade(0f, StreakFadeDuration).SetEase(Ease.InQuad));
     }
 
-    // 섬광 없이 빛이 회색으로 바래며 꺼지고, 검이 어두워지는 동안 실패 문구가 서서히 나타난다
     private void AppendFail(Sequence sequence)
     {
         float start = sequence.Duration();

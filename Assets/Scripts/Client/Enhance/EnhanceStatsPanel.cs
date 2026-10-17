@@ -1,5 +1,7 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EnhanceStatsPanel : MonoBehaviour
 {
@@ -8,6 +10,9 @@ public class EnhanceStatsPanel : MonoBehaviour
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtAttackSpeed;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtCritRate;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtLifesteal;
+    [ReadOnly] [SerializeField] private Button btnOutside;
+
+    public event Action OnClickOutsideEvent = delegate { };
 
     private void Awake()
     {
@@ -16,6 +21,17 @@ public class EnhanceStatsPanel : MonoBehaviour
         txtAttackSpeed = GameUtil.Bind<TextMeshProUGUI>(transform, "Background/Stats/AttackSpeed/Value");
         txtCritRate = GameUtil.Bind<TextMeshProUGUI>(transform, "Background/Stats/CritRate/Value");
         txtLifesteal = GameUtil.Bind<TextMeshProUGUI>(transform, "Background/Stats/Lifesteal/Value");
+        btnOutside = GameUtil.Bind<Button>(transform, "OutsideArea");
+
+        btnOutside.onClick.AddListener(OnClickOutside);
+    }
+
+    private void OnDestroy()
+    {
+        if (btnOutside != null)
+        {
+            btnOutside.onClick.RemoveListener(OnClickOutside);
+        }
     }
 
     public void SetStats(string attack, string maxHp, string attackSpeed, string critRate, string lifesteal)
@@ -30,5 +46,10 @@ public class EnhanceStatsPanel : MonoBehaviour
     public void SetOpened(bool opened)
     {
         gameObject.SetActive(opened);
+    }
+
+    private void OnClickOutside()
+    {
+        OnClickOutsideEvent.Invoke();
     }
 }

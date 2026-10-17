@@ -48,6 +48,7 @@ public class EnhanceTab : LobbyTab
         enhanceEquipmentAction.OnClickChangeEvent += OnClickChange;
 
         enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
+        enhanceStatsPanel.OnClickOutsideEvent += OnClickStatsOutside;
     }
 
     private void Start()
@@ -78,6 +79,17 @@ public class EnhanceTab : LobbyTab
             enhanceEquipmentAction.OnClickEnhanceEvent -= OnClickEnhance;
             enhanceEquipmentAction.OnClickSellEvent -= OnClickSell;
             enhanceEquipmentAction.OnClickChangeEvent -= OnClickChange;
+        }
+
+        if (enhanceStatsPanel != null)
+        {
+            enhanceStatsPanel.OnClickOutsideEvent -= OnClickStatsOutside;
+        }
+
+        // 강화 연출 중에 로비를 떠나도 상단 공지가 계속 막혀 있지 않게 푼다
+        if (ChatClient.IsInitialize())
+        {
+            ChatClient.Instance.ReleaseTopNotices();
         }
     }
 
@@ -353,11 +365,17 @@ public class EnhanceTab : LobbyTab
         enhanceTitle.SetStatsOpened(opened);
     }
 
-    // 성공하면 응답을 User에 반영하고 화면을 갱신한다. 실패는 HttpRequest가 남기는 로그로 확인한다
-    private void SendRequest<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse) where T : class
+    // 성공하면 applyResponse가 응답을 User에 반영하고 화면 갱신 시점도 정한다. 실패는 HttpRequest가 남기는 로그로 확인한다
+    // holdsTopNotices: 응답보다 먼저 오는 강화 결과 공지가 연출 전에 보이지 않도록, 강화 팝업의 확인까지 상단 공지를 미룬다
+    private void SendRequest<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, bool holdsTopNotices = false) where T : class
     {
         isRequesting = true;
-        HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, error, response));
+        if (holdsTopNotices)
+        {
+            ChatClient.Instance.HoldTopNotices();
+        }
+
+        HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, holdsTopNotices, error, response));
     }
 
     // 연출보다 먼저 강화 결과가 탭에 드러나지 않도록, 탭 갱신은 강화 팝업의 확인을 누른 뒤에 한다
@@ -483,7 +501,8 @@ public class EnhanceTab : LobbyTab
         SelectArtifact(selectedArtifactSlot);
     }
 
-    private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, HttpError error, T response) where T : class
+    private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, bool holdsTopNotices, HttpError error, T response)
+        where T : class
     {
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
@@ -500,12 +519,16 @@ public class EnhanceTab : LobbyTab
 
         if (HttpErrorUtil.IsResultUnknown(error))
         {
-            retryRequest = () => SendRequest(requestInfo, applyResponse);
+            retryRequest = () => SendRequest(requestInfo, applyResponse, holdsTopNotices);
             ShowRetryPopup();
             return;
         }
 
         isRequesting = false;
+        if (holdsTopNotices)
+        {
+            ChatClient.Instance.ReleaseTopNotices();
+        }
     }
 
     private void OnClickEnhance()
@@ -517,7 +540,7 @@ public class EnhanceTab : LobbyTab
 
         if (isSwordSelected)
         {
-            SendRequest(EnhanceApi.EnhanceSword(Guid.NewGuid(), User.Sword.Level), ApplySwordEnhance);
+            SendRequest(EnhanceApi.EnhanceSword(Guid.NewGuid(), User.Sword.Level), ApplySwordEnhance, true);
             return;
         }
 
@@ -584,12 +607,14 @@ public class EnhanceTab : LobbyTab
     private void OnCancelRetry()
     {
         DialogPopup.Close();
+        ChatClient.Instance.ReleaseTopNotices();
     }
 
     private void OnConfirmSwordEnhance()
     {
         EnhancePopup.Close();
         RefreshAfterRequest();
+        ChatClient.Instance.ReleaseTopNotices();
     }
 
     private void OnConfirmArtifactEnhance()
@@ -600,6 +625,11 @@ public class EnhanceTab : LobbyTab
     private void OnClickCombatPower()
     {
         SetStatsOpened(isStatsOpened == false);
+    }
+
+    private void OnClickStatsOutside()
+    {
+        SetStatsOpened(false);
     }
 
     private void OnClickSwordButton()

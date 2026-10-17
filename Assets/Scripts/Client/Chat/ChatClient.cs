@@ -20,6 +20,9 @@ public class ChatClient : SingletonMonoBehaviour<ChatClient>
     private readonly List<ChatMessage> listMessage = new List<ChatMessage>();
     public IReadOnlyList<ChatMessage> Messages => listMessage;
 
+    private readonly List<ChatMessage> listHeldTopNotice = new List<ChatMessage>();
+    private bool isTopNoticeHeld;
+
     public event Action<ChatMessage> OnMessageAddedEvent = delegate { };
     public event Action<ChatMessage> OnTopNoticeEvent = delegate { };
     public event Action<string> OnApplicationErrorEvent = delegate { };
@@ -84,6 +87,23 @@ public class ChatClient : SingletonMonoBehaviour<ChatClient>
         return StompClient.Instance.SendAsync(PublicChatSendDestination, body);
     }
 
+    // 서버는 검 강화 결과를 응답보다 먼저 공지로 보내므로, 강화 연출이 끝날 때까지 상단 공지를 모아 두었다가 순서대로 내보낸다
+    public void HoldTopNotices()
+    {
+        isTopNoticeHeld = true;
+    }
+
+    public void ReleaseTopNotices()
+    {
+        isTopNoticeHeld = false;
+        foreach (ChatMessage notice in listHeldTopNotice)
+        {
+            OnTopNoticeEvent.Invoke(notice);
+        }
+
+        listHeldTopNotice.Clear();
+    }
+
     // destination과 type 조합이 서버 계약에 맞는 메시지만 서버 시각 순서로 넣고, 상한을 넘으면 가장 오래된 메시지를 버린다
     private void AddReceivedMessage(string destination, string body)
     {
@@ -114,10 +134,18 @@ public class ChatClient : SingletonMonoBehaviour<ChatClient>
 
         OnMessageAddedEvent.Invoke(message);
 
-        if (message.Type == "SYSTEM_NOTICE" || message.Type == "SWORD_ENHANCEMENT")
+        if (message.Type != "SYSTEM_NOTICE" && message.Type != "SWORD_ENHANCEMENT")
         {
-            OnTopNoticeEvent.Invoke(message);
+            return;
         }
+
+        if (isTopNoticeHeld)
+        {
+            listHeldTopNotice.Add(message);
+            return;
+        }
+
+        OnTopNoticeEvent.Invoke(message);
     }
 
     private static bool IsAllowedMessage(string destination, string messageType)
@@ -175,6 +203,8 @@ public class ChatClient : SingletonMonoBehaviour<ChatClient>
     private void OnStompDisconnectRequested()
     {
         listMessage.Clear();
+        listHeldTopNotice.Clear();
+        isTopNoticeHeld = false;
     }
 
     private void OnStompError(string errorMessage)
