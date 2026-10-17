@@ -81,7 +81,7 @@ public class ArtifactChangePopup : BasePopup
             listArtifactChangeItem[i].Set(item.grade, item.level, item.name, item.stat, item.status, item.interactable);
         }
 
-        btnUnequip.interactable = canUnequip;
+        btnUnequip.gameObject.SetActive(canUnequip);
     }
 
     private void ShowItems(int count)
