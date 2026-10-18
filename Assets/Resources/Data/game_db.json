@@ -1,5 +1,5 @@
 {
-  "version": "20261016090544",
+  "version": "20261018065725",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "나무 검", "appearanceCode": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "녹슨 검", "appearanceCode": "SWORD_01" },
@@ -82,6 +82,9 @@
     { "productCode": "GOLD_SMALL", "name": "골드 주머니", "category": "GOLD", "iconCode": "ICON_GOLD_SMALL", "priceType": "DIAMOND", "price": 100 },
     { "productCode": "GOLD_MIDDLE", "name": "골드 자루", "category": "GOLD", "iconCode": "ICON_GOLD_MIDDLE", "priceType": "DIAMOND", "price": 250 },
     { "productCode": "GOLD_LARGE", "name": "골드 상자", "category": "GOLD", "iconCode": "ICON_GOLD_LARGE", "priceType": "DIAMOND", "price": 450 },
+    { "productCode": "DIAMOND_SMALL", "name": "다이아 주머니", "category": "DIAMOND", "iconCode": "ICON_DIAMOND_SMALL", "priceType": "GOLD", "price": 0 },
+    { "productCode": "DIAMOND_MIDDLE", "name": "다이아 자루", "category": "DIAMOND", "iconCode": "ICON_DIAMOND_MIDDLE", "priceType": "GOLD", "price": 0 },
+    { "productCode": "DIAMOND_LARGE", "name": "다이아 상자", "category": "DIAMOND", "iconCode": "ICON_DIAMOND_LARGE", "priceType": "GOLD", "price": 0 },
     { "productCode": "GOLD_GACHA_10", "name": "골드 뽑기 10회", "category": "GACHA", "iconCode": "ICON_GOLD_GACHA_10", "priceType": "DIAMOND", "price": 1000 },
     { "productCode": "GOLD_GACHA_1", "name": "골드 뽑기 1회", "category": "GACHA", "iconCode": "ICON_GOLD_GACHA_1", "priceType": "DIAMOND", "price": 100 },
     { "productCode": "ARTIFACT_CRIT_02", "name": "매의 눈 아티팩트 10개", "category": "ARTIFACT", "iconCode": "ICON_EAGLEEYES", "priceType": "DIAMOND", "price": 1000 },
