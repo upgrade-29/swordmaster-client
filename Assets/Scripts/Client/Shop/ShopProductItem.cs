@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +15,8 @@ public class ShopProductItem : MonoBehaviour
     [ReadOnly] [SerializeField] private Image actionIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI actionLabel;
     [ReadOnly] [SerializeField] private GameObject objActionLoading;
+
+    [ReadOnly(true)] [SerializeField] private float loadingRotationDuration = 1f; // 로딩 아이콘이 한 바퀴 도는 시간
 
     private ShopProductData product;
     public ShopProductData Product => product;
@@ -32,6 +35,11 @@ public class ShopProductItem : MonoBehaviour
         objActionLoading = GameUtil.Bind<RectTransform>(transform, "Loading").gameObject;
 
         actionButton.onClick.AddListener(OnClickActionButton);
+
+        objActionLoading.transform.DOLocalRotate(new Vector3(0f, 0f, -360f), loadingRotationDuration, RotateMode.FastBeyond360)
+            .SetEase(Ease.Linear)
+            .SetLoops(-1)
+            .SetLink(gameObject);
     }
 
     public void SetProduct(ShopProductData product, ShopProductRewardData representativeReward,
@@ -59,7 +67,7 @@ public class ShopProductItem : MonoBehaviour
             case ShopProductPurchaseState.Ready:
                 objActionLoading.SetActive(false);
                 actionButton.interactable = true;
-                actionLabel.text = product.price.ToString();
+                actionLabel.text = product.price.ToString("N0");
                 break;
 
             case ShopProductPurchaseState.Purchasing:

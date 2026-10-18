@@ -85,6 +85,11 @@ public class LobbyView : MonoBehaviour
         UpdateTabLayout();
     }
 
+    public void SetNickname(string nickname)
+    {
+        playerInfo.SetNickname(nickname);
+    }
+
     public void SetCurrencies(string gold, string diamond)
     {
         playerInfo.SetCurrencies(gold, diamond);
@@ -96,6 +101,8 @@ public class LobbyView : MonoBehaviour
         {
             lobbyTabButton.SetSelected(lobbyTabButton.TabType == selectedTab);
         }
+
+        UpdateTabSeparators(selectedTab);
     }
 
     public void AnimateSelectedTab(LobbyTabType selectedTab)
@@ -104,6 +111,8 @@ public class LobbyView : MonoBehaviour
         {
             lobbyTabButton.AnimateSelected(lobbyTabButton.TabType == selectedTab);
         }
+
+        UpdateTabSeparators(selectedTab);
     }
 
     public void SetTrackPosition(float normalizedPosition)
@@ -129,6 +138,17 @@ public class LobbyView : MonoBehaviour
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRectTab.content);
         OnUpdateTabLayoutEvent.Invoke();
+    }
+
+    // 구분선은 각 탭의 오른쪽 끝에 있고, 양옆 탭이 모두 선택되지 않았을 때만 보임
+    private void UpdateTabSeparators(LobbyTabType selectedTab)
+    {
+        for (int i = 0; i < listLobbyTabButton.Count - 1; i++)
+        {
+            bool isBetweenUnselectedTabs = listLobbyTabButton[i].TabType != selectedTab
+                && listLobbyTabButton[i + 1].TabType != selectedTab;
+            listLobbyTabButton[i].SetSeparatorVisible(isBetweenUnselectedTabs);
+        }
     }
 
     private void OnBeginDragTrack(LobbyTab lobbyTab)

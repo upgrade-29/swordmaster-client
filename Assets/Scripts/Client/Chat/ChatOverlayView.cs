@@ -32,7 +32,7 @@ public sealed class ChatOverlayView : BasePopup
     private readonly List<TMP_Text> _messageItems = new List<TMP_Text>();
     private readonly Stack<TMP_Text> _idleMessageItems = new Stack<TMP_Text>();
 
-    private ChatCoordinator _chatCoordinator;
+    private ChatClient _chatClient;
 
     // BasePopup이 Dimmed를 bind한 뒤 Prefab 내부 button callback을 연결한다.
     // PopupUI에 꺼 둔 채로 배치되어 처음 Open할 때 실행되므로, 그 전에 표시한 연결 오류를 지우지 않는다.
@@ -44,47 +44,49 @@ public sealed class ChatOverlayView : BasePopup
         _sendButton.onClick.AddListener(RequestSend);
     }
 
-    // coordinator 수신 이벤트를 view 갱신으로만 연결한다.
-    public void Bind(ChatCoordinator chatCoordinator)
+    // ChatClient 수신 이벤트를 view 갱신으로만 연결하고, 로비를 열기 전에 받아 둔 메시지도 목록에 넣는다.
+    public void Bind(ChatClient chatClient)
     {
-        if (_chatCoordinator != null)
+        if (_chatClient != null)
         {
             return;
         }
 
-        _chatCoordinator = chatCoordinator ?? throw new ArgumentNullException(nameof(chatCoordinator));
-        _chatCoordinator.MessageAdded += AddMessage;
-        _chatCoordinator.ApplicationErrorReceived += ShowApplicationError;
-        _chatCoordinator.ConnectionErrorReceived += ShowConnectionError;
+        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient.OnMessageAddedEvent += AddMessage;
+        _chatClient.OnApplicationErrorEvent += ShowApplicationError;
+        _chatClient.OnConnectionErrorEvent += ShowConnectionError;
+        _chatClient.OnConnectedEvent += ClearConnectionError;
 
-        foreach (ChatMessage message in _chatCoordinator.Messages)
+        foreach (ChatMessage message in _chatClient.Messages)
         {
             InsertMessage(message);
         }
     }
 
-    // Lobby 종료 전에 coordinator callback을 해제해 파괴 뒤 UI 갱신을 막는다.
+    // ChatClient는 로비보다 오래 남으므로, 로비 종료 전에 callback을 해제해 파괴 뒤 UI 갱신을 막는다.
     public void Unbind()
     {
-        if (_chatCoordinator == null)
+        if (_chatClient == null)
         {
             return;
         }
 
-        _chatCoordinator.MessageAdded -= AddMessage;
-        _chatCoordinator.ApplicationErrorReceived -= ShowApplicationError;
-        _chatCoordinator.ConnectionErrorReceived -= ShowConnectionError;
-        _chatCoordinator = null;
+        _chatClient.OnMessageAddedEvent -= AddMessage;
+        _chatClient.OnApplicationErrorEvent -= ShowApplicationError;
+        _chatClient.OnConnectionErrorEvent -= ShowConnectionError;
+        _chatClient.OnConnectedEvent -= ClearConnectionError;
+        _chatClient = null;
     }
 
     // UI 외부에서 발생한 연결 오류도 오버레이의 단일 오류 영역에 표시한다.
-    public void ShowConnectionError(string errorMessage)
+    private void ShowConnectionError(string errorMessage)
     {
         _errorText.text = errorMessage;
     }
 
     // 연결에 성공하면 이전 연결 오류와 재연결 안내 문구를 지운다.
-    public void ClearConnectionError()
+    private void ClearConnectionError()
     {
         _errorText.text = string.Empty;
     }
@@ -106,7 +108,7 @@ public sealed class ChatOverlayView : BasePopup
         Unbind();
     }
 
-    // client UX 검증 후 coordinator에 전송을 요청하고 서버 echo 전에는 목록을 낙관 반영하지 않는다.
+    // client UX 검증 후 ChatClient에 전송을 요청하고 서버 echo 전에는 목록을 낙관 반영하지 않는다.
     private void RequestSend()
     {
         if (ChatInputValidator.TryValidate(_inputField.text, out string errorMessage) == false)
@@ -123,7 +125,7 @@ public sealed class ChatOverlayView : BasePopup
     {
         try
         {
-            await _chatCoordinator.SendPublicChatAsync(content);
+            await _chatClient.SendPublicChatAsync(content);
             _inputField.text = string.Empty;
             _errorText.text = string.Empty;
         }
@@ -198,7 +200,7 @@ public sealed class ChatOverlayView : BasePopup
     // 장시간 로비 접속 중에도 UI 항목 수가 무한히 늘지 않게 가장 오래된 메시지부터 버리고, 그 항목은 꺼서 다시 쓴다.
     private void TrimOldestMessages()
     {
-        while (_messages.Count > ChatCoordinator.MaximumMessageCount)
+        while (_messages.Count > ChatClient.MaximumMessageCount)
         {
             _messages.RemoveAt(0);
 

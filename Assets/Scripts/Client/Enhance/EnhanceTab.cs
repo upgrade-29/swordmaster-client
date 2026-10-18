@@ -17,10 +17,17 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
 
+    [SerializeField] private Sprite spriteAttack;
+    [SerializeField] private Sprite spriteAttackSpeed;
+    [SerializeField] private Sprite spriteMaxHp;
+    [SerializeField] private Sprite spriteCritRate;
+    [SerializeField] private Sprite spriteLifesteal;
+
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
-    private ArtifactChangePopup ArtifactChangePopup => LobbyPopupUI.Instance.Get<ArtifactChangePopup>();
-    private ConfirmPopup ConfirmPopup => LobbyPopupUI.Instance.Get<ConfirmPopup>();
+    private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
+    private EnhancePopup EnhancePopup => Popup.Instance.Get<EnhancePopup>();
 
     private bool isSwordSelected;
     private int selectedArtifactSlot;
@@ -47,6 +54,7 @@ public class EnhanceTab : LobbyTab
         enhanceEquipmentAction.OnClickChangeEvent += OnClickChange;
 
         enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
+        enhanceStatsPanel.OnClickOutsideEvent += OnClickStatsOutside;
     }
 
     private void Start()
@@ -54,7 +62,7 @@ public class EnhanceTab : LobbyTab
         RefreshCombatStats();
         RefreshEquipmentNames();
         SelectSword();
-        SetStatsOpened(false);
+        SetStatsOpened(false, true);
     }
 
     protected override void OnDestroy()
@@ -77,6 +85,17 @@ public class EnhanceTab : LobbyTab
             enhanceEquipmentAction.OnClickEnhanceEvent -= OnClickEnhance;
             enhanceEquipmentAction.OnClickSellEvent -= OnClickSell;
             enhanceEquipmentAction.OnClickChangeEvent -= OnClickChange;
+        }
+
+        if (enhanceStatsPanel != null)
+        {
+            enhanceStatsPanel.OnClickOutsideEvent -= OnClickStatsOutside;
+        }
+
+        // 강화 연출 중에 로비를 떠나도 상단 공지가 계속 막혀 있지 않게 푼다
+        if (ChatClient.IsInitialize())
+        {
+            ChatClient.Instance.ReleaseTopNotices();
         }
     }
 
@@ -131,18 +150,18 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo.SetEquipment($"+{current.level.ToString()}", current.name);
         enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
-        SetStatRow(0, "공격력", current.attackPower, next?.attackPower, FormatInteger);
-        SetStatRow(1, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
-        SetStatRow(2, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
+        SetStatRow(0, spriteAttack, "공격력", current.attackPower, next?.attackPower, FormatInteger);
+        SetStatRow(1, spriteAttackSpeed, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
+        SetStatRow(2, spriteMaxHp, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
     }
 
-    private void SetStatRow(int index, string name, double current, double? next, Func<double, string> format)
+    private void SetStatRow(int index, Sprite icon, string name, double current, double? next, Func<double, string> format)
     {
         string nextText = next.HasValue
             ? format(next.Value)
             : EmptyValue;
 
-        enhanceEquipmentInfo.SetStatRow(index, name, format(current), nextText);
+        enhanceEquipmentInfo.SetStatRow(index, icon, name, format(current), nextText);
     }
 
     private void RefreshSwordAction()
@@ -180,7 +199,8 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", data.name);
         enhanceEquipmentInfo.ShowStatRows(ArtifactStatRowCount);
-        SetStatRow(0, GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue, GetStatFormat(data.statType));
+        SetStatRow(0, GetStatIcon(data.statType), GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue,
+            GetStatFormat(data.statType));
     }
 
     private void RefreshArtifactAction(int slotIndex)
@@ -261,6 +281,28 @@ public class EnhanceTab : LobbyTab
         return string.Empty;
     }
 
+    private Sprite GetStatIcon(StatType statType)
+    {
+        Sprite icon = null;
+        switch (statType)
+        {
+            case StatType.AttackSpeed:
+                icon = spriteAttackSpeed;
+                break;
+            case StatType.MaxHp:
+                icon = spriteMaxHp;
+                break;
+            case StatType.CritRate:
+                icon = spriteCritRate;
+                break;
+            case StatType.Lifesteal:
+                icon = spriteLifesteal;
+                break;
+        }
+
+        return icon;
+    }
+
     private static Func<double, string> GetStatFormat(StatType statType)
     {
         switch (statType)
@@ -325,6 +367,7 @@ public class EnhanceTab : LobbyTab
             GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
+            GetStatIcon(data.statType),
             $"{GetStatName(data.statType)} {value}",
             GetArtifactChangeStatus(artifact),
             artifact.IsEquipped == false);
@@ -345,40 +388,95 @@ public class EnhanceTab : LobbyTab
         return $"슬롯 {artifact.EquippedSlot.Value.ToString()} 장착 중";
     }
 
-    private void SetStatsOpened(bool opened)
+    private void SetStatsOpened(bool opened, bool immediately = false)
     {
         isStatsOpened = opened;
-        enhanceStatsPanel.SetOpened(opened);
+        enhanceStatsPanel.SetOpened(opened, immediately);
         enhanceTitle.SetStatsOpened(opened);
     }
 
-    // 성공하면 응답을 User에 반영하고 화면을 갱신한다. 실패는 HttpRequest가 남기는 로그로 확인한다
-    private void SendRequest<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse) where T : class
+    // 성공하면 applyResponse가 응답을 User에 반영하고 화면 갱신 시점도 정한다. 실패는 HttpRequest가 남기는 로그로 확인한다
+    // holdsTopNotices: 응답보다 먼저 오는 강화 결과 공지가 연출 전에 보이지 않도록, 강화 팝업의 확인까지 상단 공지를 미룬다
+    private void SendRequest<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, bool holdsTopNotices = false) where T : class
     {
         isRequesting = true;
-        HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, error, response));
+        if (holdsTopNotices)
+        {
+            ChatClient.Instance.HoldTopNotices();
+        }
+
+        HttpRequest.Request(requestInfo, (error, response) => OnResponse(requestInfo, applyResponse, holdsTopNotices, error, response));
     }
 
+    // 연출보다 먼저 강화 결과가 탭에 드러나지 않도록, 탭 갱신은 강화 팝업의 확인을 누른 뒤에 한다
     private void ApplySwordEnhance(EnhanceApi.SwordEnhanceResponse response)
     {
+        int levelBefore = User.Sword.Level;
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
+
+        bool isSuccess = response.result == EnhanceApi.EnhanceResultType.Success;
+        EnhancePopup.Setup(CreateSwordResult(isSuccess, levelBefore, User.Sword.Level), OnConfirmSwordEnhance);
+        EnhancePopup.Open();
     }
 
     private void ApplySwordSell(EnhanceApi.SwordSellResponse response)
     {
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
+        RefreshAfterRequest();
     }
 
     private void ApplyArtifactEnhance(EnhanceApi.ArtifactEnhanceResponse response)
     {
+        ArtifactResponse enhanced = response.artifactResponses.FirstOrDefault();
+        int levelBefore = enhanced != null ? User.GetArtifact(enhanced.code).Level : 0;
+
         foreach (ArtifactResponse artifact in response.artifactResponses)
         {
             User.GetArtifact(artifact.code)?.SyncFrom(artifact.ToUserArtifact());
         }
 
         SyncCurrencies(response.currenciesResponse);
+        RefreshAfterRequest();
+
+        if (enhanced == null)
+        {
+            return;
+        }
+
+        EnhancePopup.Setup(CreateArtifactResult(User.GetArtifact(enhanced.code), levelBefore), OnConfirmArtifactEnhance);
+        EnhancePopup.Open();
+    }
+
+    private EnhancePopup.ResultInfo CreateSwordResult(bool isSuccess, int levelBefore, int levelAfter)
+    {
+        SwordData before = GetSwordData(levelBefore);
+        SwordData after = GetSwordData(levelAfter);
+        var stats = new List<EnhancePopup.StatInfo>
+        {
+            new EnhancePopup.StatInfo(spriteAttack, "공격력", FormatInteger(before.attackPower), FormatInteger(after.attackPower)),
+            new EnhancePopup.StatInfo(spriteAttackSpeed, "공격 속도", FormatAttackSpeed(before.attackSpeed), FormatAttackSpeed(after.attackSpeed)),
+            new EnhancePopup.StatInfo(spriteMaxHp, "최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
+        };
+        string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
+
+        return new EnhancePopup.ResultInfo(isSuccess, $"+{levelBefore.ToString()}", $"+{levelAfter.ToString()}", after.name, message, stats);
+    }
+
+    private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
+    {
+        ArtifactData data = GetArtifactData(artifact.ArtifactCode);
+        Func<double, string> format = GetStatFormat(data.statType);
+        var stats = new List<EnhancePopup.StatInfo>
+        {
+            new EnhancePopup.StatInfo(GetStatIcon(data.statType), GetStatName(data.statType),
+                format(StatCalculator.GetArtifactValue(data, levelBefore)),
+                format(StatCalculator.GetArtifactValue(data, artifact.Level))),
+        };
+
+        return new EnhancePopup.ResultInfo(true, $"Lv. {levelBefore.ToString()}", $"Lv. {artifact.Level.ToString()}", data.name,
+            string.Empty, stats);
     }
 
     // 응답에는 장착한 아티팩트만 들어 있으므로, 응답에 없는 아티팩트는 장착 해제된 것이다
@@ -389,6 +487,8 @@ public class EnhanceTab : LobbyTab
             ArtifactResponse equipped = equippedArtifacts.FirstOrDefault(x => x.code == artifact.ArtifactCode);
             artifact.SetEquippedSlot(equipped?.equipSlot);
         }
+
+        RefreshAfterRequest();
     }
 
     private void SyncCurrencies(UserCurrencies currencies)
@@ -411,9 +511,10 @@ public class EnhanceTab : LobbyTab
 
     private void ShowRetryPopup()
     {
-        ConfirmPopup.Setup("요청 결과 확인 필요", "요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
-            OnConfirmRetry, OnCancelRetry);
-        ConfirmPopup.Open();
+        DialogPopup.Setup("요청 결과 확인 필요", "요청 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmRetry),
+            new DialogPopup.DialogPopupButtonInfo("취소", OnCancelRetry));
+        DialogPopup.Open();
     }
 
     private void RefreshAfterRequest()
@@ -430,7 +531,8 @@ public class EnhanceTab : LobbyTab
         SelectArtifact(selectedArtifactSlot);
     }
 
-    private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, HttpError error, T response) where T : class
+    private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, bool holdsTopNotices, HttpError error, T response)
+        where T : class
     {
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
@@ -442,18 +544,21 @@ public class EnhanceTab : LobbyTab
         {
             isRequesting = false;
             applyResponse(response);
-            RefreshAfterRequest();
             return;
         }
 
         if (HttpErrorUtil.IsResultUnknown(error))
         {
-            retryRequest = () => SendRequest(requestInfo, applyResponse);
+            retryRequest = () => SendRequest(requestInfo, applyResponse, holdsTopNotices);
             ShowRetryPopup();
             return;
         }
 
         isRequesting = false;
+        if (holdsTopNotices)
+        {
+            ChatClient.Instance.ReleaseTopNotices();
+        }
     }
 
     private void OnClickEnhance()
@@ -465,7 +570,7 @@ public class EnhanceTab : LobbyTab
 
         if (isSwordSelected)
         {
-            SendRequest(EnhanceApi.EnhanceSword(Guid.NewGuid(), User.Sword.Level), ApplySwordEnhance);
+            SendRequest(EnhanceApi.EnhanceSword(Guid.NewGuid(), User.Sword.Level), ApplySwordEnhance, true);
             return;
         }
 
@@ -521,7 +626,7 @@ public class EnhanceTab : LobbyTab
 
     private void OnConfirmRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
 
         Action retry = retryRequest;
         retryRequest = null;
@@ -531,12 +636,30 @@ public class EnhanceTab : LobbyTab
     // 요청은 그대로 두고, 강화 화면의 버튼을 누르면 재전송 팝업을 다시 연다
     private void OnCancelRetry()
     {
-        ConfirmPopup.Close();
+        DialogPopup.Close();
+        ChatClient.Instance.ReleaseTopNotices();
+    }
+
+    private void OnConfirmSwordEnhance()
+    {
+        EnhancePopup.Close();
+        RefreshAfterRequest();
+        ChatClient.Instance.ReleaseTopNotices();
+    }
+
+    private void OnConfirmArtifactEnhance()
+    {
+        EnhancePopup.Close();
     }
 
     private void OnClickCombatPower()
     {
         SetStatsOpened(isStatsOpened == false);
+    }
+
+    private void OnClickStatsOutside()
+    {
+        SetStatsOpened(false);
     }
 
     private void OnClickSwordButton()

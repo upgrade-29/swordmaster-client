@@ -11,15 +11,17 @@ public class ArtifactChangePopup : BasePopup
         public readonly string grade;
         public readonly string level;
         public readonly string name;
+        public readonly Sprite statIcon;
         public readonly string stat;
         public readonly string status;
         public readonly bool interactable;
 
-        public ItemInfo(string grade, string level, string name, string stat, string status, bool interactable)
+        public ItemInfo(string grade, string level, string name, Sprite statIcon, string stat, string status, bool interactable)
         {
             this.grade = grade;
             this.level = level;
             this.name = name;
+            this.statIcon = statIcon;
             this.stat = stat;
             this.status = status;
             this.interactable = interactable;
@@ -78,10 +80,10 @@ public class ArtifactChangePopup : BasePopup
         for (int i = 0; i < items.Count; i++)
         {
             ItemInfo item = items[i];
-            listArtifactChangeItem[i].Set(item.grade, item.level, item.name, item.stat, item.status, item.interactable);
+            listArtifactChangeItem[i].Set(item.grade, item.level, item.name, item.statIcon, item.stat, item.status, item.interactable);
         }
 
-        btnUnequip.interactable = canUnequip;
+        btnUnequip.gameObject.SetActive(canUnequip);
     }
 
     private void ShowItems(int count)

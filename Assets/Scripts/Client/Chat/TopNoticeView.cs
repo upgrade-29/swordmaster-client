@@ -7,30 +7,30 @@ public sealed class TopNoticeView : MonoBehaviour
 {
     [SerializeField] private TMP_Text _noticeText;
 
-    private ChatCoordinator _chatCoordinator;
+    private ChatClient _chatClient;
 
-    // coordinator의 상단 공지 요청만 구독해 일반 채팅이 banner에 표시되지 않게 한다.
-    public void Bind(ChatCoordinator chatCoordinator)
+    // ChatClient의 상단 공지 이벤트만 구독해 일반 채팅이 banner에 표시되지 않게 한다.
+    public void Bind(ChatClient chatClient)
     {
-        if (_chatCoordinator != null)
+        if (_chatClient != null)
         {
             return;
         }
 
-        _chatCoordinator = chatCoordinator ?? throw new ArgumentNullException(nameof(chatCoordinator));
-        _chatCoordinator.TopNoticeRequested += ShowNotice;
+        _chatClient = chatClient ?? throw new ArgumentNullException(nameof(chatClient));
+        _chatClient.OnTopNoticeEvent += ShowNotice;
     }
 
-    // Lobby 종료 전에 수신 callback을 해제해 파괴된 text를 갱신하지 않게 한다.
+    // ChatClient는 로비보다 오래 남으므로, 로비 종료 전에 수신 callback을 해제해 파괴된 text를 갱신하지 않게 한다.
     public void Unbind()
     {
-        if (_chatCoordinator == null)
+        if (_chatClient == null)
         {
             return;
         }
 
-        _chatCoordinator.TopNoticeRequested -= ShowNotice;
-        _chatCoordinator = null;
+        _chatClient.OnTopNoticeEvent -= ShowNotice;
+        _chatClient = null;
     }
 
     // component 파괴 시에도 명시적으로 callback을 해제한다.

@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,12 +9,23 @@ public class LobbyTabButton : MonoBehaviour
     [ReadOnly] [SerializeField] private Button btnTab;
     [ReadOnly] [SerializeField] private LayoutElement layoutElement;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
+    [ReadOnly] [SerializeField] private RectTransform rectIcon;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtLabel;
+    [ReadOnly] [SerializeField] private GameObject objSeparator;
 
     [ReadOnly(true)] [SerializeField] private float normalWidthRatio = 1f; // 하단 메뉴의 남는 너비를 이 비율대로 나눠 가짐
     [ReadOnly(true)] [SerializeField] private float selectedWidthRatio = 1.6f;
     [ReadOnly(true)] [SerializeField] private float widthAnimationDuration = 0.28f;
 
+    [ReadOnly(true)] [SerializeField] private float normalIconSize = 96f; // 아이콘은 BottomCenter 피벗이라 위로 커짐
+    [ReadOnly(true)] [SerializeField] private float selectedIconSize = 160f;
+    [ReadOnly(true)] [SerializeField] private float normalLabelFontSize = 32f;
+    [ReadOnly(true)] [SerializeField] private float selectedLabelFontSize = 44f;
+    [ReadOnly(true)] [SerializeField] private Color normalLabelColor = new Color32(0xB4, 0xB2, 0xA8, 0xFF);
+    [ReadOnly(true)] [SerializeField] private Color selectedLabelColor = new Color32(0x2A, 0x14, 0x06, 0xFF);
+
     private Tween tweenWidth;
+    private Tween tweenIcon;
 
     private LobbyTabType tabType;
     public LobbyTabType TabType => tabType;
@@ -28,6 +40,9 @@ public class LobbyTabButton : MonoBehaviour
         GameUtil.Bind(gameObject, ref btnTab);
         GameUtil.Bind(gameObject, ref layoutElement);
         objSelectedMark = GameUtil.Bind<RectTransform>(transform, "Selected").gameObject;
+        rectIcon = GameUtil.Bind<RectTransform>(transform, "Icon");
+        txtLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Label");
+        objSeparator = GameUtil.TryBind<RectTransform>(transform, "Separator")?.gameObject;
 
         btnTab.onClick.AddListener(OnClickTab);
     }
@@ -35,6 +50,7 @@ public class LobbyTabButton : MonoBehaviour
     private void OnDestroy()
     {
         tweenWidth?.Kill();
+        tweenIcon?.Kill();
     }
 
     public void Init(LobbyTabType tabType)
@@ -48,6 +64,9 @@ public class LobbyTabButton : MonoBehaviour
 
         tweenWidth?.Kill();
         layoutElement.flexibleWidth = GetWidthRatio(selected);
+
+        tweenIcon?.Kill();
+        rectIcon.sizeDelta = GetIconSize(selected);
     }
 
     public void AnimateSelected(bool selected)
@@ -57,14 +76,28 @@ public class LobbyTabButton : MonoBehaviour
         tweenWidth?.Kill();
         tweenWidth = DOTween.To(() => layoutElement.flexibleWidth, x => layoutElement.flexibleWidth = x, GetWidthRatio(selected), widthAnimationDuration)
             .SetEase(Ease.OutCubic);
+
+        tweenIcon?.Kill();
+        tweenIcon = rectIcon.DOSizeDelta(GetIconSize(selected), widthAnimationDuration)
+            .SetEase(Ease.OutCubic);
+    }
+
+    public void SetSeparatorVisible(bool visible)
+    {
+        objSeparator?.SetActive(visible);
     }
 
     private void UpdateSelected(bool selected)
     {
         this.selected = selected;
-        
-        // 테스트 용 코드
-        // objSelectedMark.SetActive(selected);
+        objSelectedMark.SetActive(selected);
+
+        txtLabel.fontSize = selected
+            ? selectedLabelFontSize
+            : normalLabelFontSize;
+        txtLabel.color = selected
+            ? selectedLabelColor
+            : normalLabelColor;
     }
 
     private float GetWidthRatio(bool selected)
@@ -72,6 +105,15 @@ public class LobbyTabButton : MonoBehaviour
         return selected
             ? selectedWidthRatio
             : normalWidthRatio;
+    }
+
+    private Vector2 GetIconSize(bool selected)
+    {
+        float size = selected
+            ? selectedIconSize
+            : normalIconSize;
+
+        return new Vector2(size, size);
     }
 
     private void OnClickTab()
