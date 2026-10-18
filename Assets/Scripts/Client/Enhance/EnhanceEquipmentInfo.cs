@@ -39,6 +39,8 @@ public class EnhanceEquipmentInfo : MonoBehaviour
 
     public void SetEquipment(string level, string name)
     {
+        // 빈 슬롯처럼 단계가 없으면 숨겨서 이름이 가운데에 오게 한다
+        txtLevel.gameObject.SetActive(string.IsNullOrEmpty(level) == false);
         txtLevel.text = level;
         txtName.text = name;
     }
