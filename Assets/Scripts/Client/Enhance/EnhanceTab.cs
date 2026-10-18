@@ -40,20 +40,20 @@ public class EnhanceTab : LobbyTab
     {
         base.Awake();
 
-        enhanceTitle = GameUtil.Bind<EnhanceTitle>(transform, "Title");
+        enhanceTitle = GameUtil.Bind<EnhanceTitle>(transform, "Viewport/Title");
         enhanceTitle.OnClickCombatPowerEvent += OnClickCombatPower;
 
-        enhanceEquipmentSelect = GameUtil.Bind<EnhanceEquipmentSelect>(transform, "Viewport/Content/EquipmentSelect");
+        enhanceEquipmentSelect = GameUtil.Bind<EnhanceEquipmentSelect>(transform, "Viewport/ScrollView/Content/EquipmentSelect");
         enhanceEquipmentSelect.OnClickSwordButtonEvent += OnClickSwordButton;
         enhanceEquipmentSelect.OnClickArtifactButtonEvent += OnClickArtifactButton;
 
-        enhanceEquipmentInfo = GameUtil.Bind<EnhanceEquipmentInfo>(transform, "Viewport/Content/EquipmentInfo");
-        enhanceEquipmentAction = GameUtil.Bind<EnhanceEquipmentAction>(transform, "EquipmentAction");
+        enhanceEquipmentInfo = GameUtil.Bind<EnhanceEquipmentInfo>(transform, "Viewport/ScrollView/Content/EquipmentInfo");
+        enhanceEquipmentAction = GameUtil.Bind<EnhanceEquipmentAction>(transform, "Viewport/EquipmentAction");
         enhanceEquipmentAction.OnClickEnhanceEvent += OnClickEnhance;
         enhanceEquipmentAction.OnClickSellEvent += OnClickSell;
         enhanceEquipmentAction.OnClickChangeEvent += OnClickChange;
 
-        enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "StatsPanel");
+        enhanceStatsPanel = GameUtil.Bind<EnhanceStatsPanel>(transform, "Viewport/StatsPanel");
         enhanceStatsPanel.OnClickOutsideEvent += OnClickStatsOutside;
     }
 

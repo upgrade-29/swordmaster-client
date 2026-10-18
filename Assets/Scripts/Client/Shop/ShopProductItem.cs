@@ -15,6 +15,7 @@ public class ShopProductItem : MonoBehaviour
     [ReadOnly] [SerializeField] private Image actionIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI actionLabel;
     [ReadOnly] [SerializeField] private GameObject objActionLoading;
+    [ReadOnly] [SerializeField] private CanvasGroup canvasGroupPrice;
 
     [ReadOnly(true)] [SerializeField] private float loadingRotationDuration = 1f; // 로딩 아이콘이 한 바퀴 도는 시간
 
@@ -33,6 +34,7 @@ public class ShopProductItem : MonoBehaviour
         actionIcon = GameUtil.Bind<Image>(transform, "Price/Icon");
         actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Price/Label");
         objActionLoading = GameUtil.Bind<RectTransform>(transform, "Loading").gameObject;
+        GameUtil.BindOrAdd(GameUtil.Bind<RectTransform>(transform, "Price").gameObject, ref canvasGroupPrice);
 
         actionButton.OnClickEvent += OnClickActionButton;
 
@@ -65,41 +67,50 @@ public class ShopProductItem : MonoBehaviour
         switch (state)
         {
             case ShopProductPurchaseState.Ready:
-                objActionLoading.SetActive(false);
+                SetLoading(false);
                 actionButton.Interactable = true;
                 actionLabel.text = product.price.ToString("N0");
                 break;
 
             case ShopProductPurchaseState.Purchasing:
-                objActionLoading.SetActive(true);
+                SetLoading(true);
                 actionButton.Interactable = false;
                 break;
 
             case ShopProductPurchaseState.ResultUnknown:
-                objActionLoading.SetActive(true);
+                SetLoading(true);
                 actionButton.Interactable = true;
                 break;
 
             case ShopProductPurchaseState.SoldOut:
-                objActionLoading.SetActive(false);
+                SetLoading(false);
                 actionButton.Interactable = false;
                 actionLabel.text = "품절";
                 break;
 
             case ShopProductPurchaseState.LimitReached:
-                objActionLoading.SetActive(false);
+                SetLoading(false);
                 actionButton.Interactable = false;
                 actionLabel.text = "구매 제한";
                 break;
 
             case ShopProductPurchaseState.Unavailable:
-                objActionLoading.SetActive(false);
+                SetLoading(false);
                 actionButton.Interactable = false;
                 break;
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(state), state, null);
         }
+    }
+
+    // 로딩 아이콘이 가격 줄 가운데에 겹치므로 로딩 중에는 가격을 숨긴다. 끄면 카드 레이아웃이 줄어들어서 투명도로 숨긴다
+    private void SetLoading(bool loading)
+    {
+        objActionLoading.SetActive(loading);
+        canvasGroupPrice.alpha = loading
+            ? 0f
+            : 1f;
     }
 
     private void OnClickActionButton()
