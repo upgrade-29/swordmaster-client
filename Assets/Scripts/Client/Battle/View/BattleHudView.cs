@@ -7,18 +7,22 @@ public class BattleHudView : MonoBehaviour
     private TMP_Text stageText;
     private TMP_Text timeText;
     private TMP_Text goldText;
+    private RectTransform goldIcon;
     private HpBarView playerHpBar;
     private HpBarView enemyHpBar;
 
     public HpBarView PlayerHpBar => playerHpBar;
     public HpBarView EnemyHpBar => enemyHpBar;
-    public RectTransform GoldTarget => goldText.rectTransform; // 처치 골드 동전이 빨려 들어갈 자리
+
+    // 처치 골드 동전이 빨려 들어갈 자리. 골드 숫자 앞의 아이콘 가운데라 자릿수가 바뀌어도 움직이지 않는다
+    public Vector3 GoldIconPosition => goldIcon.position;
 
     private void Awake()
     {
         stageText = GameUtil.Bind<TMP_Text>(gameObject, "StageText");
         timeText = GameUtil.Bind<TMP_Text>(gameObject, "TimeText");
         goldText = GameUtil.Bind<TMP_Text>(gameObject, "GoldText");
+        goldIcon = GameUtil.Bind<RectTransform>(gameObject, "GoldIcon");
         playerHpBar = GameUtil.Bind<HpBarView>(gameObject, "PlayerHpBar");
         enemyHpBar = GameUtil.Bind<HpBarView>(gameObject, "EnemyHpBar");
     }

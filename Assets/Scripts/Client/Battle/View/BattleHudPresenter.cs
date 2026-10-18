@@ -93,7 +93,7 @@ public class BattleHudPresenter : IDisposable
         var arrivedCount = 0;
 
         flyingCoinCount += coinCount;
-        coinFlyView.Play(enemyView.CenterPosition, hud.GoldTarget, coinCount, () =>
+        coinFlyView.Play(enemyView.CenterPosition, hud.GoldIconPosition, coinCount, () =>
         {
             arrivedCount++;
             OnCoinArrived(arrivedCount == coinCount ? goldPerCoin + remainder : goldPerCoin);
