@@ -34,11 +34,6 @@ public class EnhancePopup : BasePopup
 
     private const float ResultFadeDuration = 0.3f;   // 능력치 변화와 확인 버튼이 나타나는 시간(초)
 
-    private static readonly Color SuccessTitleColor = new Color32(0xFF, 0xD5, 0x4F, 0xFF);
-    private static readonly Color FailTitleColor = new Color32(0xFF, 0x66, 0x66, 0xFF);
-    private static readonly Color FailGlowColor = new Color32(0x60, 0x60, 0x60, 0x00);
-    private static readonly Color FailSwordColor = new Color32(0x60, 0x60, 0x60, 0xFF);
-
     public readonly struct StatInfo
     {
         public readonly Sprite icon;
@@ -153,7 +148,7 @@ public class EnhancePopup : BasePopup
         base.OnOpen();
 
         txtTitle.text = result.isSuccess ? "강화 성공" : "강화 실패";
-        txtTitle.color = result.isSuccess ? SuccessTitleColor : FailTitleColor;
+        txtTitle.color = result.isSuccess ? GameConstants.Colors.EnhanceSuccess : GameConstants.Colors.EnhanceFail;
         txtLevel.text = $"{result.levelBefore} → {result.levelAfter}";
         txtMessage.text = result.message;
         txtMessage.gameObject.SetActive(string.IsNullOrEmpty(result.message) == false);
@@ -284,10 +279,10 @@ public class EnhancePopup : BasePopup
     {
         float start = sequence.Duration();
         sequence.Insert(start, imgSword.rectTransform.DOAnchorPos(vecSwordPosition, FlashInDuration));
-        sequence.Insert(start, imgGlow.DOColor(FailGlowColor, FailDuration));
+        sequence.Insert(start, imgGlow.DOColor(GameConstants.Colors.EnhanceFailGlow, FailDuration));
         sequence.Insert(start, imgGlow.rectTransform.DOScale(FailGlowScale, FailDuration));
         sequence.Insert(start, canvasGroupRays.DOFade(0f, FailDuration * 0.6f));
-        sequence.Insert(start, imgSword.DOColor(FailSwordColor, FailDuration));
+        sequence.Insert(start, imgSword.DOColor(GameConstants.Colors.EnhanceFailSword, FailDuration));
         sequence.Insert(start, txtTitle.DOFade(1f, FailDuration));
     }
 

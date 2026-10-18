@@ -30,7 +30,7 @@ public class LobbyController : MonoBehaviour
         {
             Debug.LogWarning("[Lobby] Not logged in. Back to login");
             gameObject.SetActive(false);
-            SceneManager.LoadScene(SceneNames.Login);
+            SceneManager.LoadScene(GameConstants.Scenes.Login);
             return;
         }
 
@@ -154,6 +154,6 @@ public class LobbyController : MonoBehaviour
         DialogPopup.Close();
         HttpRequest.Request(AuthApi.Logout(), null, false);
         GameSession.Instance.Logout();
-        SceneManager.LoadScene(SceneNames.Login);
+        SceneManager.LoadScene(GameConstants.Scenes.Login);
     }
 }

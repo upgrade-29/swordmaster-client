@@ -14,7 +14,7 @@ public class BattleViewManager : MonoBehaviour
     private const string AbandonMessage = "전투를 포기하시겠습니까?\n지금까지 모은 골드만 받고 패배 처리됩니다.";
 
     [ReadOnly(true)] [SerializeField] private bool logToConsole = true; // 로그 창 문장을 Console에도 찍는다
-    [ReadOnly(true)] [SerializeField] [Range(1f, BattleManager.MaxSpeed)] private float speed = 1f;
+    [ReadOnly(true)] [SerializeField] [Range(1f, GameConstants.Rules.MaxBattleSpeed)] private float speed = 1f;
 
     private BattleManager manager;
     private BattleHudView hud;
@@ -77,7 +77,7 @@ public class BattleViewManager : MonoBehaviour
             GameSession.Instance.User == null)
         {
             Debug.LogWarning("[Battle] No entry data. Back to lobby");
-            SceneManager.LoadScene(SceneNames.Lobby);
+            SceneManager.LoadScene(GameConstants.Scenes.Lobby);
             return;
         }
 
@@ -88,7 +88,7 @@ public class BattleViewManager : MonoBehaviour
         if (GameSession.Instance.IsLoggedIn == false)
         {
             Debug.LogWarning("[Battle] Not logged in. Back to login");
-            SceneManager.LoadScene(SceneNames.Login);
+            SceneManager.LoadScene(GameConstants.Scenes.Login);
             return;
         }
 
@@ -173,7 +173,7 @@ public class BattleViewManager : MonoBehaviour
     {
         screenFader.FadeOut(ExitFadeDuration, () =>
         {
-            SceneManager.LoadScene(SceneNames.Lobby);
+            SceneManager.LoadScene(GameConstants.Scenes.Lobby);
         });
     }
 }

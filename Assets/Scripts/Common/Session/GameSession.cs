@@ -7,7 +7,6 @@ using UnityEngine;
 public class GameSession : SingletonMonoBehaviour<GameSession>
 {
     private const string AuthorizationHeader = "Authorization";
-    private const string GameDBResourcePath = "Data/game_db"; // 게임 데이터는 아직 서버에서 받지 않아 시트에서 뽑은 파일을 읽는다
 
     private string accessToken; // 로그인으로 받은 JWT. HttpConfig의 Authorization 공통 헤더에도 넣어 HttpRequest로 보내는 요청에 붙게 한다
     public string AccessToken => accessToken;
@@ -31,7 +30,7 @@ public class GameSession : SingletonMonoBehaviour<GameSession>
     {
         DontDestroyOnLoad(gameObject);
         tokenStorage = TokenStorageFactory.Create();
-        gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>(GameDBResourcePath).text);
+        gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>(GameConstants.ResourcePaths.GameDB).text);
     }
 
     // 로그인이나 리프레시로 받은 토큰 쌍을 적용한다. 리프레시 토큰은 쓸 때마다 서버가 새로 주므로 매번 덮어쓴다

@@ -5,17 +5,9 @@ using UnityEngine.UI;
 
 // 모든 팝업의 기반 클래스. Dimmed가 뒤쪽 입력을 막고, 설정에 따라 Dimmed를 누르면 닫힌다
 // 열고 닫을 때 공통 연출을 재생한다. 닫힘 연출이 재생되는 동안 IsOpened는 이미 false이고, 입력을 받지 않는다
-// 연출을 바꾸려면 아래 값과 CreateOpenSequence, CreateCloseSequence의 Tween 구성만 고치면 모든 팝업에 적용된다
+// 연출을 바꾸려면 GameConstants.PopupAnimation 값과 CreateOpenSequence, CreateCloseSequence의 Tween 구성만 고치면 모든 팝업에 적용된다
 public class BasePopup : MonoBehaviour
 {
-    private const float OpenDuration = 0.3f;         // 열림 연출 시간(초)
-    private const float OpenStartScale = 0.8f;       // 열릴 때 Panel의 시작 크기(원래 크기에 대한 비율)
-    private const Ease OpenScaleEase = Ease.OutBack; // 열릴 때 Panel 크기 변화. 페이드는 DOTween 기본 Ease를 쓴다
-
-    private const float CloseDuration = 0.15f;       // 닫힘 연출 시간(초)
-    private const float CloseEndScale = 0.9f;        // 닫힐 때 Panel의 끝 크기(원래 크기에 대한 비율)
-    private const Ease CloseEase = Ease.InQuad;      // 닫힐 때 페이드와 Panel 크기 변화
-
     [ReadOnly] [SerializeField] private Button btnDimmed;
     [ReadOnly] [SerializeField] private CanvasGroup canvasGroup;
     [ReadOnly] [SerializeField] private RectTransform rectPanel;
@@ -111,12 +103,12 @@ public class BasePopup : MonoBehaviour
         canvasGroup.alpha = 0f;
 
         Sequence sequence = CreateTransitionSequence();
-        sequence.Append(canvasGroup.DOFade(1f, OpenDuration));
+        sequence.Append(canvasGroup.DOFade(1f, GameConstants.PopupAnimation.OpenDuration));
 
         if (rectPanel != null)
         {
-            rectPanel.localScale = Vector3.one * OpenStartScale;
-            sequence.Join(rectPanel.DOScale(1f, OpenDuration).SetEase(OpenScaleEase));
+            rectPanel.localScale = Vector3.one * GameConstants.PopupAnimation.OpenStartScale;
+            sequence.Join(rectPanel.DOScale(1f, GameConstants.PopupAnimation.OpenDuration).SetEase(GameConstants.PopupAnimation.OpenScaleEase));
         }
 
         return sequence;
@@ -126,11 +118,11 @@ public class BasePopup : MonoBehaviour
     private Sequence CreateCloseSequence()
     {
         Sequence sequence = CreateTransitionSequence();
-        sequence.Append(canvasGroup.DOFade(0f, CloseDuration).SetEase(CloseEase));
+        sequence.Append(canvasGroup.DOFade(0f, GameConstants.PopupAnimation.CloseDuration).SetEase(GameConstants.PopupAnimation.CloseEase));
 
         if (rectPanel != null)
         {
-            sequence.Join(rectPanel.DOScale(CloseEndScale, CloseDuration).SetEase(CloseEase));
+            sequence.Join(rectPanel.DOScale(GameConstants.PopupAnimation.CloseEndScale, GameConstants.PopupAnimation.CloseDuration).SetEase(GameConstants.PopupAnimation.CloseEase));
         }
 
         return sequence;

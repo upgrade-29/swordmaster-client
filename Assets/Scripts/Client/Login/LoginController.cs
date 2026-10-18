@@ -318,6 +318,6 @@ public class LoginController : MonoBehaviour
     private static void EnterLobby(PlayerApi.PlayerResponse player)
     {
         GameSession.Instance.SetUser(player.ToUser());
-        SceneManager.LoadScene(SceneNames.Lobby);
+        SceneManager.LoadScene(GameConstants.Scenes.Lobby);
     }
 }

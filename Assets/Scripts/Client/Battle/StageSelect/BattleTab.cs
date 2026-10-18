@@ -173,7 +173,7 @@ public class BattleTab : LobbyTab
         if (error == null)
         {
             BattleEntry.Set(info);
-            SceneManager.LoadScene(SceneNames.Battle);
+            SceneManager.LoadScene(GameConstants.Scenes.Battle);
             return;
         }
 

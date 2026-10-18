@@ -24,6 +24,6 @@ public class ShopRewardItem : MonoBehaviour
         }
 
         icon.sprite = visualCatalog.GetRewardTypeIcon(reward.rewardType);
-        amountText.text = reward.amount.ToString("N0");
+        amountText.text = reward.amount.ToString(GameConstants.NumberFormats.Integer);
     }
 }

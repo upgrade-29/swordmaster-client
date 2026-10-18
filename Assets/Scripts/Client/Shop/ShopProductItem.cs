@@ -69,7 +69,7 @@ public class ShopProductItem : MonoBehaviour
             case ShopProductPurchaseState.Ready:
                 SetLoading(false);
                 actionButton.Interactable = true;
-                actionLabel.text = product.price.ToString("N0");
+                actionLabel.text = product.price.ToString(GameConstants.NumberFormats.Integer);
                 break;
 
             case ShopProductPurchaseState.Purchasing:

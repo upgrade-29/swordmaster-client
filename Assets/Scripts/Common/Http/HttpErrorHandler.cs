@@ -37,7 +37,7 @@ public static class HttpErrorHandler
         }
 
         session.Expire();
-        SceneManager.LoadScene(SceneNames.Login);
+        SceneManager.LoadScene(GameConstants.Scenes.Login);
         return true;
     }
 }

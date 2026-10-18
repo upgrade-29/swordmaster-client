@@ -49,8 +49,8 @@ public class StageSelectView : MonoBehaviour
         statusText.text = GetStatusLabel(state);
         enemyInfoText.text = $"일반 적 {stage.enemyCount}기 + 보스";
         rewardValueText.text = GetRewardLabel(stage);
-        myPowerText.text = myPower.ToString("N0");
-        recommendedPowerText.text = stage.recommendedPower.ToString("N0");
+        myPowerText.text = myPower.ToString(GameConstants.NumberFormats.Integer);
+        recommendedPowerText.text = stage.recommendedPower.ToString(GameConstants.NumberFormats.Integer);
         startButton.Interactable = state != StageState.Locked;
     }
 

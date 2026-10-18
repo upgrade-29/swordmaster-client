@@ -10,8 +10,6 @@ public class BattleUnitView : MonoBehaviour
     private const float HitScale = 0.1f; // 원래 크기에 대한 비율
     private const float CritHitScale = 0.25f;
     private const float HealDuration = 0.3f;
-    private static readonly Color HitColor = new Color(1f, 0.35f, 0.35f);
-    private static readonly Color HealColor = new Color(0.4f, 1f, 0.5f);
 
     private SpriteRenderer spriteRenderer;
 
@@ -62,14 +60,14 @@ public class BattleUnitView : MonoBehaviour
 
         var scale = isCrit ? CritHitScale : HitScale;
         hitScaleTween = transform.DOPunchScale(transform.localScale * scale, HitDuration, 1, 0f);
-        colorTween = spriteRenderer.DOColor(HitColor, HitDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
+        colorTween = spriteRenderer.DOColor(GameConstants.Colors.UnitHit, HitDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
     }
 
     // 흡혈로 체력을 회복하면 초록색으로 번쩍인다
     public void PlayHeal()
     {
         CompleteIfActive(colorTween);
-        colorTween = spriteRenderer.DOColor(HealColor, HealDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
+        colorTween = spriteRenderer.DOColor(GameConstants.Colors.Heal, HealDuration * 0.5f).SetLoops(2, LoopType.Yoyo);
     }
 
     private static void CompleteIfActive(Tween tween)

@@ -14,7 +14,6 @@ public class DamageFloaterPool : IDisposable
     private const float FontSize = 5f;
     private const float CritFontSize = 7f;
     private const int SortingOrder = 100; // 유닛 스프라이트보다 앞에 그린다
-    private const string FontResourcePath = "TMP/Galmuri11-Bold SDF";
 
     private readonly Transform root;
     private readonly TMP_FontAsset font;
@@ -23,7 +22,7 @@ public class DamageFloaterPool : IDisposable
     public DamageFloaterPool()
     {
         root = new GameObject("DamageFloaters").transform;
-        font = Resources.Load<TMP_FontAsset>(FontResourcePath);
+        font = Resources.Load<TMP_FontAsset>(GameConstants.ResourcePaths.DamageFont);
     }
 
     public void Dispose()

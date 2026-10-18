@@ -6,14 +6,6 @@ using UnityEngine.UI;
 
 public class EnhanceStatsPanel : MonoBehaviour
 {
-    // 팝업 공통 연출(BasePopup)과 같은 값
-    private const float OpenDuration = 0.3f;
-    private const float OpenStartScale = 0.8f;
-    private const Ease OpenScaleEase = Ease.OutBack;
-    private const float CloseDuration = 0.15f;
-    private const float CloseEndScale = 0.9f;
-    private const Ease CloseEase = Ease.InQuad;
-
     [ReadOnly] [SerializeField] private CanvasGroup canvasGroup;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtAttack;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtMaxHp;
@@ -75,10 +67,10 @@ public class EnhanceStatsPanel : MonoBehaviour
             gameObject.SetActive(true);
             canvasGroup.blocksRaycasts = true;
             canvasGroup.alpha = 0f;
-            transform.localScale = Vector3.one * OpenStartScale;
+            transform.localScale = Vector3.one * GameConstants.PopupAnimation.OpenStartScale;
             seqTransition = CreateTransitionSequence()
-                .Append(canvasGroup.DOFade(1f, OpenDuration))
-                .Join(transform.DOScale(1f, OpenDuration).SetEase(OpenScaleEase));
+                .Append(canvasGroup.DOFade(1f, GameConstants.PopupAnimation.OpenDuration))
+                .Join(transform.DOScale(1f, GameConstants.PopupAnimation.OpenDuration).SetEase(GameConstants.PopupAnimation.OpenScaleEase));
             return;
         }
 
@@ -89,8 +81,8 @@ public class EnhanceStatsPanel : MonoBehaviour
 
         canvasGroup.blocksRaycasts = false;
         seqTransition = CreateTransitionSequence()
-            .Append(canvasGroup.DOFade(0f, CloseDuration).SetEase(CloseEase))
-            .Join(transform.DOScale(CloseEndScale, CloseDuration).SetEase(CloseEase))
+            .Append(canvasGroup.DOFade(0f, GameConstants.PopupAnimation.CloseDuration).SetEase(GameConstants.PopupAnimation.CloseEase))
+            .Join(transform.DOScale(GameConstants.PopupAnimation.CloseEndScale, GameConstants.PopupAnimation.CloseDuration).SetEase(GameConstants.PopupAnimation.CloseEase))
             .OnComplete(OnCloseComplete);
     }
 

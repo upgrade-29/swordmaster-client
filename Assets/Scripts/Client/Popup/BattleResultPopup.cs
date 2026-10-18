@@ -7,9 +7,6 @@ using UnityEngine.UI;
 // 전투가 끝난 뒤 뜨는 결과 팝업. Setup으로 받은 결과를 보여주고, 재도전과 나가기 입력은 Setup으로 받은 콜백으로 돌려준다
 public class BattleResultPopup : BasePopup
 {
-    private static readonly Color VictoryColor = new Color(0.75f, 0.5f, 0f);
-    private static readonly Color DefeatColor = new Color(0.75f, 0.15f, 0.15f);
-
     [ReadOnly] [SerializeField] private TextMeshProUGUI titleText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI descriptionText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI stageText;
@@ -107,7 +104,7 @@ public class BattleResultPopup : BasePopup
         base.OnOpen();
 
         titleText.text = isVictory ? "성공" : "실패";
-        titleText.color = isVictory ? VictoryColor : DefeatColor;
+        titleText.color = isVictory ? GameConstants.Colors.BattleVictory : GameConstants.Colors.BattleDefeat;
         descriptionText.text = description;
         stageText.text = $"STAGE {stage.ToString()}";
         rewardLabelText.text = rewardLabel;
@@ -138,7 +135,7 @@ public class BattleResultPopup : BasePopup
         if (rewards.gold > 0)
         {
             labels.Add("골드");
-            values.Add($"+{rewards.gold.ToString("N0")}");
+            values.Add($"+{rewards.gold.ToString(GameConstants.NumberFormats.Integer)}");
         }
 
         foreach (string artifactName in artifactNames)

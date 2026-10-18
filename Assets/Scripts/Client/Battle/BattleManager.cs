@@ -10,7 +10,6 @@ using UnityEngine;
 public class BattleManager : MonoBehaviour
 {
     public const float BossWarningDuration = 1.8f;
-    public const float MaxSpeed = 2f; // 서버 시간 검증과 같은 배속 상한
     private const float StartDelay = 2f;
     private const int ReportMaxAttempts = 3; // 통신 오류로 보고 응답을 못 받으면 다시 보낸다. 서버는 같은 보고에 같은 응답을 준다
     private const float RequestRetryDelay = 1f; // 다시 보내기 전에 기다리는 시간(초)
@@ -87,7 +86,7 @@ public class BattleManager : MonoBehaviour
 
     public void SetSpeed(float speed)
     {
-        Speed = Mathf.Clamp(speed, 1f, MaxSpeed);
+        Speed = Mathf.Clamp(speed, 1f, GameConstants.Rules.MaxBattleSpeed);
     }
 
     // 성공하면 onSuccess를 호출한다. onSuccess에서 다음 요청을 보내면 된다

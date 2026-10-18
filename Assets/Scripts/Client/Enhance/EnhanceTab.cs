@@ -115,8 +115,8 @@ public class EnhanceTab : LobbyTab
 
     private void RefreshEquipmentNames()
     {
-        enhanceEquipmentSelect.SetSwordName($"검 +{User.Sword.Level.ToString()}");
-        for (int slotIndex = 0; slotIndex < EnhanceEquipmentSelect.ArtifactSlotCount; slotIndex++)
+        enhanceEquipmentSelect.SetSwordName($"검 {SwordLevelColor.Format(User.Sword.Level)}");
+        for (int slotIndex = 0; slotIndex < GameConstants.Rules.ArtifactSlotCount; slotIndex++)
         {
             enhanceEquipmentSelect.SetArtifactName(slotIndex, GetEquippedArtifactName(slotIndex));
         }
@@ -148,7 +148,7 @@ public class EnhanceTab : LobbyTab
         SwordData current = GetSwordData(User.Sword.Level);
         SwordData next = GetSwordData(User.Sword.Level + 1);
 
-        enhanceEquipmentInfo.SetEquipment($"+{current.level.ToString()}", current.name);
+        enhanceEquipmentInfo.SetEquipment(SwordLevelColor.Format(current.level), current.name);
         enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
         SetStatRow(0, spriteAttack, "공격력", current.attackPower, next?.attackPower, FormatInteger);
         SetStatRow(1, spriteAttackSpeed, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
@@ -461,7 +461,7 @@ public class EnhanceTab : LobbyTab
         };
         string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
 
-        return new EnhancePopup.ResultInfo(isSuccess, $"+{levelBefore.ToString()}", $"+{levelAfter.ToString()}", after.name, message, stats);
+        return new EnhancePopup.ResultInfo(isSuccess, SwordLevelColor.Format(levelBefore), SwordLevelColor.Format(levelAfter), after.name, message, stats);
     }
 
     private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
