@@ -43,9 +43,9 @@ public class EnhanceEquipmentInfo : MonoBehaviour
         txtName.text = name;
     }
 
-    public void SetStatRow(int index, string name, string current, string next)
+    public void SetStatRow(int index, Sprite icon, string name, string current, string next)
     {
-        listEnhanceStatRow[index].Set(name, current, next);
+        listEnhanceStatRow[index].Set(icon, name, current, next);
     }
 
     public void ShowStatRows(int rowCount)

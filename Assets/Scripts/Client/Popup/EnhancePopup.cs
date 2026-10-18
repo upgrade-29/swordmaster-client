@@ -41,12 +41,14 @@ public class EnhancePopup : BasePopup
 
     public readonly struct StatInfo
     {
+        public readonly Sprite icon;
         public readonly string name;
         public readonly string before;
         public readonly string after;
 
-        public StatInfo(string name, string before, string after)
+        public StatInfo(Sprite icon, string name, string before, string after)
         {
+            this.icon = icon;
             this.name = name;
             this.before = before;
             this.after = after;
@@ -193,6 +195,7 @@ public class EnhancePopup : BasePopup
 
     private void SetStatRow(RectTransform row, StatInfo stat)
     {
+        GameUtil.Bind<Image>(row, "Icon").sprite = stat.icon;
         GameUtil.Bind<TextMeshProUGUI>(row, "Label").text = stat.name;
         GameUtil.Bind<TextMeshProUGUI>(row, "Before").text = stat.before;
         GameUtil.Bind<TextMeshProUGUI>(row, "After").text = stat.after;

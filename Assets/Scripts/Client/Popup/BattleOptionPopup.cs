@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class BattleOptionPopup : BasePopup
 {
     [ReadOnly] [SerializeField] private Button abandonButton;
-    [ReadOnly] [SerializeField] private Button closeButton;
 
     public event Action AbandonClicked;
 
@@ -15,10 +14,8 @@ public class BattleOptionPopup : BasePopup
         base.Awake();
 
         abandonButton = GameUtil.Bind<Button>(transform, "Panel/Footer/AbandonButton");
-        closeButton = GameUtil.Bind<Button>(transform, "Panel/Footer/CloseButton");
 
         abandonButton.onClick.AddListener(OnClickAbandon);
-        closeButton.onClick.AddListener(Close);
     }
 
     private void OnClickAbandon() => AbandonClicked?.Invoke();

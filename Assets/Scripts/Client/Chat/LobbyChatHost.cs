@@ -15,6 +15,7 @@ public sealed class LobbyChatHost : MonoBehaviour
 
     [Header("연결 대상")]
     [SerializeField] private TopNoticeView _topNoticeView;
+    [SerializeField] private ChatPreviewView _chatPreviewView;
 
     private ChatOverlayView _chatOverlayView; // PopupUI에 있으므로 Start에서 Popup으로 가져온다
 
@@ -30,6 +31,11 @@ public sealed class LobbyChatHost : MonoBehaviour
         if (_topNoticeView != null)
         {
             _topNoticeView.Bind(chatClient);
+        }
+
+        if (_chatPreviewView != null)
+        {
+            _chatPreviewView.Bind(chatClient);
         }
 
         if (GameSession.Instance.IsLoggedIn)
@@ -57,6 +63,11 @@ public sealed class LobbyChatHost : MonoBehaviour
         if (ReferenceEquals(_topNoticeView, null) == false)
         {
             _topNoticeView.Unbind();
+        }
+
+        if (ReferenceEquals(_chatPreviewView, null) == false)
+        {
+            _chatPreviewView.Unbind();
         }
     }
 

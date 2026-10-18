@@ -17,6 +17,12 @@ public class EnhanceTab : LobbyTab
     [ReadOnly] [SerializeField] private EnhanceEquipmentAction enhanceEquipmentAction;
     [ReadOnly] [SerializeField] private EnhanceStatsPanel enhanceStatsPanel;
 
+    [SerializeField] private Sprite spriteAttack;
+    [SerializeField] private Sprite spriteAttackSpeed;
+    [SerializeField] private Sprite spriteMaxHp;
+    [SerializeField] private Sprite spriteCritRate;
+    [SerializeField] private Sprite spriteLifesteal;
+
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
     private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
@@ -56,7 +62,7 @@ public class EnhanceTab : LobbyTab
         RefreshCombatStats();
         RefreshEquipmentNames();
         SelectSword();
-        SetStatsOpened(false);
+        SetStatsOpened(false, true);
     }
 
     protected override void OnDestroy()
@@ -144,18 +150,18 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo.SetEquipment($"+{current.level.ToString()}", current.name);
         enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
-        SetStatRow(0, "공격력", current.attackPower, next?.attackPower, FormatInteger);
-        SetStatRow(1, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
-        SetStatRow(2, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
+        SetStatRow(0, spriteAttack, "공격력", current.attackPower, next?.attackPower, FormatInteger);
+        SetStatRow(1, spriteAttackSpeed, "공격 속도", current.attackSpeed, next?.attackSpeed, FormatAttackSpeed);
+        SetStatRow(2, spriteMaxHp, "최대 체력", current.maxHp, next?.maxHp, FormatInteger);
     }
 
-    private void SetStatRow(int index, string name, double current, double? next, Func<double, string> format)
+    private void SetStatRow(int index, Sprite icon, string name, double current, double? next, Func<double, string> format)
     {
         string nextText = next.HasValue
             ? format(next.Value)
             : EmptyValue;
 
-        enhanceEquipmentInfo.SetStatRow(index, name, format(current), nextText);
+        enhanceEquipmentInfo.SetStatRow(index, icon, name, format(current), nextText);
     }
 
     private void RefreshSwordAction()
@@ -193,7 +199,8 @@ public class EnhanceTab : LobbyTab
 
         enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", data.name);
         enhanceEquipmentInfo.ShowStatRows(ArtifactStatRowCount);
-        SetStatRow(0, GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue, GetStatFormat(data.statType));
+        SetStatRow(0, GetStatIcon(data.statType), GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue,
+            GetStatFormat(data.statType));
     }
 
     private void RefreshArtifactAction(int slotIndex)
@@ -274,6 +281,28 @@ public class EnhanceTab : LobbyTab
         return string.Empty;
     }
 
+    private Sprite GetStatIcon(StatType statType)
+    {
+        Sprite icon = null;
+        switch (statType)
+        {
+            case StatType.AttackSpeed:
+                icon = spriteAttackSpeed;
+                break;
+            case StatType.MaxHp:
+                icon = spriteMaxHp;
+                break;
+            case StatType.CritRate:
+                icon = spriteCritRate;
+                break;
+            case StatType.Lifesteal:
+                icon = spriteLifesteal;
+                break;
+        }
+
+        return icon;
+    }
+
     private static Func<double, string> GetStatFormat(StatType statType)
     {
         switch (statType)
@@ -338,6 +367,7 @@ public class EnhanceTab : LobbyTab
             GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
+            GetStatIcon(data.statType),
             $"{GetStatName(data.statType)} {value}",
             GetArtifactChangeStatus(artifact),
             artifact.IsEquipped == false);
@@ -358,10 +388,10 @@ public class EnhanceTab : LobbyTab
         return $"슬롯 {artifact.EquippedSlot.Value.ToString()} 장착 중";
     }
 
-    private void SetStatsOpened(bool opened)
+    private void SetStatsOpened(bool opened, bool immediately = false)
     {
         isStatsOpened = opened;
-        enhanceStatsPanel.SetOpened(opened);
+        enhanceStatsPanel.SetOpened(opened, immediately);
         enhanceTitle.SetStatsOpened(opened);
     }
 
@@ -425,9 +455,9 @@ public class EnhanceTab : LobbyTab
         SwordData after = GetSwordData(levelAfter);
         var stats = new List<EnhancePopup.StatInfo>
         {
-            new EnhancePopup.StatInfo("공격력", FormatInteger(before.attackPower), FormatInteger(after.attackPower)),
-            new EnhancePopup.StatInfo("공격 속도", FormatAttackSpeed(before.attackSpeed), FormatAttackSpeed(after.attackSpeed)),
-            new EnhancePopup.StatInfo("최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
+            new EnhancePopup.StatInfo(spriteAttack, "공격력", FormatInteger(before.attackPower), FormatInteger(after.attackPower)),
+            new EnhancePopup.StatInfo(spriteAttackSpeed, "공격 속도", FormatAttackSpeed(before.attackSpeed), FormatAttackSpeed(after.attackSpeed)),
+            new EnhancePopup.StatInfo(spriteMaxHp, "최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
         };
         string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
 
@@ -440,7 +470,7 @@ public class EnhanceTab : LobbyTab
         Func<double, string> format = GetStatFormat(data.statType);
         var stats = new List<EnhancePopup.StatInfo>
         {
-            new EnhancePopup.StatInfo(GetStatName(data.statType),
+            new EnhancePopup.StatInfo(GetStatIcon(data.statType), GetStatName(data.statType),
                 format(StatCalculator.GetArtifactValue(data, levelBefore)),
                 format(StatCalculator.GetArtifactValue(data, artifact.Level))),
         };

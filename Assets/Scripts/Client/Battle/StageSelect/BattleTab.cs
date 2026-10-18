@@ -26,7 +26,7 @@ public class BattleTab : LobbyTab
         stageSelectController = GameUtil.Bind<StageSelectController>(transform, "Viewport/Content/StageSelectView");
         stageSelectController.StageEntered += OnStageEntered;
 
-        btnChat = GameUtil.Bind<Button>(transform, "Viewport/Content/StageSelectView/ChatUI/ChatButton");
+        btnChat = GameUtil.Bind<Button>(transform, "Viewport/Content/ChatUI/ChatButton");
         btnChat.onClick.AddListener(OnClickChat);
 
         lobbyController = GetComponentInParent<LobbyController>();

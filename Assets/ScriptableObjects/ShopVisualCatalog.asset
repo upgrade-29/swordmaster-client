@@ -17,12 +17,14 @@ MonoBehaviour:
     icon: {fileID: 0}
   currencyIcons:
   - currencyType: 1
-    icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    icon: {fileID: 21300000, guid: 19ba188f58088484bafd53d989af68b0, type: 3}
   - currencyType: 2
-    icon: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+    icon: {fileID: 21300000, guid: fbfea33e001af5448ab82e73280ae947, type: 3}
   rewardTypeIcons:
   - rewardType: 1
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 19ba188f58088484bafd53d989af68b0, type: 3}
+  - rewardType: 6
+    icon: {fileID: 21300000, guid: fbfea33e001af5448ab82e73280ae947, type: 3}
   categoryLabels:
   - category: 1
     label: "\uACE8\uB4DC"
