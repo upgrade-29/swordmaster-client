@@ -44,11 +44,25 @@ public class GameSession : SingletonMonoBehaviour<GameSession>
     }
 
     // 로그인한 상태에서 서버가 401로 토큰을 거절했을 때. 토큰과 유저를 지우고, 같은 토큰으로 맺은 실시간 연결도 끊는다
+    // 리프레시 토큰은 남겨 두어 타이틀에서 자동 로그인으로 다시 들어올 수 있게 한다
     public void Expire()
+    {
+        ClearLogin();
+        isExpired = true;
+    }
+
+    // 사용자가 로그아웃했을 때. 리프레시 토큰까지 지워 다음 실행에서 자동 로그인하지 않게 한다
+    public void Logout()
+    {
+        ClearLogin();
+        isExpired = false;
+        tokenStorage.Clear();
+    }
+
+    private void ClearLogin()
     {
         accessToken = null;
         user = null;
-        isExpired = true;
         HttpConfig.RemoveHeader(AuthorizationHeader);
 
         // 연결한 적이 없으면 StompClient를 새로 만들지 않는다

@@ -23,10 +23,12 @@ public class LobbyView : MonoBehaviour
     public event Action<LobbyTabType> OnClickTabButtonEvent = delegate { };
     public event Action OnSwipeEndEvent = delegate { };
     public event Action OnUpdateTabLayoutEvent = delegate { };
+    public event Action OnClickMenuEvent = delegate { };
 
     private void Awake()
     {
         playerInfo = GameUtil.Bind<LobbyPlayerInfo>(transform, "TopUI/PlayerInfo");
+        playerInfo.OnClickMenuEvent += OnClickMenu;
         scrollRectTab = GameUtil.Bind<ScrollRect>(transform, "TabList");
 
         foreach (var tab in Tabs)
@@ -52,6 +54,11 @@ public class LobbyView : MonoBehaviour
     private void OnDestroy()
     {
         tweenTrack?.Kill();
+
+        if (playerInfo != null)
+        {
+            playerInfo.OnClickMenuEvent -= OnClickMenu;
+        }
 
         foreach (var lobbyTab in listLobbyTab)
         {
@@ -164,5 +171,10 @@ public class LobbyView : MonoBehaviour
     private void OnClickTabButton(LobbyTabButton lobbyTabButton)
     {
         OnClickTabButtonEvent.Invoke(lobbyTabButton.TabType);
+    }
+
+    private void OnClickMenu()
+    {
+        OnClickMenuEvent.Invoke();
     }
 }

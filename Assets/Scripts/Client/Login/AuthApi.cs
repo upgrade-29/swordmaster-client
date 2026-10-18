@@ -67,6 +67,13 @@ public static class AuthApi
         return HttpRequestFactory.Post<TokenResponse>("api/auth/refresh", new RefreshRequest(refreshToken));
     }
 
+    // 서버에 저장된 리프레시 토큰을 지운다. 공통 헤더의 액세스 토큰으로 누구인지 알리므로 본문은 없다
+    // 액세스 토큰이 이미 만료됐으면 401을 받는다. 기기에서는 응답과 관계없이 로그아웃하므로 에러 로그를 남기지 않는다
+    public static HttpRequestInfo<EmptyResponse> Logout()
+    {
+        return HttpRequestFactory.Post<EmptyResponse>("api/auth/logout", silentStatusCodes: new[] { UnauthorizedStatusCode });
+    }
+
     // 성공하면 본문 없이 201을 받는다
     public static HttpRequestInfo<EmptyResponse> Signup(string email, string password)
     {

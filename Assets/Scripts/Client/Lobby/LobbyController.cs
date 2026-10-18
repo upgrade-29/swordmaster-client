@@ -7,12 +7,17 @@ public class LobbyController : MonoBehaviour
 {
     private static readonly int LastTabIndex = Enum.GetValues(typeof(LobbyTabType)).Length - 1;
 
+    private const string LogoutTitle = "로그아웃";
+    private const string LogoutMessage = "로그아웃할까요?\n다음 실행부터 자동 로그인하지 않습니다.";
+
     [ReadOnly] [SerializeField] private LobbyView view;
 
     [ReadOnly(true)] [SerializeField] private LobbyTabType startTab = LobbyTabType.Battle;
     [ReadOnly(true)] [SerializeField] private float swipeThresholdRatio = 0.2f; // 이 값보다 많이 움직이면 탭 전환
 
     private User User => GameSession.Instance.User;
+    private LobbyOptionPopup OptionPopup => Popup.Instance.Get<LobbyOptionPopup>();
+    private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
 
     private LobbyTabType currentTab;
 
@@ -35,6 +40,7 @@ public class LobbyController : MonoBehaviour
         view.OnClickTabButtonEvent += OnClickTabButton;
         view.OnSwipeEndEvent += OnSwipeEnd;
         view.OnUpdateTabLayoutEvent += OnUpdateTabLayout;
+        view.OnClickMenuEvent += OnClickMenu;
     }
 
     private void Start()
@@ -45,6 +51,8 @@ public class LobbyController : MonoBehaviour
 
         GameSession.Instance.OnChangeCurrenciesEvent += OnChangeCurrencies;
         RefreshCurrencies();
+
+        OptionPopup.LogoutClicked += OnLogoutClicked;
     }
 
     private void OnDestroy()
@@ -55,6 +63,12 @@ public class LobbyController : MonoBehaviour
             GameSession.Instance.OnChangeCurrenciesEvent -= OnChangeCurrencies;
         }
 
+        // 씬을 닫을 때 Popup이 먼저 파괴됐으면 Instance로 새로 만들지 않는다. 팝업도 함께 파괴되므로 구독을 풀 필요가 없다
+        if (Popup.IsInitialize())
+        {
+            OptionPopup.LogoutClicked -= OnLogoutClicked;
+        }
+
         if (view == null)
         {
             return;
@@ -63,6 +77,7 @@ public class LobbyController : MonoBehaviour
         view.OnClickTabButtonEvent -= OnClickTabButton;
         view.OnSwipeEndEvent -= OnSwipeEnd;
         view.OnUpdateTabLayoutEvent -= OnUpdateTabLayout;
+        view.OnClickMenuEvent -= OnClickMenu;
     }
 
     public void ChangeTab(LobbyTabType tab)
@@ -116,5 +131,29 @@ public class LobbyController : MonoBehaviour
     private void OnChangeCurrencies()
     {
         RefreshCurrencies();
+    }
+
+    private void OnClickMenu()
+    {
+        OptionPopup.Open();
+    }
+
+    private void OnLogoutClicked()
+    {
+        OptionPopup.Close();
+        DialogPopup.Setup(LogoutTitle, LogoutMessage,
+            new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmLogout),
+            new DialogPopup.DialogPopupButtonInfo("취소", DialogPopup.Close));
+        DialogPopup.Open();
+    }
+
+    // 서버 응답을 기다리지 않고 기기에서 먼저 로그아웃한다. 요청은 보내는 순간 헤더를 복사하므로 세션을 지워도 액세스 토큰이 붙어 간다
+    // 늦게 온 401은 이미 로그아웃한 상태라 HttpErrorHandler가 처리하지 않고, 서버 요청이 실패해도 다음 실행에서 자동 로그인하지 않는다
+    private void OnConfirmLogout()
+    {
+        DialogPopup.Close();
+        HttpRequest.Request(AuthApi.Logout(), null, false);
+        GameSession.Instance.Logout();
+        SceneManager.LoadScene(SceneNames.Login);
     }
 }
