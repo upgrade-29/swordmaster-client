@@ -11,9 +11,9 @@ public class RewardResponse
     [JsonConstructor]
     public RewardResponse(RewardType rewardType, string rewardCode, long amount)
     {
-        if (rewardCode == null && rewardType != RewardType.Gold)
+        if (rewardCode == null && rewardType != RewardType.Gold && rewardType != RewardType.Diamond)
         {
-            throw new ArgumentException("GOLD 이외 보상의 rewardCode는 null일 수 없습니다.", nameof(rewardCode));
+            throw new ArgumentException("GOLD, DIAMOND 이외 보상의 rewardCode는 null일 수 없습니다.", nameof(rewardCode));
         }
 
         this.rewardType = rewardType;

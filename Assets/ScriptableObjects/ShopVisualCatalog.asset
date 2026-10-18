@@ -28,6 +28,8 @@ MonoBehaviour:
   categoryLabels:
   - category: 1
     label: "\uACE8\uB4DC"
+  - category: 6
+    label: "\uB2E4\uC774\uC544"
   - category: 2
     label: "\uAC00\uCC60"
   - category: 5

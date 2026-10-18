@@ -9,4 +9,5 @@ public enum ShopCategory
     Profile,
     Item,
     Artifact,
+    Diamond,
 }
