@@ -1,10 +1,9 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class ArtifactChangeItem : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private ButtonUI btnItem;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtGrade;
@@ -18,9 +17,6 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
     [SerializeField] private Sprite spriteStatusNormal;
     [SerializeField] private Sprite spriteStatusPressed;
     [SerializeField] private Sprite spriteStatusDisabled;
-
-    // Button처럼 누르고 있는 동안 Status 이미지를 눌린 이미지로 바꾼다
-    private bool isPointerDown;
 
     public event Action<ArtifactChangeItem> OnClickItemEvent = delegate { };
 
@@ -36,11 +32,7 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
         txtStatus = GameUtil.Bind<TextMeshProUGUI>(transform, "Status/Label");
 
         btnItem.OnClickEvent += OnClickItem;
-    }
-
-    private void OnDisable()
-    {
-        isPointerDown = false;
+        btnItem.OnPressedChangedEvent += OnPressedChangedItem;
     }
 
     public void Set(string grade, string level, string name, Sprite statIcon, string stat, string status, bool interactable)
@@ -55,28 +47,6 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
         UpdateStatusSprite();
     }
 
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        if (eventData.button != PointerEventData.InputButton.Left)
-        {
-            return;
-        }
-
-        isPointerDown = true;
-        UpdateStatusSprite();
-    }
-
-    public void OnPointerUp(PointerEventData eventData)
-    {
-        if (eventData.button != PointerEventData.InputButton.Left)
-        {
-            return;
-        }
-
-        isPointerDown = false;
-        UpdateStatusSprite();
-    }
-
     private void UpdateStatusSprite()
     {
         if (btnItem.Interactable == false)
@@ -85,9 +55,15 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
             return;
         }
 
-        imgStatus.sprite = isPointerDown
+        // 누르고 있는 동안 Status 줄도 눌린 버튼 이미지로 바꾼다
+        imgStatus.sprite = btnItem.IsPressed
             ? spriteStatusPressed
             : spriteStatusNormal;
+    }
+
+    private void OnPressedChangedItem(bool pressed)
+    {
+        UpdateStatusSprite();
     }
 
     private void OnClickItem()

@@ -22,7 +22,7 @@ public class LobbyTabButton : MonoBehaviour
     [ReadOnly(true)] [SerializeField] private float normalLabelFontSize = 32f;
     [ReadOnly(true)] [SerializeField] private float selectedLabelFontSize = 44f;
     [ReadOnly(true)] [SerializeField] private Color normalLabelColor = new Color32(0xB4, 0xB2, 0xA8, 0xFF);
-    [ReadOnly(true)] [SerializeField] private Color selectedLabelColor = new Color32(0x2A, 0x14, 0x06, 0xFF);
+    [ReadOnly(true)] [SerializeField] private Color selectedLabelColor = new Color32(0xE8, 0xE6, 0xDC, 0xFF);
 
     private Tween tweenWidth;
     private Tween tweenIcon;

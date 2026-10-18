@@ -17,6 +17,9 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private Vector3 vecOriginalScale;
     private Tween tweenScale;
 
+    private bool isPressed;
+    public bool IsPressed => isPressed;
+
     public bool Interactable
     {
         get => btnTarget.interactable;
@@ -24,6 +27,7 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     }
 
     public event Action OnClickEvent = delegate { };
+    public event Action<bool> OnPressedChangedEvent = delegate { };
 
     private void Awake()
     {
@@ -38,6 +42,7 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         tweenScale?.Kill();
         transform.localScale = vecOriginalScale;
+        SetPressed(false);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -48,6 +53,7 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             return;
         }
 
+        SetPressed(true);
         AnimateScale(vecOriginalScale * pressedScale, pressDuration);
     }
 
@@ -59,7 +65,19 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             return;
         }
 
+        SetPressed(false);
         AnimateScale(vecOriginalScale, releaseDuration);
+    }
+
+    private void SetPressed(bool pressed)
+    {
+        if (isPressed == pressed)
+        {
+            return;
+        }
+
+        isPressed = pressed;
+        OnPressedChangedEvent.Invoke(pressed);
     }
 
     private void AnimateScale(Vector3 scale, float duration)
