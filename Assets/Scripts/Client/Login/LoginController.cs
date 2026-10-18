@@ -38,8 +38,7 @@ public class LoginController : MonoBehaviour
         if (GameSession.Instance.IsExpired)
         {
             GameSession.Instance.ClearExpired();
-            titleView.ShowDimmed();
-            view.Show();
+            ShowLoginPanel();
             view.SetResult(false, SessionExpiredMessage);
             return;
         }
@@ -73,8 +72,65 @@ public class LoginController : MonoBehaviour
         }
     }
 
-    // TODO: 기존 유저면 플레이어 정보를 받아 바로 로비로 가고, 아니면 로그인 화면을 띄운다. 지금은 판별 없이 로그인 화면을 띄운다
+    // 저장된 리프레시 토큰이 있으면 자동 로그인을 시도하고, 없으면 로그인 화면을 띄운다
     private void OnClickTitle()
+    {
+        if (isRequesting)
+        {
+            return;
+        }
+
+        if (GameSession.Instance.TokenStorage.TryLoad(out string refreshToken) == false)
+        {
+            ShowLoginPanel();
+            return;
+        }
+
+        isRequesting = true;
+        titleView.SetInteractable(false);
+
+        HttpRequest.Request(AuthApi.Refresh(refreshToken), OnRefreshResponse);
+    }
+
+    private void OnRefreshResponse(HttpError error, AuthApi.TokenResponse response)
+    {
+        // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
+        if (this == null)
+        {
+            return;
+        }
+
+        if (error != null)
+        {
+            isRequesting = false;
+
+            // 토큰이 만료됐거나 무효다. 다시 보내도 실패하니 지운다. 네트워크 오류면 다음에 다시 시도하도록 남긴다
+            if (error.StatusCode == AuthApi.UnauthorizedStatusCode)
+            {
+                GameSession.Instance.TokenStorage.Clear();
+                ShowLoginPanel();
+                return;
+            }
+
+            ShowLoginPanel();
+            view.SetResult(false, $"자동 로그인 실패: {error.Message}");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(response?.accessToken) || string.IsNullOrEmpty(response.refreshToken))
+        {
+            isRequesting = false;
+            ShowLoginPanel();
+            view.SetResult(false, "자동 로그인 실패: 서버 응답을 읽을 수 없습니다.");
+            return;
+        }
+
+        // 받은 리프레시 토큰으로 저장된 토큰을 덮어쓴다. 이후는 직접 로그인했을 때와 같다
+        GameSession.Instance.SetLogin(response.accessToken, response.refreshToken);
+        HttpRequest.Request(PlayerApi.GetMe(), OnLoadPlayerResponse);
+    }
+
+    private void ShowLoginPanel()
     {
         titleView.ShowDimmed();
         view.Show();
@@ -163,7 +219,7 @@ public class LoginController : MonoBehaviour
         HttpRequest.Request(AuthApi.Login(id, password), OnLoginResponse);
     }
 
-    private void OnLoginResponse(HttpError error, AuthApi.LoginResponse response)
+    private void OnLoginResponse(HttpError error, AuthApi.TokenResponse response)
     {
         // 응답을 기다리는 동안 씬이 바뀌어 파괴됐을 수 있다
         if (this == null)
@@ -177,13 +233,13 @@ public class LoginController : MonoBehaviour
             return;
         }
 
-        if (string.IsNullOrEmpty(response?.accessToken))
+        if (string.IsNullOrEmpty(response?.accessToken) || string.IsNullOrEmpty(response.refreshToken))
         {
             FailLogin("서버 응답을 읽을 수 없습니다.");
             return;
         }
 
-        GameSession.Instance.SetLogin(response.accessToken);
+        GameSession.Instance.SetLogin(response.accessToken, response.refreshToken);
         HttpRequest.Request(PlayerApi.GetMe(), OnLoadPlayerResponse);
     }
 
@@ -215,9 +271,11 @@ public class LoginController : MonoBehaviour
         EnterLobby(player);
     }
 
+    // 자동 로그인 중에 실패하면 로그인 화면이 아직 없으므로 함께 띄운다
     private void FailLogin(string message)
     {
         isRequesting = false;
+        ShowLoginPanel();
         view.SetInteractable(true);
         view.SetResult(false, $"로그인 실패: {message}");
     }

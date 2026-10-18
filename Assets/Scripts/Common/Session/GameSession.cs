@@ -16,6 +16,9 @@ public class GameSession : SingletonMonoBehaviour<GameSession>
     private bool isExpired; // 로그인한 상태에서 서버가 토큰을 거절해 로그인 씬으로 돌아가는 중인지. 로그인 화면이 안내 문구를 띄운 뒤 지운다
     public bool IsExpired => isExpired;
 
+    private ITokenStorage tokenStorage; // 자동 로그인용 리프레시 토큰을 기기에 저장한다. 액세스 토큰은 저장하지 않는다
+    public ITokenStorage TokenStorage => tokenStorage;
+
     private GameDB gameDB;
     public GameDB GameDB => gameDB;
 
@@ -27,14 +30,17 @@ public class GameSession : SingletonMonoBehaviour<GameSession>
     protected override void OnAwakeSingleton()
     {
         DontDestroyOnLoad(gameObject);
+        tokenStorage = TokenStorageFactory.Create();
         gameDB = JsonConvert.DeserializeObject<GameDB>(Resources.Load<TextAsset>(GameDBResourcePath).text);
     }
 
-    public void SetLogin(string accessToken)
+    // 로그인이나 리프레시로 받은 토큰 쌍을 적용한다. 리프레시 토큰은 쓸 때마다 서버가 새로 주므로 매번 덮어쓴다
+    public void SetLogin(string accessToken, string refreshToken)
     {
         this.accessToken = accessToken;
         isExpired = false;
         HttpConfig.SetHeader(AuthorizationHeader, $"Bearer {accessToken}");
+        tokenStorage.Save(refreshToken);
     }
 
     // 로그인한 상태에서 서버가 401로 토큰을 거절했을 때. 토큰과 유저를 지우고, 같은 토큰으로 맺은 실시간 연결도 끊는다
