@@ -599,6 +599,7 @@ GameObject:
   - component: {fileID: 1762526963658822626}
   - component: {fileID: 4186944707959806345}
   - component: {fileID: 2203477630459472320}
+  - component: {fileID: 1681436786515967182}
   m_Layer: 5
   m_Name: ShopProductItem
   m_TagString: Untagged
@@ -731,6 +732,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1681436786515967182
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8667299434057154725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &8808651073029021880
 GameObject:
   m_ObjectHideFlags: 0

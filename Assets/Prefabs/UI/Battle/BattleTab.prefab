@@ -245,6 +245,7 @@ GameObject:
   - component: {fileID: 2568178431194870028}
   - component: {fileID: 3166837499106890952}
   - component: {fileID: 4613328112772428964}
+  - component: {fileID: 3599602294684565077}
   m_Layer: 0
   m_Name: NextButton
   m_TagString: Untagged
@@ -354,6 +355,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3599602294684565077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623992949104944624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &1264265644904521770
 GameObject:
   m_ObjectHideFlags: 0
@@ -578,6 +595,7 @@ GameObject:
   - component: {fileID: 2910637369870818293}
   - component: {fileID: 1293988653906231319}
   - component: {fileID: 2761870629717863096}
+  - component: {fileID: 4042695294405420676}
   m_Layer: 0
   m_Name: PrevButton
   m_TagString: Untagged
@@ -687,6 +705,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4042695294405420676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2945384369467688611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &3140081531406184896
 GameObject:
   m_ObjectHideFlags: 0
@@ -2785,6 +2819,7 @@ GameObject:
   - component: {fileID: 9221899108833306530}
   - component: {fileID: 545640691779708934}
   - component: {fileID: 5906245218959860240}
+  - component: {fileID: 5144236521161320498}
   m_Layer: 0
   m_Name: StartButton
   m_TagString: Untagged
@@ -2914,6 +2949,22 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &5144236521161320498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8371586348599558609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &8473202024744935138
 GameObject:
   m_ObjectHideFlags: 0

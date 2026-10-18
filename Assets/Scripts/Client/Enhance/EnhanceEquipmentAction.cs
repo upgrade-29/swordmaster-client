@@ -1,7 +1,6 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class EnhanceEquipmentAction : MonoBehaviour
 {
@@ -13,13 +12,13 @@ public class EnhanceEquipmentAction : MonoBehaviour
     [ReadOnly] [SerializeField] private GameObject objMaterial;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtMaterialCount;
     [ReadOnly] [SerializeField] private RectTransform rectMaterialFill;
-    [ReadOnly] [SerializeField] private Button btnEnhance;
+    [ReadOnly] [SerializeField] private ButtonUI btnEnhance;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtEnhanceLabel;
     [ReadOnly] [SerializeField] private GameObject objEnhanceCost;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtEnhanceCost;
-    [ReadOnly] [SerializeField] private Button btnSell;
+    [ReadOnly] [SerializeField] private ButtonUI btnSell;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtSellPrice;
-    [ReadOnly] [SerializeField] private Button btnChange;
+    [ReadOnly] [SerializeField] private ButtonUI btnChange;
 
     public event Action OnClickEnhanceEvent = delegate { };
     public event Action OnClickSellEvent = delegate { };
@@ -32,17 +31,17 @@ public class EnhanceEquipmentAction : MonoBehaviour
         objMaterial = GameUtil.Bind<RectTransform>(transform, "Material").gameObject;
         txtMaterialCount = GameUtil.Bind<TextMeshProUGUI>(transform, "Material/Count");
         rectMaterialFill = GameUtil.Bind<RectTransform>(transform, "Material/Progress/Fill");
-        btnEnhance = GameUtil.Bind<Button>(transform, "Buttons/EnhanceButton");
+        btnEnhance = GameUtil.Bind<ButtonUI>(transform, "Buttons/EnhanceButton");
         txtEnhanceLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/EnhanceButton/Label");
         objEnhanceCost = GameUtil.Bind<RectTransform>(transform, "Buttons/EnhanceButton/Cost").gameObject;
         txtEnhanceCost = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/EnhanceButton/Cost/Value");
-        btnSell = GameUtil.Bind<Button>(transform, "Buttons/SellButton");
+        btnSell = GameUtil.Bind<ButtonUI>(transform, "Buttons/SellButton");
         txtSellPrice = GameUtil.Bind<TextMeshProUGUI>(transform, "Buttons/SellButton/Cost/Value");
-        btnChange = GameUtil.Bind<Button>(transform, "Buttons/ChangeButton");
+        btnChange = GameUtil.Bind<ButtonUI>(transform, "Buttons/ChangeButton");
 
-        btnEnhance.onClick.AddListener(OnClickEnhance);
-        btnSell.onClick.AddListener(OnClickSell);
-        btnChange.onClick.AddListener(OnClickChange);
+        btnEnhance.OnClickEvent += OnClickEnhance;
+        btnSell.OnClickEvent += OnClickSell;
+        btnChange.OnClickEvent += OnClickChange;
     }
 
     public void SetEnhancePercentage(string percentage)

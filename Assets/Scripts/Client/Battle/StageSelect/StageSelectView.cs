@@ -1,7 +1,6 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 // 스테이지 선택 카드. 받은 값을 보여주고 버튼 입력을 이벤트로 알리기만 한다
 public class StageSelectView : MonoBehaviour
@@ -12,9 +11,9 @@ public class StageSelectView : MonoBehaviour
     private TMP_Text rewardValueText;
     private TMP_Text myPowerText;
     private TMP_Text recommendedPowerText;
-    private Button prevButton;
-    private Button nextButton;
-    private Button startButton;
+    private ButtonUI prevButton;
+    private ButtonUI nextButton;
+    private ButtonUI startButton;
 
     public event Action PrevClicked;
     public event Action NextClicked;
@@ -28,20 +27,20 @@ public class StageSelectView : MonoBehaviour
         rewardValueText = GameUtil.Bind<TMP_Text>(gameObject, "Card/RewardRow/RewardValue");
         myPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/MyPower/Value");
         recommendedPowerText = GameUtil.Bind<TMP_Text>(gameObject, "Card/PowerRow/RecommendedPower/Value");
-        prevButton = GameUtil.Bind<Button>(gameObject, "Card/ImageArea/PrevButton");
-        nextButton = GameUtil.Bind<Button>(gameObject, "Card/ImageArea/NextButton");
-        startButton = GameUtil.Bind<Button>(gameObject, "Card/StartButton");
+        prevButton = GameUtil.Bind<ButtonUI>(gameObject, "Card/ImageArea/PrevButton");
+        nextButton = GameUtil.Bind<ButtonUI>(gameObject, "Card/ImageArea/NextButton");
+        startButton = GameUtil.Bind<ButtonUI>(gameObject, "Card/StartButton");
 
-        prevButton.onClick.AddListener(OnClickPrev);
-        nextButton.onClick.AddListener(OnClickNext);
-        startButton.onClick.AddListener(OnClickStart);
+        prevButton.OnClickEvent += OnClickPrev;
+        nextButton.OnClickEvent += OnClickNext;
+        startButton.OnClickEvent += OnClickStart;
     }
 
     private void OnDestroy()
     {
-        prevButton.onClick.RemoveListener(OnClickPrev);
-        nextButton.onClick.RemoveListener(OnClickNext);
-        startButton.onClick.RemoveListener(OnClickStart);
+        prevButton.OnClickEvent -= OnClickPrev;
+        nextButton.OnClickEvent -= OnClickNext;
+        startButton.OnClickEvent -= OnClickStart;
     }
 
     public void Show(StageData stage, StageState state, long myPower)
@@ -52,13 +51,13 @@ public class StageSelectView : MonoBehaviour
         rewardValueText.text = GetRewardLabel(stage);
         myPowerText.text = myPower.ToString("N0");
         recommendedPowerText.text = stage.recommendedPower.ToString("N0");
-        startButton.interactable = state != StageState.Locked;
+        startButton.Interactable = state != StageState.Locked;
     }
 
     public void SetArrowsInteractable(bool hasPrev, bool hasNext)
     {
-        prevButton.interactable = hasPrev;
-        nextButton.interactable = hasNext;
+        prevButton.Interactable = hasPrev;
+        nextButton.Interactable = hasNext;
     }
 
     private static string GetStatusLabel(StageState state)

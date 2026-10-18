@@ -810,6 +810,7 @@ GameObject:
   - component: {fileID: 1232122516259136925}
   - component: {fileID: 4210358923333259179}
   - component: {fileID: 7625215405991682978}
+  - component: {fileID: 5796394280772708954}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -939,6 +940,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5796394280772708954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7218515616990743567}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &8593171244070364767
 GameObject:
   m_ObjectHideFlags: 0

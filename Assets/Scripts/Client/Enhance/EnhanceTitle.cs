@@ -1,14 +1,13 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class EnhanceTitle : MonoBehaviour
 {
     private const string StatsOpenedMark = "▲";
     private const string StatsClosedMark = "▼";
 
-    [ReadOnly] [SerializeField] private Button btnCombatPower;
+    [ReadOnly] [SerializeField] private ButtonUI btnCombatPower;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtCombatPower;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtStatsToggle;
 
@@ -16,11 +15,11 @@ public class EnhanceTitle : MonoBehaviour
 
     private void Awake()
     {
-        btnCombatPower = GameUtil.Bind<Button>(transform, "CombatPower");
+        btnCombatPower = GameUtil.Bind<ButtonUI>(transform, "CombatPower");
         txtCombatPower = GameUtil.Bind<TextMeshProUGUI>(transform, "CombatPower/Value");
         txtStatsToggle = GameUtil.Bind<TextMeshProUGUI>(transform, "CombatPower/Toggle");
 
-        btnCombatPower.onClick.AddListener(OnClickCombatPower);
+        btnCombatPower.OnClickEvent += OnClickCombatPower;
     }
 
     public void SetCombatPower(string combatPower)

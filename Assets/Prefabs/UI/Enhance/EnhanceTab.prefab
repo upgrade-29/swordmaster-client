@@ -851,6 +851,7 @@ GameObject:
   - component: {fileID: 5301173483474734899}
   - component: {fileID: 8439116145015907766}
   - component: {fileID: 5298682512137159380}
+  - component: {fileID: 8066809811301490127}
   m_Layer: 5
   m_Name: ArtifactButton2
   m_TagString: Untagged
@@ -978,6 +979,22 @@ MonoBehaviour:
   imgIcon: {fileID: 0}
   txtName: {fileID: 0}
   objSelectedMark: {fileID: 0}
+--- !u!114 &8066809811301490127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 389795137618064055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &395010287816874774
 GameObject:
   m_ObjectHideFlags: 0
@@ -1694,6 +1711,7 @@ GameObject:
   - component: {fileID: 8520140645921163877}
   - component: {fileID: 5181154026303354248}
   - component: {fileID: 5346910667036724589}
+  - component: {fileID: 5331475343177823430}
   m_Layer: 5
   m_Name: EnhanceButton
   m_TagString: Untagged
@@ -1850,6 +1868,22 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &5331475343177823430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 958776050498272408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &1007691948381045922
 GameObject:
   m_ObjectHideFlags: 0
@@ -2000,6 +2034,7 @@ GameObject:
   - component: {fileID: 2281722898722007901}
   - component: {fileID: 3622896430710162433}
   - component: {fileID: 4350288057573389031}
+  - component: {fileID: 6774743400432009097}
   m_Layer: 5
   m_Name: ArtifactButton1
   m_TagString: Untagged
@@ -2127,6 +2162,22 @@ MonoBehaviour:
   imgIcon: {fileID: 0}
   txtName: {fileID: 0}
   objSelectedMark: {fileID: 0}
+--- !u!114 &6774743400432009097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154561043212103499}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &1154842420663952091
 GameObject:
   m_ObjectHideFlags: 0
@@ -2597,6 +2648,7 @@ GameObject:
   - component: {fileID: 3255022338314195013}
   - component: {fileID: 6052844701975984870}
   - component: {fileID: 6481471074419710580}
+  - component: {fileID: 1526495353589229550}
   m_Layer: 5
   m_Name: SwordButton
   m_TagString: Untagged
@@ -2724,6 +2776,22 @@ MonoBehaviour:
   imgIcon: {fileID: 0}
   txtName: {fileID: 0}
   objSelectedMark: {fileID: 0}
+--- !u!114 &1526495353589229550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1640505825893511826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &1662414182622211224
 GameObject:
   m_ObjectHideFlags: 0
@@ -6068,6 +6136,7 @@ GameObject:
   - component: {fileID: 1560632729094574978}
   - component: {fileID: 1010552045780947466}
   - component: {fileID: 1546635356168849990}
+  - component: {fileID: 521933098451052774}
   m_Layer: 5
   m_Name: SellButton
   m_TagString: Untagged
@@ -6224,6 +6293,22 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &521933098451052774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5131818616217814431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &5369518394687904405
 GameObject:
   m_ObjectHideFlags: 0
@@ -7614,6 +7699,7 @@ GameObject:
   - component: {fileID: 7593273848908478966}
   - component: {fileID: 40320924256737102}
   - component: {fileID: 6019097065102364461}
+  - component: {fileID: 4101230824883281868}
   m_Layer: 5
   m_Name: CombatPower
   m_TagString: Untagged
@@ -7726,6 +7812,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4101230824883281868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6094317876855190037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &6101987186289105596
 GameObject:
   m_ObjectHideFlags: 0
@@ -9214,6 +9316,7 @@ GameObject:
   - component: {fileID: 2715553914420519501}
   - component: {fileID: 4733365709402885544}
   - component: {fileID: 1658604251071729098}
+  - component: {fileID: 7130441432417900244}
   m_Layer: 5
   m_Name: ArtifactButton3
   m_TagString: Untagged
@@ -9341,6 +9444,22 @@ MonoBehaviour:
   imgIcon: {fileID: 0}
   txtName: {fileID: 0}
   objSelectedMark: {fileID: 0}
+--- !u!114 &7130441432417900244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7243274565413090841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &7247660671534621557
 GameObject:
   m_ObjectHideFlags: 0
@@ -10069,6 +10188,7 @@ GameObject:
   - component: {fileID: 3978911740012660023}
   - component: {fileID: 338251095691663589}
   - component: {fileID: 6579789245243163285}
+  - component: {fileID: 7009947308578518276}
   m_Layer: 5
   m_Name: ChangeButton
   m_TagString: Untagged
@@ -10224,6 +10344,22 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &7009947308578518276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7614536193061184036}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &7667815577563681838
 GameObject:
   m_ObjectHideFlags: 0

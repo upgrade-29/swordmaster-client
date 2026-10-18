@@ -90,7 +90,7 @@ public class EnhancePopup : BasePopup
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
     [ReadOnly] [SerializeField] private RectTransform rectStatList;
     [ReadOnly] [SerializeField] private List<RectTransform> listStatRow = new List<RectTransform>();
-    [ReadOnly] [SerializeField] private Button btnConfirm;
+    [ReadOnly] [SerializeField] private ButtonUI btnConfirm;
 
     private ResultInfo result;
     private Action onConfirm;
@@ -117,13 +117,13 @@ public class EnhancePopup : BasePopup
         txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Result/Name");
         rectStatList = GameUtil.Bind<RectTransform>(transform, "Panel/Result/StatList");
         listStatRow.Add(GameUtil.Bind<RectTransform>(rectStatList, "StatRow"));
-        btnConfirm = GameUtil.Bind<Button>(transform, "Panel/Result/Footer/ConfirmButton");
+        btnConfirm = GameUtil.Bind<ButtonUI>(transform, "Panel/Result/Footer/ConfirmButton");
 
         colorGlow = imgGlow.color;
         colorSword = imgSword.color;
         vecSwordPosition = imgSword.rectTransform.anchoredPosition;
 
-        btnConfirm.onClick.AddListener(OnClickConfirm);
+        btnConfirm.OnClickEvent += OnClickConfirm;
     }
 
     protected override void OnDisable()
@@ -137,7 +137,7 @@ public class EnhancePopup : BasePopup
     {
         if (btnConfirm != null)
         {
-            btnConfirm.onClick.RemoveListener(OnClickConfirm);
+            btnConfirm.OnClickEvent -= OnClickConfirm;
         }
     }
 

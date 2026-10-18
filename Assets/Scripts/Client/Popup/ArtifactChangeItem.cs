@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    [ReadOnly] [SerializeField] private Button btnItem;
+    [ReadOnly] [SerializeField] private ButtonUI btnItem;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtGrade;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtLevel;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
@@ -35,7 +35,7 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
         imgStatus = GameUtil.Bind<Image>(transform, "Status");
         txtStatus = GameUtil.Bind<TextMeshProUGUI>(transform, "Status/Label");
 
-        btnItem.onClick.AddListener(OnClickItem);
+        btnItem.OnClickEvent += OnClickItem;
     }
 
     private void OnDisable()
@@ -51,7 +51,7 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
         imgStatIcon.sprite = statIcon;
         txtStat.text = stat;
         txtStatus.text = status;
-        btnItem.interactable = interactable;
+        btnItem.Interactable = interactable;
         UpdateStatusSprite();
     }
 
@@ -79,7 +79,7 @@ public class ArtifactChangeItem : MonoBehaviour, IPointerDownHandler, IPointerUp
 
     private void UpdateStatusSprite()
     {
-        if (btnItem.interactable == false)
+        if (btnItem.Interactable == false)
         {
             imgStatus.sprite = spriteStatusDisabled;
             return;

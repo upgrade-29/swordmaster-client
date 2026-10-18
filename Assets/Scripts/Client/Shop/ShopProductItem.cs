@@ -11,7 +11,7 @@ public class ShopProductItem : MonoBehaviour
     [ReadOnly] [SerializeField] private Image productVisual;
     [ReadOnly] [SerializeField] private TextMeshProUGUI productName;
     [ReadOnly] [SerializeField] private ShopRewardItem rewardItem;
-    [ReadOnly] [SerializeField] private Button actionButton;
+    [ReadOnly] [SerializeField] private ButtonUI actionButton;
     [ReadOnly] [SerializeField] private Image actionIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI actionLabel;
     [ReadOnly] [SerializeField] private GameObject objActionLoading;
@@ -34,7 +34,7 @@ public class ShopProductItem : MonoBehaviour
         actionLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Price/Label");
         objActionLoading = GameUtil.Bind<RectTransform>(transform, "Loading").gameObject;
 
-        actionButton.onClick.AddListener(OnClickActionButton);
+        actionButton.OnClickEvent += OnClickActionButton;
 
         objActionLoading.transform.DOLocalRotate(new Vector3(0f, 0f, -360f), loadingRotationDuration, RotateMode.FastBeyond360)
             .SetEase(Ease.Linear)
@@ -66,35 +66,35 @@ public class ShopProductItem : MonoBehaviour
         {
             case ShopProductPurchaseState.Ready:
                 objActionLoading.SetActive(false);
-                actionButton.interactable = true;
+                actionButton.Interactable = true;
                 actionLabel.text = product.price.ToString("N0");
                 break;
 
             case ShopProductPurchaseState.Purchasing:
                 objActionLoading.SetActive(true);
-                actionButton.interactable = false;
+                actionButton.Interactable = false;
                 break;
 
             case ShopProductPurchaseState.ResultUnknown:
                 objActionLoading.SetActive(true);
-                actionButton.interactable = true;
+                actionButton.Interactable = true;
                 break;
 
             case ShopProductPurchaseState.SoldOut:
                 objActionLoading.SetActive(false);
-                actionButton.interactable = false;
+                actionButton.Interactable = false;
                 actionLabel.text = "품절";
                 break;
 
             case ShopProductPurchaseState.LimitReached:
                 objActionLoading.SetActive(false);
-                actionButton.interactable = false;
+                actionButton.Interactable = false;
                 actionLabel.text = "구매 제한";
                 break;
 
             case ShopProductPurchaseState.Unavailable:
                 objActionLoading.SetActive(false);
-                actionButton.interactable = false;
+                actionButton.Interactable = false;
                 break;
 
             default:

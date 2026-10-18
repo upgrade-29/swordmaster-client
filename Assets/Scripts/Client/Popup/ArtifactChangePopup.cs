@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ArtifactChangePopup : BasePopup
 {
@@ -28,8 +27,8 @@ public class ArtifactChangePopup : BasePopup
         }
     }
 
-    [ReadOnly] [SerializeField] private Button btnClose;
-    [ReadOnly] [SerializeField] private Button btnUnequip;
+    [ReadOnly] [SerializeField] private ButtonUI btnClose;
+    [ReadOnly] [SerializeField] private ButtonUI btnUnequip;
     [ReadOnly] [SerializeField] private RectTransform rectItemContent;
     [ReadOnly] [SerializeField] private List<ArtifactChangeItem> listArtifactChangeItem = new List<ArtifactChangeItem>();
 
@@ -42,13 +41,13 @@ public class ArtifactChangePopup : BasePopup
     {
         base.Awake();
 
-        btnClose = GameUtil.Bind<Button>(transform, "Panel/Header/CloseButton");
-        btnUnequip = GameUtil.Bind<Button>(transform, "Panel/Footer/UnequipButton");
+        btnClose = GameUtil.Bind<ButtonUI>(transform, "Panel/Header/CloseButton");
+        btnUnequip = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/UnequipButton");
         rectItemContent = GameUtil.Bind<RectTransform>(transform, "Panel/ArtifactList/Viewport/Content");
         AddItem(GameUtil.Bind<ArtifactChangeItem>(rectItemContent, "Item"));
 
-        btnClose.onClick.AddListener(OnClickClose);
-        btnUnequip.onClick.AddListener(OnClickUnequip);
+        btnClose.OnClickEvent += OnClickClose;
+        btnUnequip.OnClickEvent += OnClickUnequip;
     }
 
     private void OnDestroy()

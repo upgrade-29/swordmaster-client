@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class LobbyTabButton : MonoBehaviour
 {
-    [ReadOnly] [SerializeField] private Button btnTab;
+    [ReadOnly] [SerializeField] private ButtonUI btnTab;
     [ReadOnly] [SerializeField] private LayoutElement layoutElement;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
     [ReadOnly] [SerializeField] private RectTransform rectIcon;
@@ -44,7 +44,7 @@ public class LobbyTabButton : MonoBehaviour
         txtLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Label");
         objSeparator = GameUtil.TryBind<RectTransform>(transform, "Separator")?.gameObject;
 
-        btnTab.onClick.AddListener(OnClickTab);
+        btnTab.OnClickEvent += OnClickTab;
     }
 
     private void OnDestroy()

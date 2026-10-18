@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 // 제목/본문 표시와 버튼 입력 전달만 담당한다. 구매 등 어떤 기능의 도메인 규칙도 갖지 않는다.
 // 버튼은 Setup으로 받은 정보 수만큼 Footer의 템플릿 버튼을 복제해 보여 준다. 팝업을 닫는 일은 버튼 콜백이 맡는다
@@ -24,7 +23,7 @@ public class DialogPopup : BasePopup
     [ReadOnly] [SerializeField] private TextMeshProUGUI titleText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI messageText;
     [ReadOnly] [SerializeField] private RectTransform rectFooter;
-    [ReadOnly] [SerializeField] private List<Button> listButton = new List<Button>();
+    [ReadOnly] [SerializeField] private List<ButtonUI> listButton = new List<ButtonUI>();
     [ReadOnly] [SerializeField] private List<TextMeshProUGUI> listButtonLabel = new List<TextMeshProUGUI>();
 
     private string title;
@@ -38,7 +37,7 @@ public class DialogPopup : BasePopup
         titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Header/Title");
         messageText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Message");
         rectFooter = GameUtil.Bind<RectTransform>(transform, "Panel/Footer");
-        AddButton(GameUtil.Bind<Button>(rectFooter, "Button"));
+        AddButton(GameUtil.Bind<ButtonUI>(rectFooter, "Button"));
     }
 
     // 여는 쪽마다 버튼 수와 할 일이 다르므로, 열 때마다 버튼 정보를 바꿔 끼운다
@@ -77,14 +76,14 @@ public class DialogPopup : BasePopup
         }
     }
 
-    private void AddButton(Button button)
+    private void AddButton(ButtonUI button)
     {
-        button.onClick.AddListener(() => OnClickButton(button));
+        button.OnClickEvent += () => OnClickButton(button);
         listButton.Add(button);
         listButtonLabel.Add(GameUtil.Bind<TextMeshProUGUI>(button.transform, "Label"));
     }
 
-    private void OnClickButton(Button button)
+    private void OnClickButton(ButtonUI button)
     {
         buttonInfos[listButton.IndexOf(button)].onClick?.Invoke();
     }

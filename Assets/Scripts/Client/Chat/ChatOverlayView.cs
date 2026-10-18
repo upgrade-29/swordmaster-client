@@ -8,7 +8,7 @@ using UnityEngine;
 public sealed class ChatOverlayView : BasePopup
 {
     [Header("오버레이")]
-    [SerializeField] private UnityEngine.UI.Button _closeButton;
+    [SerializeField] private ButtonUI _closeButton;
 
     [Header("채팅 목록")]
     [SerializeField] private TMP_Text _messageItemTemplate;
@@ -21,7 +21,7 @@ public sealed class ChatOverlayView : BasePopup
 
     [Header("입력")]
     [SerializeField] private TMP_InputField _inputField;
-    [SerializeField] private UnityEngine.UI.Button _sendButton;
+    [SerializeField] private ButtonUI _sendButton;
     [SerializeField] private TMP_Text _errorText;
 
     private const float AutoScrollThreshold = 0.1f;
@@ -40,8 +40,8 @@ public sealed class ChatOverlayView : BasePopup
     {
         base.Awake();
 
-        _closeButton.onClick.AddListener(Close);
-        _sendButton.onClick.AddListener(RequestSend);
+        _closeButton.OnClickEvent += Close;
+        _sendButton.OnClickEvent += RequestSend;
     }
 
     // ChatClient 수신 이벤트를 view 갱신으로만 연결하고, 로비를 열기 전에 받아 둔 메시지도 목록에 넣는다.
@@ -103,8 +103,8 @@ public sealed class ChatOverlayView : BasePopup
     // button callback을 해제해 Prefab 재생성이나 파괴 시 중복 구독을 남기지 않는다.
     private void OnDestroy()
     {
-        _closeButton.onClick.RemoveListener(Close);
-        _sendButton.onClick.RemoveListener(RequestSend);
+        _closeButton.OnClickEvent -= Close;
+        _sendButton.OnClickEvent -= RequestSend;
         Unbind();
     }
 

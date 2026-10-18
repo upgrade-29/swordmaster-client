@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3313266509868170648}
   - component: {fileID: 1821709595735061543}
   - component: {fileID: 5479065320827107269}
+  - component: {fileID: 3524220282338201125}
   m_Layer: 0
   m_Name: CloseButton
   m_TagString: Untagged
@@ -121,6 +122,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3524220282338201125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 49657420985544124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &178180196755356327
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,14 +277,14 @@ MonoBehaviour:
   canvasGroup: {fileID: 0}
   rectPanel: {fileID: 0}
   closeOnOutsideTouch: 1
-  _closeButton: {fileID: 5479065320827107269}
+  _closeButton: {fileID: 3524220282338201125}
   _messageItemTemplate: {fileID: 3074083510443305983}
   _messagesScrollRect: {fileID: 2210510009712498711}
   _publicChatColor: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
   _systemNoticeColor: {r: 0.5411765, g: 0.39607844, b: 0, a: 1}
   _swordEnhancementColor: {r: 0.7019608, g: 0.2784314, b: 0, a: 1}
   _inputField: {fileID: 7602342755421058862}
-  _sendButton: {fileID: 750579619505740043}
+  _sendButton: {fileID: 5728387463164176929}
   _errorText: {fileID: 7513878927048597718}
 --- !u!1 &1872780949284135470
 GameObject:
@@ -1878,6 +1895,7 @@ GameObject:
   - component: {fileID: 8355441211002439447}
   - component: {fileID: 750579619505740043}
   - component: {fileID: 7754466177014797951}
+  - component: {fileID: 5728387463164176929}
   m_Layer: 0
   m_Name: SendButton
   m_TagString: Untagged
@@ -2007,6 +2025,22 @@ MonoBehaviour:
   m_FlexibleWidth: 0
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &5728387463164176929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8516106449976961037}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &8886073908704620993
 GameObject:
   m_ObjectHideFlags: 0

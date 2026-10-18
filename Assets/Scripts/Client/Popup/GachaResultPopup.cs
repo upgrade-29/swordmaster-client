@@ -12,7 +12,7 @@ public class GachaResultPopup : BasePopup
     [ReadOnly] [SerializeField] private TextMeshProUGUI rewardNameText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI rewardAmountText;
     [ReadOnly] [SerializeField] private TextMeshProUGUI progressText;
-    [ReadOnly] [SerializeField] private Button nextButton;
+    [ReadOnly] [SerializeField] private ButtonUI nextButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI nextButtonLabel;
 
     private RewardResponse reward;
@@ -31,17 +31,17 @@ public class GachaResultPopup : BasePopup
         rewardNameText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardName");
         rewardAmountText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardAmount");
         progressText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/ProgressText");
-        nextButton = GameUtil.Bind<Button>(transform, "Panel/Footer/NextButton");
+        nextButton = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/NextButton");
         nextButtonLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/NextButton/Label");
 
-        nextButton.onClick.AddListener(OnClickNext);
+        nextButton.OnClickEvent += OnClickNext;
     }
 
     private void OnDestroy()
     {
         if (nextButton != null)
         {
-            nextButton.onClick.RemoveListener(OnClickNext);
+            nextButton.OnClickEvent -= OnClickNext;
         }
     }
 
@@ -68,7 +68,7 @@ public class GachaResultPopup : BasePopup
         rewardAmountText.text = reward.amount.ToString();
         progressText.text = $"{index + 1} / {totalCount}";
         nextButtonLabel.text = index + 1 == totalCount ? "닫기" : "다음";
-        nextButton.interactable = true;
+        nextButton.Interactable = true;
     }
 
     private static string GetRewardName(RewardResponse reward, GameDB gameDB)

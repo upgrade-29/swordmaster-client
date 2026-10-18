@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class EnhanceEquipmentButton : MonoBehaviour
 {
-    [ReadOnly] [SerializeField] private Button btnEquipment;
+    [ReadOnly] [SerializeField] private ButtonUI btnEquipment;
     [ReadOnly] [SerializeField] private Image imgIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
@@ -19,7 +19,7 @@ public class EnhanceEquipmentButton : MonoBehaviour
         txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "Label");
         objSelectedMark = GameUtil.Bind<RectTransform>(transform, "Selected").gameObject;
 
-        btnEquipment.onClick.AddListener(OnClickEquipment);
+        btnEquipment.OnClickEvent += OnClickEquipment;
     }
 
     public void SetName(string name)
