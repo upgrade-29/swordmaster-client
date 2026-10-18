@@ -97,7 +97,7 @@ public class BattleEffectPresenter : IDisposable
         }
     }
 
-    // 처치한 적은 서버 검증을 통과한 뒤 사라진다
+    // 처치한 적은 서버 검증을 통과한 뒤 사라진다. 처치 골드 동전은 BattleHudPresenter가 띄운다
     private void OnSubStageVerified(BattleSubStage subStage, BattleApi.BattleResultVerifyResponse response)
     {
         if (response.resultEnum == BattleSubStageResultEnum.EnemyDead)

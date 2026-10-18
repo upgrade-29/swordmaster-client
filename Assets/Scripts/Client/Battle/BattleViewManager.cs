@@ -22,6 +22,7 @@ public class BattleViewManager : MonoBehaviour
     private BattleUnitView playerView;
     private BattleUnitView enemyView;
     private BossWarningView bossWarningView;
+    private CoinFlyView coinFlyView;
     private ScreenFader screenFader;
     private Button optionButton;
     private BattleHudPresenter hudPresenter;
@@ -42,6 +43,7 @@ public class BattleViewManager : MonoBehaviour
         playerView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Player"));
         enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
+        coinFlyView = GameUtil.Bind<CoinFlyView>(GameObject.Find("BattleCanvas"), "CoinLayer");
         screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
         optionButton = GameUtil.Bind<Button>(GameObject.Find("BattleCanvas"), "Hud/OptionButton");
     }
@@ -95,7 +97,7 @@ public class BattleViewManager : MonoBehaviour
 
         manager.Init(gameDB);
         manager.SetSpeed(speed);
-        hudPresenter = new BattleHudPresenter(manager, hud);
+        hudPresenter = new BattleHudPresenter(manager, hud, enemyView, coinFlyView);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
         effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, gameDB, manager.Retry, OnExitClicked);
 

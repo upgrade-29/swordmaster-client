@@ -12,6 +12,7 @@ public class BattleHudView : MonoBehaviour
 
     public HpBarView PlayerHpBar => playerHpBar;
     public HpBarView EnemyHpBar => enemyHpBar;
+    public RectTransform GoldTarget => goldText.rectTransform; // 처치 골드 동전이 빨려 들어갈 자리
 
     private void Awake()
     {

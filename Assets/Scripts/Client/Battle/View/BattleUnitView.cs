@@ -24,6 +24,10 @@ public class BattleUnitView : MonoBehaviour
     // 데미지 숫자를 띄울 머리 위 위치
     public Vector3 HeadPosition => new Vector3(transform.position.x, spriteRenderer.bounds.max.y, 0f);
 
+    // 처치 골드 동전이 튀어나올 몸 가운데 위치
+    // 숨긴(렌더러를 끈) 뒤에도 읽을 수 있게 렌더러 대신 스프라이트 자체의 범위로 구한다
+    public Vector3 CenterPosition => transform.TransformPoint(spriteRenderer.sprite.bounds.center);
+
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref spriteRenderer);
