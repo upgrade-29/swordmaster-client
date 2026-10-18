@@ -6,4 +6,5 @@ public static class ConfigKey
     public const string HealRate = "HEAL_RATE";
     public const string NormalBattleTimeLimit = "NORMAL_BATTLE_TIME_LIMIT";
     public const string BossBattleTimeLimit = "BOSS_BATTLE_TIME_LIMIT";
+    public const string GameDataVersion = "X_GAME_DATA_VERSION";
 }
