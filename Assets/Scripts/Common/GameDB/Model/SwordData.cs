@@ -10,11 +10,11 @@ public class SwordData
     public readonly double attackSpeed;
     public readonly double maxHp;
     public readonly string name;
-    public readonly string appearanceCode;
+    public readonly string code;
 
     [JsonConstructor]
     public SwordData(int level, double? successRate, long? enhanceCost, long sellPrice,
-        double attackPower, double attackSpeed, double maxHp, string name, string appearanceCode)
+        double attackPower, double attackSpeed, double maxHp, string name, string code)
     {
         this.level = level;
         this.successRate = successRate;
@@ -24,6 +24,6 @@ public class SwordData
         this.attackSpeed = attackSpeed;
         this.maxHp = maxHp;
         this.name = name;
-        this.appearanceCode = appearanceCode;
+        this.code = code;
     }
 }
