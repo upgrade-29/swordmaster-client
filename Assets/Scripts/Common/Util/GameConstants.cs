@@ -40,6 +40,11 @@ public static class GameConstants
         public const string DamageFont = "TMP/Galmuri11-Bold SDF";
     }
 
+    public static class AddressableLabels
+    {
+        public const string Preload = "preload"; // 시작할 때 타이틀 화면에서 한 번에 읽어 두는 리소스
+    }
+
     // Color는 const가 될 수 없어서 static readonly로 둔다
     public static class Colors
     {

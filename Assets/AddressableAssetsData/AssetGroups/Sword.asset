@@ -1,0 +1,197 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Sword
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Sword
+  m_GUID: 584c0bbc8f8c2594089b185df6dd2080
+  m_SerializeEntries:
+  - m_GUID: 0ecbdb0f63fc27b4489140ce0ae0c0de
+    m_Address: SWORD_25
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14da089d7a7a8d24fbb54e8bb32297bc
+    m_Address: SWORD_27
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1de3172ec29aedc4da36c94c458c69ca
+    m_Address: SWORD_26
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 20dd4ba89fdc51f4eb43731947006d23
+    m_Address: SWORD_24
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 219aad43c42bf5a488705f9c46642a25
+    m_Address: SWORD_07
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 28d599d2f73f2ff4cbbf2c769f0b3be5
+    m_Address: SWORD_10
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2f4b8fea19dbd99419639ec4efa27746
+    m_Address: SWORD_14
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ebf523bbd12c44409a91e543f4b434b
+    m_Address: SWORD_29
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5300c084ac2d16049910332a3623bf03
+    m_Address: SWORD_19
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 69befe75f3e3dc84e8d58022e3c2e1f6
+    m_Address: SWORD_08
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7668adbe201dd4849858e21e3cc17a7e
+    m_Address: SWORD_23
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a45fe3e258a77d46bc9d64cf3c556d8
+    m_Address: SWORD_03
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7c1e3ffe5fe28fc468c2d34baa26cca1
+    m_Address: SWORD_15
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e56bf736eeaf324a86454bc45bdce4c
+    m_Address: SWORD_28
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 856f4ff1499a4174bad1d9370f4f971f
+    m_Address: SWORD_16
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 859a7bcbf3548fb49b4f3463359f24b0
+    m_Address: SWORD_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8880122f2cdeade4280ee1e501394501
+    m_Address: SWORD_12
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8a44dcf20974d1246b429615c151bd03
+    m_Address: SWORD_09
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8a941d558f6493c4f8a20b919740789a
+    m_Address: SWORD_21
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9645e0a48c6a23a40bb45f2e66ef9042
+    m_Address: SWORD_17
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 998e99397bc36d44a80dc8cee97d1ce5
+    m_Address: SWORD_20
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9bf12658d2da7e94da107667972d0474
+    m_Address: SWORD_18
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9dded6428893f9a4a9d6a5e7b6ddf9de
+    m_Address: SWORD_06
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9f6a41e71de3d2544827aa6b5b798219
+    m_Address: SWORD_13
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6bb0e67fc7801846aa06866b1d7c0b6
+    m_Address: SWORD_04
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc52c2ae057dbf947b8199aaf65caad8
+    m_Address: SWORD_22
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bfbc191b1bce5db4d879289ffb3889b2
+    m_Address: SWORD_11
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5cce5ce35714374db75368a2e72d568
+    m_Address: SWORD_05
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: edc5b897feb3bfa4aaccc79650f13c62
+    m_Address: SWORD_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: c82b8690fb1d9f54daec3fd62bc4501a, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 9cee376830e166046840d004b4231cd7, type: 2}
+    - {fileID: 11400000, guid: a1d9fb726d4272b49959d727262e73de, type: 2}
