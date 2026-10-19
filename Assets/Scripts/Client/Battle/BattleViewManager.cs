@@ -88,7 +88,7 @@ public class BattleViewManager : MonoBehaviour
         if (GameSession.Instance.IsLoggedIn == false)
         {
             Debug.LogWarning("[Battle] Not logged in. Back to login");
-            SceneManager.LoadScene(GameConstants.Scenes.Login);
+            SceneManager.LoadScene(GameConstants.Scenes.Title);
             return;
         }
 

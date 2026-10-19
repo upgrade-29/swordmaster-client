@@ -6,7 +6,7 @@ public static class GameConstants
 {
     public static class Scenes
     {
-        public const string Login = "LoginScene";
+        public const string Title = "TitleScene";
         public const string Lobby = "LobbyScene";
         public const string Battle = "BattleScene";
     }
