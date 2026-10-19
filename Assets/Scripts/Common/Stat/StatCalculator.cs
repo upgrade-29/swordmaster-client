@@ -8,32 +8,36 @@ public static class StatCalculator
     public static CombatStat CalculatePlayer(GameDB gameDB, User user)
     {
         SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
-        var equippedArtifacts = user.EquippedArtifacts.Select(x => (gameDB.artifacts.First(y => y.code == x.ArtifactCode), x.Level));
+        var equippedArtifacts = user.EquippedArtifacts.Select(x => (gameDB.GetArtifactStats(x.ArtifactCode), x.Level));
         return CalculatePlayer(sword, equippedArtifacts);
     }
 
-    // 검 능력치에 장착한 아티팩트의 능력치를 더한다
-    public static CombatStat CalculatePlayer(SwordData sword, IEnumerable<(ArtifactData data, int level)> equippedArtifacts)
+    // 검 능력치에 장착한 아티팩트의 능력치를 더한다. 공격 속도만 검 공격 속도에 대한 비율이다
+    public static CombatStat CalculatePlayer(SwordData sword, IEnumerable<(IReadOnlyList<ArtifactStatData> stats, int level)> equippedArtifacts)
     {
         var attack = sword.attackPower;
-        var attackSpeed = sword.attackSpeed;
+        var attackSpeedRate = 0.0;
         var maxHp = sword.maxHp;
         var critRate = 0.0;
         var lifesteal = 0.0;
 
-        foreach (var (data, level) in equippedArtifacts)
+        foreach (var (stats, level) in equippedArtifacts)
         {
-            var value = GetArtifactValue(data, level);
-            switch (data.statType)
+            foreach (ArtifactStatData stat in stats)
             {
-                case StatType.AttackSpeed: attackSpeed += value; break;
-                case StatType.MaxHp: maxHp += value; break;
-                case StatType.CritRate: critRate += value; break;
-                case StatType.Lifesteal: lifesteal += value; break;
-                default: throw new ArgumentOutOfRangeException(nameof(data.statType), data.statType, data.code);
+                var value = GetArtifactValue(stat, level);
+                switch (stat.statType)
+                {
+                    case StatType.AttackSpeed: attackSpeedRate += value; break;
+                    case StatType.MaxHp: maxHp += value; break;
+                    case StatType.CritRate: critRate += value; break;
+                    case StatType.Lifesteal: lifesteal += value; break;
+                    default: throw new ArgumentOutOfRangeException(nameof(stat.statType), stat.statType, stat.code);
+                }
             }
         }
 
+        var attackSpeed = sword.attackSpeed * (1 + attackSpeedRate);
         return new CombatStat(attack, attackSpeed, Math.Floor(maxHp), critRate, lifesteal);
     }
 
@@ -49,8 +53,8 @@ public static class StatCalculator
             stat.lifesteal);
     }
 
-    public static double GetArtifactValue(ArtifactData data, int level)
+    public static double GetArtifactValue(ArtifactStatData stat, int level)
     {
-        return data.baseValue + data.valuePerLevel * (level - 1);
+        return stat.baseValue + stat.valuePerLevel * (level - 1);
     }
 }

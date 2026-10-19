@@ -9,7 +9,6 @@ public class EnhanceTab : LobbyTab
     private const string EmptySlotName = "빈 슬롯";
     private const string EmptyValue = "-";
     private const int SwordStatRowCount = 3;
-    private const int ArtifactStatRowCount = 1;
 
     [ReadOnly] [SerializeField] private EnhanceTitle enhanceTitle;
     [ReadOnly] [SerializeField] private EnhanceEquipmentSelect enhanceEquipmentSelect;
@@ -191,16 +190,20 @@ public class EnhanceTab : LobbyTab
         }
 
         ArtifactData data = GetArtifactData(artifact.ArtifactCode);
-        double? nextValue = null;
-        if (GetArtifactEnhanceData(artifact) != null)
-        {
-            nextValue = StatCalculator.GetArtifactValue(data, artifact.Level + 1);
-        }
+        IReadOnlyList<ArtifactStatData> stats = GameDB.GetArtifactStats(artifact.ArtifactCode);
+        bool canEnhance = GetArtifactEnhanceData(artifact) != null;
 
         enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", data.name);
-        enhanceEquipmentInfo.ShowStatRows(ArtifactStatRowCount);
-        SetStatRow(0, GetStatIcon(data.statType), GetStatName(data.statType), StatCalculator.GetArtifactValue(data, artifact.Level), nextValue,
-            GetStatFormat(data.statType));
+        enhanceEquipmentInfo.ShowStatRows(stats.Count);
+        for (int i = 0; i < stats.Count; i++)
+        {
+            ArtifactStatData stat = stats[i];
+            double? nextValue = canEnhance
+                ? StatCalculator.GetArtifactValue(stat, artifact.Level + 1)
+                : (double?)null;
+            SetStatRow(i, GetStatIcon(stat.statType), GetStatName(stat.statType), StatCalculator.GetArtifactValue(stat, artifact.Level), nextValue,
+                GetStatFormat(stat.statType));
+        }
     }
 
     private void RefreshArtifactAction(int slotIndex)
@@ -307,10 +310,9 @@ public class EnhanceTab : LobbyTab
     {
         switch (statType)
         {
-            case StatType.AttackSpeed:
-                return FormatAttackSpeed;
             case StatType.MaxHp:
                 return FormatInteger;
+            case StatType.AttackSpeed:
             case StatType.CritRate:
             case StatType.Lifesteal:
                 return FormatPercentage;
@@ -361,14 +363,15 @@ public class EnhanceTab : LobbyTab
     private ArtifactChangePopup.ItemInfo CreateArtifactChangeItem(UserArtifact artifact)
     {
         ArtifactData data = GetArtifactData(artifact.ArtifactCode);
-        string value = GetStatFormat(data.statType)(StatCalculator.GetArtifactValue(data, artifact.Level));
+        ArtifactStatData mainStat = GameDB.GetArtifactStats(artifact.ArtifactCode)[0];
+        string value = GetStatFormat(mainStat.statType)(StatCalculator.GetArtifactValue(mainStat, artifact.Level));
 
         return new ArtifactChangePopup.ItemInfo(
             GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
-            GetStatIcon(data.statType),
-            $"{GetStatName(data.statType)} {value}",
+            GetStatIcon(mainStat.statType),
+            $"{GetStatName(mainStat.statType)} {value}",
             GetArtifactChangeStatus(artifact),
             artifact.IsEquipped == false);
     }
@@ -467,13 +470,11 @@ public class EnhanceTab : LobbyTab
     private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
     {
         ArtifactData data = GetArtifactData(artifact.ArtifactCode);
-        Func<double, string> format = GetStatFormat(data.statType);
-        var stats = new List<EnhancePopup.StatInfo>
-        {
-            new EnhancePopup.StatInfo(GetStatIcon(data.statType), GetStatName(data.statType),
-                format(StatCalculator.GetArtifactValue(data, levelBefore)),
-                format(StatCalculator.GetArtifactValue(data, artifact.Level))),
-        };
+        var stats = GameDB.GetArtifactStats(artifact.ArtifactCode)
+            .Select(x => new EnhancePopup.StatInfo(GetStatIcon(x.statType), GetStatName(x.statType),
+                GetStatFormat(x.statType)(StatCalculator.GetArtifactValue(x, levelBefore)),
+                GetStatFormat(x.statType)(StatCalculator.GetArtifactValue(x, artifact.Level))))
+            .ToList();
 
         return new EnhancePopup.ResultInfo(true, $"Lv. {levelBefore.ToString()}", $"Lv. {artifact.Level.ToString()}", data.name,
             string.Empty, stats);

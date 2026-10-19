@@ -10,6 +10,7 @@ public class GameDB
     public readonly string version;
     public readonly IReadOnlyList<SwordData> swords;
     public readonly IReadOnlyList<ArtifactData> artifacts;
+    public readonly IReadOnlyList<ArtifactStatData> artifactStats;
     public readonly IReadOnlyList<ArtifactEnhanceData> artifactEnhance;
     public readonly IReadOnlyList<EnemyData> enemies;
     public readonly IReadOnlyList<StageData> stages;
@@ -18,9 +19,12 @@ public class GameDB
     public readonly IReadOnlyList<ShopProductRewardData> shopProductRewards;
     public readonly IReadOnlyList<ConfigData> config;
 
+    private readonly Dictionary<string, List<ArtifactStatData>> dicArtifactStats;
+
     [JsonConstructor]
     public GameDB(IReadOnlyList<SwordData> swords,
         IReadOnlyList<ArtifactData> artifacts,
+        IReadOnlyList<ArtifactStatData> artifactStats,
         IReadOnlyList<ArtifactEnhanceData> artifactEnhance,
         IReadOnlyList<EnemyData> enemies,
         IReadOnlyList<StageData> stages,
@@ -31,6 +35,7 @@ public class GameDB
     {
         this.swords = swords;
         this.artifacts = artifacts;
+        this.artifactStats = artifactStats;
         this.artifactEnhance = artifactEnhance;
         this.enemies = enemies;
         this.stages = stages;
@@ -39,6 +44,16 @@ public class GameDB
         this.shopProductRewards = shopProductRewards;
         this.config = config;
         version = config.First(x => x.key == ConfigKey.GameDataVersion).value;
+
+        // 같은 code 안에서는 시트의 행 순서를 유지한다. 첫 행이 기본 능력치이고, 서버도 이 순서로 더한다
+        dicArtifactStats = artifactStats
+            .GroupBy(x => x.code)
+            .ToDictionary(x => x.Key, x => x.ToList());
+    }
+
+    public IReadOnlyList<ArtifactStatData> GetArtifactStats(string artifactCode)
+    {
+        return dicArtifactStats[artifactCode];
     }
 
     // config 값은 문자열로 저장되어 있으므로 숫자로 바꿔서 돌려준다
