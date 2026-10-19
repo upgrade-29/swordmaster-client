@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 public class StageData
 {
     public readonly int stage;
+    public readonly string name;
     public readonly string enemyCode;
     public readonly int enemyCount; // 세부 스테이지 수는 enemyCount + 1(보스)
     public readonly string bossCode;
@@ -14,10 +15,11 @@ public class StageData
     public readonly string imageCode;
 
     [JsonConstructor]
-    public StageData(int stage, string enemyCode, int enemyCount, string bossCode, double statMultiplier,
+    public StageData(int stage, string name, string enemyCode, int enemyCount, string bossCode, double statMultiplier,
         long goldPerEnemy, long bossGold, double artifactDropRate, long recommendedPower, string imageCode)
     {
         this.stage = stage;
+        this.name = name;
         this.enemyCode = enemyCode;
         this.enemyCount = enemyCount;
         this.bossCode = bossCode;
