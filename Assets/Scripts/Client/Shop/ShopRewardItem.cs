@@ -15,7 +15,7 @@ public class ShopRewardItem : MonoBehaviour
     }
 
     // 표시할 대표 보상이 없으면(reward == null) 항목 자체를 숨긴다.
-    public void SetReward(ShopProductRewardData reward, ShopVisualCatalogSO visualCatalog)
+    public void SetReward(ShopProductRewardData reward, Sprite rewardIcon)
     {
         gameObject.SetActive(reward != null);
         if (reward == null)
@@ -23,7 +23,7 @@ public class ShopRewardItem : MonoBehaviour
             return;
         }
 
-        icon.sprite = visualCatalog.GetRewardTypeIcon(reward.rewardType);
+        icon.sprite = rewardIcon;
         amountText.text = reward.amount.ToString(GameConstants.NumberFormats.Integer);
     }
 }

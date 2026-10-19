@@ -45,16 +45,15 @@ public class ShopProductItem : MonoBehaviour
     }
 
     public void SetProduct(ShopProductData product, ShopProductRewardData representativeReward,
-        ShopVisualCatalogSO visualCatalog)
+        Sprite productIcon, Sprite currencyIcon, Sprite rewardIcon)
     {
         this.product = product;
 
-        productVisual.sprite = visualCatalog.GetProductIcon(product.iconCode);
+        productVisual.sprite = productIcon;
         productName.text = product.name;
-        rewardItem.SetReward(representativeReward, visualCatalog);
+        rewardItem.SetReward(representativeReward, rewardIcon);
 
         // ActionButton의 Label/Icon으로 가격 정보를 표시한다.
-        Sprite currencyIcon = visualCatalog.GetCurrencyIcon(product.priceType);
         actionIcon.sprite = currencyIcon;
         actionIcon.gameObject.SetActive(currencyIcon != null);
 

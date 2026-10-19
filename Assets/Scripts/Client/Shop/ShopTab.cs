@@ -10,9 +10,12 @@ public class ShopTab : LobbyTab
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
 
-    [SerializeField] private ShopVisualCatalogSO visualCatalog;
     [SerializeField] private ShopSection sectionPrefab;
     [SerializeField] private ShopProductItem itemPrefab;
+
+    [SerializeField] private Sprite spriteGold;
+    [SerializeField] private Sprite spriteDiamond;
+    [SerializeField] private Sprite spriteFallback; // 이미지가 정해지지 않은 상품, 재화, 보상에 쓴다
 
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
@@ -63,12 +66,17 @@ public class ShopTab : LobbyTab
         foreach (var group in GameDB.shopProducts.GroupBy(x => x.category))
         {
             ShopSection section = Instantiate(sectionPrefab, contentTransform);
-            section.SetHeader(visualCatalog.GetCategoryLabel(group.Key));
+            section.SetHeader(GetCategoryLabel(group.Key));
 
             foreach (ShopProductData product in group)
             {
                 ShopProductItem item = Instantiate(itemPrefab, section.ItemsContainer);
-                item.SetProduct(product, GetRepresentativeReward(product), visualCatalog);
+                ShopProductRewardData reward = GetRepresentativeReward(product);
+                Sprite rewardIcon = reward == null
+                    ? null
+                    : GetRewardIcon(reward.rewardType);
+                // 상품 이미지는 아직 없어서 기본 이미지를 쓴다
+                item.SetProduct(product, reward, spriteFallback, GetCurrencyIcon(product.priceType), rewardIcon);
                 item.OnClickPurchaseEvent += OnClickPurchase;
             }
         }
@@ -260,8 +268,63 @@ public class ShopTab : LobbyTab
 
     private void ShowGachaReward(RewardResponse reward, int index, int totalCount)
     {
-        GachaResultPopup.Setup(reward, index, totalCount, visualCatalog, GameDB, OnGachaNextRequested);
+        GachaResultPopup.Setup(reward, index, totalCount, GetRewardIcon(reward.rewardType), GameDB, OnGachaNextRequested);
         GachaResultPopup.Open();
+    }
+
+    private Sprite GetCurrencyIcon(CurrencyType currencyType)
+    {
+        Sprite icon = spriteFallback;
+        switch (currencyType)
+        {
+            case CurrencyType.Gold:
+                icon = spriteGold;
+                break;
+            case CurrencyType.Diamond:
+                icon = spriteDiamond;
+                break;
+        }
+
+        return icon;
+    }
+
+    private Sprite GetRewardIcon(RewardType rewardType)
+    {
+        Sprite icon = spriteFallback;
+        switch (rewardType)
+        {
+            case RewardType.Gold:
+                icon = spriteGold;
+                break;
+            case RewardType.Diamond:
+                icon = spriteDiamond;
+                break;
+        }
+
+        return icon;
+    }
+
+    // 정해진 이름이 없는 카테고리는 enum 이름을 그대로 쓴다
+    private static string GetCategoryLabel(ShopCategory category)
+    {
+        string label = category.ToString();
+        switch (category)
+        {
+            case ShopCategory.Gold:
+                label = "골드";
+                break;
+            case ShopCategory.Diamond:
+                label = "다이아";
+                break;
+            case ShopCategory.Gacha:
+                label = "가챠";
+                break;
+            case ShopCategory.Artifact:
+                label = "아티팩트";
+                break;
+        }
+
+        return label;
     }
 
     private void OnGachaNextRequested()

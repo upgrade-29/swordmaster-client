@@ -18,7 +18,7 @@ public class GachaResultPopup : BasePopup
     private RewardResponse reward;
     private int index;
     private int totalCount;
-    private ShopVisualCatalogSO visualCatalog;
+    private Sprite rewardSprite;
     private GameDB gameDB;
     private Action onNext;
 
@@ -46,13 +46,13 @@ public class GachaResultPopup : BasePopup
     }
 
     // 보상 한 건마다 다시 Setup하고 Open한다. 이미 열려 있으면 Open이 새 보상만 다시 반영한다
-    public void Setup(RewardResponse reward, int index, int totalCount, ShopVisualCatalogSO visualCatalog, GameDB gameDB,
+    public void Setup(RewardResponse reward, int index, int totalCount, Sprite rewardSprite, GameDB gameDB,
         Action onNext)
     {
         this.reward = reward;
         this.index = index;
         this.totalCount = totalCount;
-        this.visualCatalog = visualCatalog;
+        this.rewardSprite = rewardSprite;
         this.gameDB = gameDB;
         this.onNext = onNext;
     }
@@ -63,7 +63,7 @@ public class GachaResultPopup : BasePopup
         base.OnOpen();
 
         titleText.text = "가챠 결과";
-        rewardIcon.sprite = visualCatalog.GetRewardTypeIcon(reward.rewardType);
+        rewardIcon.sprite = rewardSprite;
         rewardNameText.text = GetRewardName(reward, gameDB);
         rewardAmountText.text = reward.amount.ToString();
         progressText.text = $"{index + 1} / {totalCount}";
