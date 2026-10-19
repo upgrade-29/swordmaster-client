@@ -1,5 +1,5 @@
 {
-  "version": "20261019060508",
+  "version": "20261019073949",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "망가진 나무 검", "appearanceCode": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "나무 검", "appearanceCode": "SWORD_02" },
@@ -132,15 +132,29 @@
     { "grade": "LEGENDARY", "level": 4, "materialCount": 4, "gold": 6400 }
   ],
   "enemies": [
-    { "code": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 8, "attackSpeed": 0.8, "maxHp": 120, "critRate": 0, "lifesteal": 0 },
-    { "code": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 12, "attackSpeed": 1, "maxHp": 180, "critRate": 0.05, "lifesteal": 0 },
-    { "code": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 600, "critRate": 0, "lifesteal": 0.05 },
-    { "code": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 22, "attackSpeed": 0.9, "maxHp": 900, "critRate": 0.1, "lifesteal": 0.05 }
+    { "code": "RUSTY_DAGGER", "name": "녹슨 단검", "appearanceCode": "ENEMY_SWORD_01", "boss": false, "attack": 7, "attackSpeed": 1.2, "maxHp": 40, "critRate": 0.05, "lifesteal": 0 },
+    { "code": "BANDIT_SABER", "name": "도적의 곡도", "appearanceCode": "ENEMY_SWORD_02", "boss": false, "attack": 13, "attackSpeed": 0.7, "maxHp": 40, "critRate": 0, "lifesteal": 0 },
+    { "code": "CURSED_GREATSWORD", "name": "저주받은 대검", "appearanceCode": "BOSS_SWORD_01", "boss": true, "attack": 15, "attackSpeed": 0.7, "maxHp": 140, "critRate": 0.05, "lifesteal": 0.05 },
+    { "code": "PIRATE_CUTLASS", "name": "해적의 커틀러스", "appearanceCode": "ENEMY_SWORD_03", "boss": false, "attack": 14, "attackSpeed": 1.3, "maxHp": 190, "critRate": 0.1, "lifesteal": 0 },
+    { "code": "MERCENARY_LONGSWORD", "name": "용병의 장검", "appearanceCode": "ENEMY_SWORD_04", "boss": false, "attack": 26, "attackSpeed": 0.75, "maxHp": 190, "critRate": 0, "lifesteal": 0.02 },
+    { "code": "BLACK_KNIGHT_SWORD", "name": "흑기사의 검", "appearanceCode": "BOSS_SWORD_02", "boss": true, "attack": 29, "attackSpeed": 0.76, "maxHp": 700, "critRate": 0.08, "lifesteal": 0.06 },
+    { "code": "ASSASSIN_STILETTO", "name": "암살자의 스틸레토", "appearanceCode": "ENEMY_SWORD_05", "boss": false, "attack": 24, "attackSpeed": 1.4, "maxHp": 540, "critRate": 0.15, "lifesteal": 0 },
+    { "code": "EXECUTIONER_SWORD", "name": "처형인의 검", "appearanceCode": "ENEMY_SWORD_06", "boss": false, "attack": 46, "attackSpeed": 0.8, "maxHp": 530, "critRate": 0, "lifesteal": 0.04 },
+    { "code": "FROST_LORD_BLADE", "name": "서리 군주의 검", "appearanceCode": "BOSS_SWORD_03", "boss": true, "attack": 51, "attackSpeed": 0.82, "maxHp": 1960, "critRate": 0.11, "lifesteal": 0.07 },
+    { "code": "FLAME_SCIMITAR", "name": "화염의 시미터", "appearanceCode": "ENEMY_SWORD_07", "boss": false, "attack": 41, "attackSpeed": 1.5, "maxHp": 1310, "critRate": 0.2, "lifesteal": 0 },
+    { "code": "VOLCANIC_CLAYMORE", "name": "화산의 대검", "appearanceCode": "ENEMY_SWORD_08", "boss": false, "attack": 79, "attackSpeed": 0.85, "maxHp": 1290, "critRate": 0, "lifesteal": 0.06 },
+    { "code": "DRAGON_FANG", "name": "염룡의 송곳니", "appearanceCode": "BOSS_SWORD_04", "boss": true, "attack": 86, "attackSpeed": 0.88, "maxHp": 4760, "critRate": 0.14, "lifesteal": 0.08 },
+    { "code": "WRAITH_RAPIER", "name": "망령의 레이피어", "appearanceCode": "ENEMY_SWORD_09", "boss": false, "attack": 68, "attackSpeed": 1.6, "maxHp": 2940, "critRate": 0.25, "lifesteal": 0 },
+    { "code": "BONE_KNIGHT_BLADE", "name": "해골 기사의 검", "appearanceCode": "ENEMY_SWORD_10", "boss": false, "attack": 136, "attackSpeed": 0.9, "maxHp": 2870, "critRate": 0, "lifesteal": 0.08 },
+    { "code": "REAPER_BLADE", "name": "사신의 낫검", "appearanceCode": "BOSS_SWORD_05", "boss": true, "attack": 144, "attackSpeed": 0.94, "maxHp": 10700, "critRate": 0.17, "lifesteal": 0.09 },
+    { "code": "ABYSS_TWINBLADE", "name": "심연의 쌍검", "appearanceCode": "ENEMY_SWORD_11", "boss": false, "attack": 114, "attackSpeed": 1.7, "maxHp": 6320, "critRate": 0.3, "lifesteal": 0 },
+    { "code": "FALLEN_ANGEL_SWORD", "name": "타락천사의 검", "appearanceCode": "ENEMY_SWORD_12", "boss": false, "attack": 235, "attackSpeed": 0.95, "maxHp": 6140, "critRate": 0, "lifesteal": 0.1 },
+    { "code": "DEMON_KING_SWORD", "name": "마왕의 검", "appearanceCode": "BOSS_SWORD_06", "boss": true, "attack": 244, "attackSpeed": 1, "maxHp": 22900, "critRate": 0.2, "lifesteal": 0.1 }
   ],
   "stages": [
-    { "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1, "recommendedPower": 500, "imageCode": "STAGE_01" },
-    { "stage": 2, "enemyCode": "BANDIT_SABER", "enemyCount": 4, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
-    { "stage": 3, "enemyCode": "BANDIT_SABER", "enemyCount": 5, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
+    { "name": "깊은 숲", "stage": 1, "enemyCode": "RUSTY_DAGGER", "enemyCount": 3, "bossCode": "CURSED_GREATSWORD", "statMultiplier": 1, "goldPerEnemy": 100, "bossGold": 500, "artifactDropRate": 1, "recommendedPower": 500, "imageCode": "STAGE_01" },
+    { "name": "사막", "stage": 2, "enemyCode": "BANDIT_SABER", "enemyCount": 4, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.2, "goldPerEnemy": 150, "bossGold": 800, "artifactDropRate": 0.5, "recommendedPower": 800, "imageCode": "STAGE_02" },
+    { "name": "임시스테이지", "stage": 3, "enemyCode": "BANDIT_SABER", "enemyCount": 5, "bossCode": "BLACK_KNIGHT_SWORD", "statMultiplier": 1.6, "goldPerEnemy": 200, "bossGold": 1200, "artifactDropRate": 0.5, "recommendedPower": 1200, "imageCode": "STAGE_03" }
   ],
   "dropRates": [
     { "grade": "COMMON", "rate": 0.6 },
