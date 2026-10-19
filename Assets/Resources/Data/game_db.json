@@ -1,5 +1,5 @@
 {
-  "version": "20261019090241",
+  "version": "20261019090641",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "망가진 나무 검", "appearanceCode": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "나무 검", "appearanceCode": "SWORD_02" },
@@ -171,7 +171,7 @@
     { "productCode": "DIAMOND_LARGE", "name": "다이아 상자", "category": "DIAMOND", "iconCode": "ICON_DIAMOND_LARGE", "priceType": "GOLD", "price": 0 },
     { "productCode": "GOLD_GACHA_10", "name": "골드 뽑기 10회", "category": "GACHA", "iconCode": "ICON_GOLD_GACHA_10", "priceType": "DIAMOND", "price": 1000 },
     { "productCode": "GOLD_GACHA_1", "name": "골드 뽑기 1회", "category": "GACHA", "iconCode": "ICON_GOLD_GACHA_1", "priceType": "DIAMOND", "price": 100 },
-    { "productCode": "ARTIFACT_CRIT_02", "name": "생명의 구슬 아티팩트 10개", "category": "ARTIFACT", "iconCode": "ICON_VITAL_ORB", "priceType": "DIAMOND", "price": 1000 },
+    { "productCode": "ARTIFACT_VITAL_ORB", "name": "생명의 구슬 아티팩트 10개", "category": "ARTIFACT", "iconCode": "ICON_VITAL_ORB", "priceType": "DIAMOND", "price": 1000 },
     { "productCode": "ARTIFACT_GACHA_10", "name": "아티팩트 뽑기 10회", "category": "GACHA", "iconCode": "ICON_ARTIFACT_GACHA_10", "priceType": "DIAMOND", "price": 2000 }
   ],
   "shopProductRewards": [
