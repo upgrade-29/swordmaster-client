@@ -6,6 +6,7 @@ using UnityEngine;
 public class StageSelectView : MonoBehaviour
 {
     private TMP_Text stageTitleText;
+    private TMP_Text stageNameText;
     private TMP_Text statusText;
     private TMP_Text enemyInfoText;
     private TMP_Text rewardValueText;
@@ -22,6 +23,7 @@ public class StageSelectView : MonoBehaviour
     private void Awake()
     {
         stageTitleText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StageTitle");
+        stageNameText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StageName");
         statusText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StatusLabel");
         enemyInfoText = GameUtil.Bind<TMP_Text>(gameObject, "Card/EnemyInfoText");
         rewardValueText = GameUtil.Bind<TMP_Text>(gameObject, "Card/RewardRow/RewardValue");
@@ -46,6 +48,7 @@ public class StageSelectView : MonoBehaviour
     public void Show(StageData stage, StageState state, long myPower)
     {
         stageTitleText.text = $"STAGE {stage.stage}";
+        stageNameText.text = stage.name;
         statusText.text = GetStatusLabel(state);
         enemyInfoText.text = $"일반 적 {stage.enemyCount}기 + 보스";
         rewardValueText.text = GetRewardLabel(stage);
