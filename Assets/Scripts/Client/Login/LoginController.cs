@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -44,6 +45,19 @@ public class LoginController : MonoBehaviour
         }
 
         view.Hide();
+        if (ResourceManager.Instance.IsPreloaded)
+        {
+            titleView.Show();
+            return;
+        }
+
+        titleView.ShowLoading();
+        StartCoroutine(PreloadResourcesRoutine());
+    }
+
+    private IEnumerator PreloadResourcesRoutine()
+    {
+        yield return ResourceManager.Instance.PreloadRoutine(titleView.SetLoadingProgress);
         titleView.Show();
     }
 
