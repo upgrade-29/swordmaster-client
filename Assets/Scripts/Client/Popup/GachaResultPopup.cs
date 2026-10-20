@@ -7,7 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 가챠 결과를 상자 열기 연출로 보여 준다. 상자를 누르면 떨리면서 틈으로 빛이 새어 나오고, 뚜껑이 들리는 중에 글로우가 터지고,
+// 가챠 결과를 상자 열기 연출로 보여 준다. 상자를 누르면 떨리면서 틈으로 빛이 새어 나오고, 화면이 순간 하얘지면서 뚜껑이 들리고, 들리는 중에 글로우가 터지고,
 // 다 열리면 광선이 하나씩 돌면서 뻗어 나온 뒤 멈춘다
 // 빛 색은 뽑은 유물의 최고 등급으로 정한다. 처음에는 패널 없이 어두운 배경 위에 상자만 보인다
 // 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 결과 패널을 띄운 뒤 왼쪽 위부터 보상을 채우고 닫기 버튼을 켠다
@@ -36,6 +36,7 @@ public class GachaResultPopup : BasePopup
     [ReadOnly] [SerializeField] private RectTransform rectRewardGrid;
     [ReadOnly] [SerializeField] private GameObject objSlotTemplate;
     [ReadOnly] [SerializeField] private ButtonUI btnClose;
+    [ReadOnly] [SerializeField] private Image imgFlash;
 
     [Header("떨림")]
     [SerializeField] private float shakeDuration = 1f;     // 상자를 누른 뒤 떨리는 시간(초)
@@ -49,6 +50,11 @@ public class GachaResultPopup : BasePopup
     [SerializeField] [Range(0f, 1f)] private float seamAlpha = 1f;       // 뚜껑 틈 빛의 밝기
     [SerializeField] private float seamFlickerScale = 2f;                // 틈 빛이 깜빡일 때 두꺼워지는 배율
     [SerializeField] private float seamFlickerDuration = 0.07f;          // 틈 빛이 한 번 깜빡이는 시간(초)
+
+    [Header("섬광 (열리기 직전에 화면이 하얘진다)")]
+    [SerializeField] [Range(0f, 1f)] private float flashAlpha = 0.8f; // 섬광이 가장 밝을 때의 밝기
+    [SerializeField] private float flashInDuration = 0.2f;           // 하얘지기까지의 시간(초). 가장 밝을 때 뚜껑이 들리기 시작한다
+    [SerializeField] private float flashOutDuration = 0.3f;          // 다시 걷히는 시간(초)
 
     [Header("글로우 (열리는 중에 터진다)")]
     [SerializeField] [Range(0f, 1f)] private float glowStartTime = 0.3f; // 열림 애니메이션의 이 지점(0~1)에서 터진다
@@ -156,6 +162,7 @@ public class GachaResultPopup : BasePopup
         rectRewardGrid = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid");
         objSlotTemplate = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid/SlotTemplate").gameObject;
         btnClose = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/CloseButton");
+        imgFlash = GameUtil.Bind<Image>(transform, "Flash");
 
         woodChestController = animatorChest.runtimeAnimatorController;
         woodChestFront = imgChestFront.sprite;
@@ -253,6 +260,7 @@ public class GachaResultPopup : BasePopup
         }
         canvasGroupRays.alpha = 0f;
         imgSeamLight.rectTransform.localScale = Vector3.one;
+        SetColor(imgFlash, imgFlash.color, 0f);
 
         imgLeakGlow.gameObject.SetActive(false);
         imgSeamLight.gameObject.SetActive(false);
@@ -279,7 +287,7 @@ public class GachaResultPopup : BasePopup
         coOpenChest = StartCoroutine(CoOpenChest());
     }
 
-    // 떨림(빛이 샌다) > 열리는 중 글로우가 터진다 > 다 열리면 광선 > 대기 > 보상 순서로 진행한다
+    // 떨림(빛이 샌다) > 섬광 > 열리는 중 글로우가 터진다 > 다 열리면 광선 > 대기 > 보상 순서로 진행한다
     // 팝업과 애니메이터 모두 시간 배율과 관계없이 재생한다
     private IEnumerator CoOpenChest()
     {
@@ -289,7 +297,11 @@ public class GachaResultPopup : BasePopup
         rectChest.anchoredPosition = vecChestPosition;
         rectChest.localRotation = Quaternion.identity;
 
-        // 뚜껑이 들리면 틈이 없어지므로 틈 빛을 끈다
+        // 틈 빛이 가장 밝은 채로 섬광이 터진다
+        PlayFlash();
+        yield return new WaitForSecondsRealtime(flashInDuration);
+
+        // 화면이 가장 하얄 때 뚜껑이 들리기 시작한다. 뚜껑이 들리면 틈이 없어지므로 틈 빛을 끈다
         tweenSeamFlicker.Kill();
         imgSeamLight.gameObject.SetActive(false);
         animatorChest.SetTrigger(AnimOpenTrigger);
@@ -374,6 +386,15 @@ public class GachaResultPopup : BasePopup
             .SetLoops(-1, LoopType.Yoyo);
         AddTween(tweenSeamFlicker);
         return sequence;
+    }
+
+    // 화면 전체가 순간 하얘졌다가 걷힌다
+    private void PlayFlash()
+    {
+        Sequence sequence = CreateSequence();
+        sequence.Append(imgFlash.DOFade(flashAlpha, flashInDuration));
+        sequence.Append(imgFlash.DOFade(0f, flashOutDuration));
+        AddTween(sequence);
     }
 
     // 뚜껑이 들리는 중에 글로우가 순간 크게 번졌다가 자리 잡는다. 앞부분은 뚜껑과 겹치지 않는 몸통만 덮는다
