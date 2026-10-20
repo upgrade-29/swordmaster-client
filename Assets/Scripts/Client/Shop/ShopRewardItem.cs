@@ -23,7 +23,12 @@ public class ShopRewardItem : MonoBehaviour
             return;
         }
 
+        // 가챠 상자는 뽑기 횟수라서 아이콘 없이 X10처럼 표시한다
+        bool isGachaBox = reward.rewardType == RewardType.GachaBox;
+        icon.gameObject.SetActive(isGachaBox == false);
         icon.sprite = rewardIcon;
-        amountText.text = reward.amount.ToString(GameConstants.NumberFormats.Integer);
+        amountText.text = isGachaBox
+            ? $"X{reward.amount.ToString(GameConstants.NumberFormats.Integer)}"
+            : reward.amount.ToString(GameConstants.NumberFormats.Integer);
     }
 }

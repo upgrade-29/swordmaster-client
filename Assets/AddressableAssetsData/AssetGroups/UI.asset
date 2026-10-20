@@ -15,6 +15,12 @@ MonoBehaviour:
   m_GroupName: UI
   m_GUID: fea5b3365a636a24eb2118fc981e206f
   m_SerializeEntries:
+  - m_GUID: 00927ce74d6e7c943bebab6c6627a2c7
+    m_Address: SHOP_ICON_ARTIFACT_GACHA
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21c422a3258bd9a48b776fe198ec25cf
     m_Address: SHOP_HEADER
     m_ReadOnly: 0
