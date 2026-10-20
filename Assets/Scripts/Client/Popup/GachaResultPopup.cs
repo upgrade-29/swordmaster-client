@@ -9,7 +9,8 @@ using UnityEngine.UI;
 
 // 가챠 결과를 상자 열기 연출로 보여 준다. 상자를 누르면 떨리면서 틈으로 빛이 새어 나오고, 뚜껑이 들리는 중에 글로우가 터지고,
 // 다 열리면 광선이 하나씩 돌면서 뻗어 나온 뒤 멈춘다
-// 빛 색은 뽑은 유물의 최고 등급으로 정한다. 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 그 자리에 왼쪽 위부터 보상을 채운 뒤 닫기 버튼을 켠다
+// 빛 색은 뽑은 유물의 최고 등급으로 정한다. 처음에는 패널 없이 어두운 배경 위에 상자만 보인다
+// 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 결과 패널을 띄운 뒤 왼쪽 위부터 보상을 채우고 닫기 버튼을 켠다
 // 그리는 순서는 새는 빛 > 상자(애니메이션) > 틈 빛 > 광선 > 글로우 > 상자 앞부분이라서 빛이 상자 안에서 나오는 것처럼 보인다
 // 앞부분은 두 장이다. 열리는 중에는 뚜껑과 겹치지 않는 몸통만(FrontOpening), 다 열린 뒤에는 앞 테두리까지(Front) 덮는다
 public class GachaResultPopup : BasePopup
@@ -31,6 +32,7 @@ public class GachaResultPopup : BasePopup
     [ReadOnly] [SerializeField] private CanvasGroup canvasGroupRays;
     [ReadOnly] [SerializeField] private List<Image> listRay = new List<Image>();
     [ReadOnly] [SerializeField] private List<float> listRayAngle = new List<float>(); // 프리팹에 놓인 각 광선의 각도. 연출이 끝나면 여기서 멈춘다
+    [ReadOnly] [SerializeField] private RectTransform rectResultPanel;
     [ReadOnly] [SerializeField] private RectTransform rectRewardGrid;
     [ReadOnly] [SerializeField] private GameObject objSlotTemplate;
     [ReadOnly] [SerializeField] private ButtonUI btnClose;
@@ -133,23 +135,24 @@ public class GachaResultPopup : BasePopup
     {
         base.Awake();
 
-        rectChestArea = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea");
-        canvasGroupChestArea = GameUtil.Bind<CanvasGroup>(transform, "Panel/Stage/ChestArea");
-        rectChest = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea/Chest");
-        btnChest = GameUtil.Bind<ButtonUI>(transform, "Panel/Stage/ChestArea/Chest");
-        animatorChest = GameUtil.Bind<Animator>(transform, "Panel/Stage/ChestArea/Chest");
-        imgLeakGlow = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/LeakGlow");
-        imgSeamLight = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/SeamLight");
-        imgChestFront = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/ChestFront");
-        imgChestFrontOpening = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/ChestFrontOpening");
-        imgGlow = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/Glow");
-        rectRays = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea/Rays");
-        canvasGroupRays = GameUtil.Bind<CanvasGroup>(transform, "Panel/Stage/ChestArea/Rays");
+        rectChestArea = GameUtil.Bind<RectTransform>(transform, "ChestArea");
+        canvasGroupChestArea = GameUtil.Bind<CanvasGroup>(transform, "ChestArea");
+        rectChest = GameUtil.Bind<RectTransform>(transform, "ChestArea/Chest");
+        btnChest = GameUtil.Bind<ButtonUI>(transform, "ChestArea/Chest");
+        animatorChest = GameUtil.Bind<Animator>(transform, "ChestArea/Chest");
+        imgLeakGlow = GameUtil.Bind<Image>(transform, "ChestArea/LeakGlow");
+        imgSeamLight = GameUtil.Bind<Image>(transform, "ChestArea/SeamLight");
+        imgChestFront = GameUtil.Bind<Image>(transform, "ChestArea/ChestFront");
+        imgChestFrontOpening = GameUtil.Bind<Image>(transform, "ChestArea/ChestFrontOpening");
+        imgGlow = GameUtil.Bind<Image>(transform, "ChestArea/Glow");
+        rectRays = GameUtil.Bind<RectTransform>(transform, "ChestArea/Rays");
+        canvasGroupRays = GameUtil.Bind<CanvasGroup>(transform, "ChestArea/Rays");
         foreach (Transform ray in rectRays)
         {
             listRay.Add(GameUtil.TryGetComponent<Image>(ray.gameObject));
             listRayAngle.Add(Mathf.DeltaAngle(0f, ray.localEulerAngles.z)); // 328도가 아니라 -32도로 받는다
         }
+        rectResultPanel = GameUtil.Bind<RectTransform>(transform, "Panel");
         rectRewardGrid = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid");
         objSlotTemplate = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid/SlotTemplate").gameObject;
         btnClose = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/CloseButton");
@@ -260,6 +263,8 @@ public class GachaResultPopup : BasePopup
 
         ClearRewardSlots();
 
+        // 상자를 다 열 때까지 결과 패널은 숨겨 둔다
+        rectResultPanel.gameObject.SetActive(false);
         btnClose.Interactable = false;
     }
 
@@ -304,6 +309,9 @@ public class GachaResultPopup : BasePopup
         Sequence hide = HideChest();
         yield return hide.WaitForCompletion();
 
+        Sequence panel = ShowResultPanel();
+        yield return panel.WaitForCompletion();
+
         ShowRewards();
         coOpenChest = null;
     }
@@ -316,6 +324,19 @@ public class GachaResultPopup : BasePopup
         Sequence sequence = CreateSequence();
         sequence.Join(canvasGroupChestArea.DOFade(0f, chestHideDuration).SetEase(Ease.InQuad));
         sequence.Join(rectChestArea.DOScale(chestHideScale, chestHideDuration).SetEase(Ease.InBack));
+        AddTween(sequence);
+        return sequence;
+    }
+
+    // 결과 패널을 켜고 팝업이 열릴 때와 같은 크기 연출로 띄운다
+    private Sequence ShowResultPanel()
+    {
+        rectResultPanel.gameObject.SetActive(true);
+        rectResultPanel.localScale = Vector3.one * GameConstants.PopupAnimation.OpenStartScale;
+
+        Sequence sequence = CreateSequence();
+        sequence.Join(rectResultPanel.DOScale(1f, GameConstants.PopupAnimation.OpenDuration)
+            .SetEase(GameConstants.PopupAnimation.OpenScaleEase));
         AddTween(sequence);
         return sequence;
     }

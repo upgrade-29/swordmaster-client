@@ -179,7 +179,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2988262881176437918}
   - {fileID: 8908917764407164178}
   m_Father: {fileID: 8908092938270075276}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1460,6 +1459,7 @@ RectTransform:
   m_Children:
   - {fileID: 8495513628623938665}
   - {fileID: 8908092938270075276}
+  - {fileID: 2988262881176437918}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1483,7 +1483,8 @@ MonoBehaviour:
   canvasGroup: {fileID: 0}
   rectPanel: {fileID: 0}
   closeOnOutsideTouch: 0
-  rectStage: {fileID: 0}
+  rectChestArea: {fileID: 0}
+  canvasGroupChestArea: {fileID: 0}
   rectChest: {fileID: 0}
   btnChest: {fileID: 0}
   animatorChest: {fileID: 0}
@@ -1497,8 +1498,6 @@ MonoBehaviour:
   listRay: []
   listRayAngle: []
   rectRewardGrid: {fileID: 0}
-  gridRewards: {fileID: 0}
-  layoutRewardGrid: {fileID: 0}
   objSlotTemplate: {fileID: 0}
   btnClose: {fileID: 0}
   shakeDuration: 0.8
@@ -1530,6 +1529,8 @@ MonoBehaviour:
   goldChestFrontOpening: {fileID: 21300000, guid: b21bdf4f0833d9d4ab7f5dd015ab41de, type: 3}
   goldChestOffset: {x: 0, y: -24}
   iconDelay: 2
+  chestHideDuration: 0.3
+  chestHideScale: 0.6
   iconStartScale: 2.5
   iconDuration: 0.18
   iconInterval: 0.08
@@ -1694,7 +1695,7 @@ RectTransform:
   - {fileID: 1336102177707586375}
   - {fileID: 2903710556712803492}
   - {fileID: 6660230939851661800}
-  m_Father: {fileID: 680643472425814878}
+  m_Father: {fileID: 4906526712638514312}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
