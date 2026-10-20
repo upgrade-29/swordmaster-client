@@ -10,12 +10,15 @@ public class EnhanceEquipmentButton : MonoBehaviour
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
 
+    private Color colorIconPlaceholder; // 이미지가 없을 때 보여줄 회색 상자 색
+
     public event Action<EnhanceEquipmentButton> OnClickEquipmentButtonEvent = delegate { };
 
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref btnEquipment);
         imgIcon = GameUtil.Bind<Image>(transform, "Icon");
+        colorIconPlaceholder = imgIcon.color;
         txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "Label");
         objSelectedMark = GameUtil.Bind<RectTransform>(transform, "Selected").gameObject;
 
@@ -25,6 +28,14 @@ public class EnhanceEquipmentButton : MonoBehaviour
     public void SetName(string name)
     {
         txtName.text = name;
+    }
+
+    // 아이콘 칸 크기는 프리팹에서 원본의 정수 배율로 맞춰 둔다. 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다
+    public void SetIcon(string imageCode)
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
+        imgIcon.sprite = sprite;
+        imgIcon.color = sprite != null ? Color.white : colorIconPlaceholder;
     }
 
     public void SetSelected(bool selected)

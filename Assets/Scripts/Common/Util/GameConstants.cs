@@ -22,6 +22,12 @@ public static class GameConstants
         public const Ease CloseEase = Ease.InQuad;   // 닫힐 때 페이드와 크기 변화
     }
 
+    // 아트 스타일 가이드의 픽셀 규격. 이미지는 원본의 정수 배율로만 키운다
+    public static class ArtPixel
+    {
+        public const int UiScale = 4; // 아트 픽셀 1칸 = UI 4유닛(캔버스 1080x1920)
+    }
+
     public static class Rules
     {
         public const int ArtifactSlotCount = 3;
