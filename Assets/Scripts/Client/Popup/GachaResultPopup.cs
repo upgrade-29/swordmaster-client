@@ -73,6 +73,7 @@ public class GachaResultPopup : BasePopup
     [SerializeField] private RuntimeAnimatorController goldChestController;        // 셋 중 하나라도 비어 있으면 나무 상자를 쓴다
     [SerializeField] private Sprite goldChestFront;
     [SerializeField] private Sprite goldChestFrontOpening;
+    [SerializeField] private Vector2 goldChestOffset = new Vector2(0f, -24f); // 금 상자 그림이 나무 상자보다 6px 위에 있어서 상자와 앞부분을 내려 빛 위치에 맞춘다
 
     [Header("보상")]
     [SerializeField] private float iconDelay = 2f;         // 상자가 열리고 상자를 치우기까지(초)
@@ -117,7 +118,10 @@ public class GachaResultPopup : BasePopup
     private RuntimeAnimatorController woodChestController;
     private Sprite woodChestFront;
     private Sprite woodChestFrontOpening;
-    private Vector2 vecChestPosition;
+    private Vector2 vecWoodChestPosition;
+    private Vector2 vecWoodChestFrontPosition;
+    private Vector2 vecWoodChestFrontOpeningPosition;
+    private Vector2 vecChestPosition; // 이번에 쓰는 상자의 제자리. 떨림이 끝나면 여기로 돌아온다
     private bool isFinished;
 
     private Coroutine coOpenChest;
@@ -153,7 +157,9 @@ public class GachaResultPopup : BasePopup
         woodChestController = animatorChest.runtimeAnimatorController;
         woodChestFront = imgChestFront.sprite;
         woodChestFrontOpening = imgChestFrontOpening.sprite;
-        vecChestPosition = rectChest.anchoredPosition;
+        vecWoodChestPosition = rectChest.anchoredPosition;
+        vecWoodChestFrontPosition = imgChestFront.rectTransform.anchoredPosition;
+        vecWoodChestFrontOpeningPosition = imgChestFrontOpening.rectTransform.anchoredPosition;
 
         btnChest.OnClickEvent += OnClickChest;
         btnClose.OnClickEvent += OnClickClose;
@@ -218,6 +224,10 @@ public class GachaResultPopup : BasePopup
         animatorChest.runtimeAnimatorController = useGoldChest ? goldChestController : woodChestController;
         imgChestFront.sprite = useGoldChest ? goldChestFront : woodChestFront;
         imgChestFrontOpening.sprite = useGoldChest ? goldChestFrontOpening : woodChestFrontOpening;
+        Vector2 offset = useGoldChest ? goldChestOffset : Vector2.zero;
+        vecChestPosition = vecWoodChestPosition + offset;
+        imgChestFront.rectTransform.anchoredPosition = vecWoodChestFrontPosition + offset;
+        imgChestFrontOpening.rectTransform.anchoredPosition = vecWoodChestFrontOpeningPosition + offset;
         animatorChest.Rebind();
         animatorChest.Update(0f);
 
