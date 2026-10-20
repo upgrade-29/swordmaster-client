@@ -125,6 +125,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         public readonly Image imgIcon;
         public readonly Image imgGradeFrame;
         public readonly TextMeshProUGUI txtAmount;
+        public readonly GameObject objNew;
 
         public RewardSlot(GameObject obj)
         {
@@ -133,12 +134,16 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             imgIcon = GameUtil.Bind<Image>(obj, "Icon");
             imgGradeFrame = GameUtil.Bind<Image>(obj, "GradeFrame");
             txtAmount = GameUtil.Bind<TextMeshProUGUI>(obj, "Amount");
+            objNew = GameUtil.Bind<RectTransform>(obj, "New").gameObject;
         }
     }
 
     private IReadOnlyList<RewardResponse> rewards;
     private GameDB gameDB;
     private Func<RewardResponse, Sprite> getRewardIcon;
+    private ISet<string> newArtifactCodes;
+    // 같은 새 유물이 여러 개 나오면 첫 칸에만 NEW를 붙이려고 이미 붙인 코드를 모은다
+    private readonly HashSet<string> setShownNewCode = new HashSet<string>();
     private readonly List<RewardSlot> listSlot = new List<RewardSlot>();
 
     // 나무 상자는 프리팹에 넣어 둔 컨트롤러와 앞부분 이미지를 쓴다
@@ -216,11 +221,14 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
 
     // 서버가 준 보상 목록을 그대로 받는다. 상자 종류와 빛 색은 그중 유물의 최고 등급으로 정한다
     // 아이콘은 보상마다 getRewardIcon으로 받는다(유물 이미지, 재화 아이콘 등은 부르는 쪽이 정한다)
-    public void Setup(IReadOnlyList<RewardResponse> rewards, GameDB gameDB, Func<RewardResponse, Sprite> getRewardIcon)
+    // newArtifactCodes는 뽑기 전에 갖고 있지 않던 유물의 코드로, 그 칸에 NEW를 붙인다
+    public void Setup(IReadOnlyList<RewardResponse> rewards, GameDB gameDB, Func<RewardResponse, Sprite> getRewardIcon,
+        ISet<string> newArtifactCodes)
     {
         this.rewards = rewards;
         this.gameDB = gameDB;
         this.getRewardIcon = getRewardIcon;
+        this.newArtifactCodes = newArtifactCodes;
     }
 
     // index번째 보상 칸 아이콘의 위치(캔버스 UI의 월드 좌표). 닫을 때 재화를 이 자리에서 날린다
@@ -663,6 +671,10 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         // 유물 1개처럼 1이면 수량을 쓰지 않는다
         slot.txtAmount.text = reward.amount > 1 ? reward.amount.ToString("N0") : string.Empty;
 
+        bool isNew = reward.rewardType == RewardType.Artifact && newArtifactCodes != null &&
+                     newArtifactCodes.Contains(reward.rewardCode) && setShownNewCode.Add(reward.rewardCode);
+        slot.objNew.SetActive(isNew);
+
         listSlot.Add(slot);
         return slot;
     }
@@ -674,6 +686,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             Destroy(slot.rect.gameObject);
         }
         listSlot.Clear();
+        setShownNewCode.Clear();
     }
 
     // 유물이 아니거나 등급을 모르면 테두리를 쓰지 않는다

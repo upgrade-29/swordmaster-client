@@ -222,12 +222,14 @@ public class ShopTab : LobbyTab
         {
             ShopProductItem purchasedItem = purchasingItem;
             EndPurchase();
+            // 결과를 반영하면 새 유물도 보유 목록에 들어가므로 그 전에 골라 둔다
+            System.Collections.Generic.HashSet<string> newArtifactCodes = GetNewArtifactCodes(response.rewards);
             ApplyPurchaseResult(response);
 
             HoldCurrencyRewards(response.rewards);
             if (purchasedItem.Product.category == ShopCategory.Gacha && response.rewards.Count > 0)
             {
-                ShowGachaResult(response.rewards);
+                ShowGachaResult(response.rewards, newArtifactCodes);
             }
             else
             {
@@ -345,10 +347,20 @@ public class ShopTab : LobbyTab
         }
     }
 
-    private void ShowGachaResult(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards)
+    // 보상 중 지금 갖고 있지 않은 유물의 코드. 결과 팝업에서 NEW를 붙인다
+    private System.Collections.Generic.HashSet<string> GetNewArtifactCodes(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards)
+    {
+        return rewards
+            .Where(reward => reward.rewardType == RewardType.Artifact && User.GetArtifact(reward.rewardCode) == null)
+            .Select(reward => reward.rewardCode)
+            .ToHashSet();
+    }
+
+    private void ShowGachaResult(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards,
+        System.Collections.Generic.HashSet<string> newArtifactCodes)
     {
         gachaRewards = rewards;
-        GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon);
+        GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon, newArtifactCodes);
         GachaResultPopup.Open();
     }
 
