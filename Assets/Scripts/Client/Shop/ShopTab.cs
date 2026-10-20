@@ -20,7 +20,10 @@ public class ShopTab : LobbyTab
     [SerializeField] private Sprite spriteDiamond;
     [SerializeField] private Sprite spriteFallback; // 이미지가 정해지지 않은 상품, 재화, 보상에 쓴다
 
-    private GameDB GameDB => GameSession.Instance.GameDB;
+    private const string ArtifactGachaBoxCode = "ARTIFACT_BOX";
+    private const string GoldGachaBoxCode = "GOLD_BOX";
+
+    private GameDB GameDB =>GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
     private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
     private GachaResultPopup GachaResultPopup => Popup.Instance.Get<GachaResultPopup>();
@@ -287,12 +290,18 @@ public class ShopTab : LobbyTab
     }
 
     // 상품 이미지는 대표 보상으로 고른다. 유물은 code 끝의 종류 이름(VITAL_ORB → ORB)으로 찾는다.
-    // 가챠처럼 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
+    // 골드 뽑기는 골드 상품과 같은 골드 주머니 이미지를 쓴다. 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
     private Sprite GetProductIcon(ShopProductRewardData reward)
     {
         string address = null;
         switch (reward?.rewardType)
         {
+            case RewardType.GachaBox when reward.rewardCode == ArtifactGachaBoxCode:
+                address = GameConstants.AddressableAddresses.ShopIconArtifactGacha;
+                break;
+            case RewardType.GachaBox when reward.rewardCode == GoldGachaBoxCode:
+                address = GameConstants.AddressableAddresses.ShopIconGold;
+                break;
             case RewardType.Gold:
                 address = GameConstants.AddressableAddresses.ShopIconGold;
                 break;
