@@ -51,6 +51,12 @@ public static class GameConstants
         public const string Preload = "preload"; // 시작할 때 타이틀 화면에서 한 번에 읽어 두는 리소스
     }
 
+    // 게임 데이터 code로 찾지 않는 고정 이미지의 Addressables 주소
+    public static class AddressableAddresses
+    {
+        public const string ShopHeader = "SHOP_HEADER";
+    }
+
     // Color는 const가 될 수 없어서 static readonly로 둔다
     public static class Colors
     {

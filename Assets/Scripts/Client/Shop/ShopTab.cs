@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 상점 상품 목록을 만들고 구매를 요청한다. 구매 성공 여부와 재화는 서버 응답을 그대로 따른다.
 // 탭 안쪽 세로 스크롤과 바깥쪽 가로 탭 스와이프의 라우팅은 기반 클래스 LobbyTab이 담당한다.
@@ -9,6 +10,8 @@ public class ShopTab : LobbyTab
     [ReadOnly] [SerializeField] private GameObject objViewport;
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
+    [ReadOnly] [SerializeField] private Image headerImage;
+    [ReadOnly] [SerializeField] private GameObject objHeaderPlaceholderText; // 이미지가 없을 때 보여줄 "임시 이미지" 글자
 
     [SerializeField] private ShopSection sectionPrefab;
     [SerializeField] private ShopProductItem itemPrefab;
@@ -35,11 +38,29 @@ public class ShopTab : LobbyTab
         objViewport = GameUtil.Bind<RectTransform>(transform, "Viewport").gameObject;
         contentTransform = GameUtil.Bind<RectTransform>(transform, "Viewport/Content");
         objEmptyPanel = GameUtil.Bind<RectTransform>(transform, "EmptyPanel").gameObject;
+        headerImage = GameUtil.Bind<Image>(transform, "Viewport/Content/ShopHeader");
+        objHeaderPlaceholderText = GameUtil.Bind<RectTransform>(transform, "Viewport/Content/ShopHeader/Text (TMP)").gameObject;
     }
 
     private void Start()
     {
+        InitHeaderImage();
         InitProductList();
+    }
+
+    // 미리 읽은 이미지가 없으면 회색 상자와 임시 글자를 그대로 둔다
+    private void InitHeaderImage()
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(GameConstants.AddressableAddresses.ShopHeader);
+        if (sprite == null)
+        {
+            return;
+        }
+
+        headerImage.sprite = sprite;
+        headerImage.color = Color.white;
+        headerImage.preserveAspect = true;
+        objHeaderPlaceholderText.SetActive(false);
     }
 
     // 섹션 순서는 상품 목록에서 각 카테고리가 처음 나오는 순서를 따른다.
