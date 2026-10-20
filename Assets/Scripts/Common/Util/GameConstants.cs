@@ -22,10 +22,22 @@ public static class GameConstants
         public const Ease CloseEase = Ease.InQuad;   // 닫힐 때 페이드와 크기 변화
     }
 
+    // 아트 스타일 가이드의 픽셀 규격. 이미지는 원본의 정수 배율로만 키운다
+    public static class ArtPixel
+    {
+        public const int UiScale = 4; // 아트 픽셀 1칸 = UI 4유닛(캔버스 1080x1920)
+    }
+
     public static class Rules
     {
         public const int ArtifactSlotCount = 3;
         public const float MaxBattleSpeed = 2f; // 서버 시간 검증과 같은 배속 상한
+    }
+
+    // 데미지 숫자 크기와 체력바 흔들림이 함께 쓰는 전투 연출 기준
+    public static class BattleEffect
+    {
+        public const float StrongHitDamageRatio = 0.5f; // 최대 체력 대비 이 비율 이상을 잃으면 가장 세게 맞은 것으로 본다
     }
 
     public static class NumberFormats

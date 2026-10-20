@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -10,6 +12,7 @@ using UnityEngine.UI;
 public class BattleViewManager : MonoBehaviour
 {
     private const float ExitFadeDuration = 0.5f;
+    private const float NextEnemyResumeDelay = 0.3f; // 다음 적이 도착하고 전투를 다시 시작하기까지(1배속 기준)
     private const string AbandonTitle = "전투 포기";
     private const string AbandonMessage = "전투를 포기하시겠습니까?\n지금까지 모은 골드만 받고 패배 처리됩니다.";
 
@@ -23,6 +26,7 @@ public class BattleViewManager : MonoBehaviour
     private BattleUnitView playerView;
     private BattleUnitView enemyView;
     private BossWarningView bossWarningView;
+    private BattleBackgroundView backgroundView;
     private CoinFlyView coinFlyView;
     private ScreenFader screenFader;
     private Button optionButton;
@@ -44,6 +48,7 @@ public class BattleViewManager : MonoBehaviour
         playerView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Player"));
         enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
         namePlateView = GameUtil.TryGetComponent<NamePlateView>(GameObject.Find("NamePlateCanvas"));
+        backgroundView = GameUtil.TryGetComponent<BattleBackgroundView>(GameObject.Find("Background"));
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
         coinFlyView = GameUtil.Bind<CoinFlyView>(GameObject.Find("BattleCanvas"), "CoinLayer");
         screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
@@ -67,6 +72,7 @@ public class BattleViewManager : MonoBehaviour
 
         manager.BusyChanged -= OnBusyChanged;
         manager.BattleEnded -= OnBattleEnded;
+        manager.NextSubStageTransition = null;
         hudPresenter?.Dispose();
         battleLogger?.Dispose();
         effectPresenter?.Dispose();
@@ -97,14 +103,20 @@ public class BattleViewManager : MonoBehaviour
         Debug.Log($"[Battle] Entered from lobby. Start stage {session.stage} (next stage {user.StageProgress.NextStage}), " +
                   $"server {ServerSettings.BaseUrl}");
 
+        // 플레이어는 지금 강화 단계의 검 이미지로 보여준다. 전투 중에는 강화하지 않으므로 한 번만 바꾼다
+        SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
+        playerView.SetSprite(sword.code);
+
         manager.Init(gameDB);
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud, namePlateView, enemyView, coinFlyView, user.Nickname);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
-        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, gameDB, manager.Retry, OnExitClicked);
+        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, backgroundView,
+            Camera.main.transform, gameDB, manager.Retry, OnExitClicked);
 
         manager.BusyChanged += OnBusyChanged;
         manager.BattleEnded += OnBattleEnded;
+        manager.NextSubStageTransition = PlayNextSubStageTransition;
 
         optionButton.interactable = false; // 전투가 시작되면 OnBusyChanged에서 켠다
         optionButton.onClick.AddListener(OnClickOption);
@@ -115,6 +127,14 @@ public class BattleViewManager : MonoBehaviour
         DialogPopup.OnCloseEvent += OnPausePopupChanged;
 
         manager.EnterBattle(session);
+    }
+
+    // 처치한 적이 날아가고 다음 적이 도착하면, 다음 적의 이름판과 체력바를 보여 주고 잠깐 뒤에 전투를 다시 시작한다
+    private IEnumerator PlayNextSubStageTransition(BattleSubStage next)
+    {
+        yield return effectPresenter.PlayNextEnemyEntrance(next);
+        hudPresenter.ShowNextEnemy(next);
+        yield return new WaitForSeconds(NextEnemyResumeDelay / manager.Speed);
     }
 
     // 서버가 확정한 재화, 진행도, 아티팩트를 유저에 반영한다. 로비로 돌아가면 이 유저로 화면을 그린다

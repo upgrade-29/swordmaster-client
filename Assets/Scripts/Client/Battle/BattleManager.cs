@@ -30,6 +30,9 @@ public class BattleManager : MonoBehaviour
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절·실패 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
     public event Action<bool> BusyChanged; // 결과(BattleEnd)나 거절·실패 응답을 받으면 false가 된다. 그때부터 다시 전투에 들어갈 수 있다
 
+    // 검증을 통과한 뒤 다음 세부스테이지를 시작하기 전에 기다릴 화면 연출(적 처치, 다음 적 등장). 인자는 다음 세부스테이지
+    public Func<BattleSubStage, IEnumerator> NextSubStageTransition;
+
     private GameDB gameDB;
     private BattleEngine engine;
     private string gameDataVersion; // 서버가 같은 데이터로 계산하는지 확인하도록 모든 요청에 담는다
@@ -219,7 +222,15 @@ public class BattleManager : MonoBehaviour
         }
 
         BattleSubStage next = CreateSubStage(verified.nextSubStageIndex, verified.nextPlayerHp);
-        battleRoutine = StartCoroutine(RunSubStageAndReport(next));
+        battleRoutine = StartCoroutine(RunNextSubStage(next));
+    }
+
+    private IEnumerator RunNextSubStage(BattleSubStage next)
+    {
+        if (NextSubStageTransition != null)
+            yield return NextSubStageTransition(next);
+
+        yield return RunSubStageAndReport(next);
     }
 
     private BattleSubStage CreateSubStage(int subStageIndex, double playerHp)

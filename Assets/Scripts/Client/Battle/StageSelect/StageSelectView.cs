@@ -1,10 +1,13 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 스테이지 선택 카드. 받은 값을 보여주고 버튼 입력을 이벤트로 알리기만 한다
 public class StageSelectView : MonoBehaviour
 {
+    private Image stageImage;
+    private Color stageImagePlaceholderColor; // 이미지가 없을 때 보여줄 회색 상자 색
     private TMP_Text stageTitleText;
     private TMP_Text stageNameText;
     private TMP_Text statusText;
@@ -22,6 +25,8 @@ public class StageSelectView : MonoBehaviour
 
     private void Awake()
     {
+        stageImage = GameUtil.Bind<Image>(gameObject, "Card/ImageArea/StageImage");
+        stageImagePlaceholderColor = stageImage.color;
         stageTitleText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StageTitle");
         stageNameText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StageName");
         statusText = GameUtil.Bind<TMP_Text>(gameObject, "Card/StatusLabel");
@@ -47,6 +52,7 @@ public class StageSelectView : MonoBehaviour
 
     public void Show(StageData stage, StageState state, long myPower)
     {
+        SetStageImage(stage.imageCode);
         stageTitleText.text = $"STAGE {stage.stage}";
         stageNameText.text = stage.name;
         statusText.text = GetStatusLabel(state);
@@ -61,6 +67,14 @@ public class StageSelectView : MonoBehaviour
     {
         prevButton.Interactable = hasPrev;
         nextButton.Interactable = hasNext;
+    }
+
+    // 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다
+    private void SetStageImage(string imageCode)
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
+        stageImage.sprite = sprite;
+        stageImage.color = sprite != null ? Color.white : stageImagePlaceholderColor;
     }
 
     private static string GetStatusLabel(StageState state)

@@ -59,9 +59,10 @@ public class EnhancePopup : BasePopup
         public readonly string name;
         public readonly string message; // 레벨 아래에 덧붙이는 문구. 없으면 빈 문자열
         public readonly IReadOnlyList<StatInfo> stats;
+        public readonly string imageCode; // 가운데에 보여 줄 검이나 아티팩트의 이미지 주소
 
         public ResultInfo(bool isSuccess, string levelBefore, string levelAfter, string name, string message,
-            IReadOnlyList<StatInfo> stats)
+            IReadOnlyList<StatInfo> stats, string imageCode)
         {
             this.isSuccess = isSuccess;
             this.levelBefore = levelBefore;
@@ -69,6 +70,7 @@ public class EnhancePopup : BasePopup
             this.name = name;
             this.message = message;
             this.stats = stats;
+            this.imageCode = imageCode;
         }
     }
 
@@ -91,7 +93,9 @@ public class EnhancePopup : BasePopup
     private Action onConfirm;
 
     private Color colorGlow;
-    private Color colorSword;
+    private Color colorSword; // 연출을 시작할 때의 색. 이미지가 있으면 흰색, 없으면 회색 상자 색
+    private Color colorSwordPlaceholder;
+    private Vector2 vecSwordPlaceholderSize;
     private Vector2 vecSwordPosition;
     private Sequence seqEnhance;
 
@@ -115,7 +119,8 @@ public class EnhancePopup : BasePopup
         btnConfirm = GameUtil.Bind<ButtonUI>(transform, "Panel/Result/Footer/ConfirmButton");
 
         colorGlow = imgGlow.color;
-        colorSword = imgSword.color;
+        colorSwordPlaceholder = imgSword.color;
+        vecSwordPlaceholderSize = imgSword.rectTransform.sizeDelta;
         vecSwordPosition = imgSword.rectTransform.anchoredPosition;
 
         btnConfirm.OnClickEvent += OnClickConfirm;
@@ -153,6 +158,7 @@ public class EnhancePopup : BasePopup
         txtMessage.text = result.message;
         txtMessage.gameObject.SetActive(string.IsNullOrEmpty(result.message) == false);
         txtName.text = result.name;
+        SetImage(result.imageCode);
         ShowStats(result.stats);
 
         PlayEnhanceSequence();
@@ -168,6 +174,18 @@ public class EnhancePopup : BasePopup
         }
 
         base.OnClickDimmed();
+    }
+
+    // 검(48x96)과 아티팩트(40x40)는 원본 크기가 달라서, 열 때마다 원본의 4배로 크기를 맞춘다
+    // 미리 읽은 이미지가 없으면 프리팹의 회색 상자를 그대로 둔다
+    private void SetImage(string imageCode)
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
+        imgSword.sprite = sprite;
+        imgSword.rectTransform.sizeDelta = sprite != null
+            ? sprite.rect.size * GameConstants.ArtPixel.UiScale
+            : vecSwordPlaceholderSize;
+        colorSword = sprite != null ? Color.white : colorSwordPlaceholder;
     }
 
     private void ShowStats(IReadOnlyList<StatInfo> stats)

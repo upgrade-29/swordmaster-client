@@ -81,10 +81,15 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
 
     /// <summary>
     /// 미리 읽은 이미지를 주소로 꺼낸다. 미리 읽지 못한 주소면 경고를 한 번 남기고 null을 돌려준다.
-    /// 호출하는 화면은 null이면 자리 표시(회색 상자 등)를 그대로 둔다.
+    /// 호출하는 화면은 null이면 자리 표시(회색 상자 등)를 그대로 둔다. 빈 슬롯처럼 주소가 없으면 경고 없이 null을 돌려준다.
     /// </summary>
     public Sprite GetSprite(string address)
     {
+        if (string.IsNullOrEmpty(address))
+        {
+            return null;
+        }
+
         if (dicSprite.TryGetValue(address, out Sprite sprite))
         {
             return sprite;

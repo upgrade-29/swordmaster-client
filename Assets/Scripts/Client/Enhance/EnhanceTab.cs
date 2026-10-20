@@ -59,7 +59,7 @@ public class EnhanceTab : LobbyTab
     private void Start()
     {
         RefreshCombatStats();
-        RefreshEquipmentNames();
+        RefreshEquipmentButtons();
         SelectSword();
         SetStatsOpened(false, true);
     }
@@ -112,12 +112,14 @@ public class EnhanceTab : LobbyTab
             FormatPercentage(stat.lifesteal));
     }
 
-    private void RefreshEquipmentNames()
+    private void RefreshEquipmentButtons()
     {
-        enhanceEquipmentSelect.SetSwordName($"검 {SwordLevelColor.Format(User.Sword.Level)}");
+        enhanceEquipmentSelect.SetSword($"검 {SwordLevelColor.Format(User.Sword.Level)}", GetSwordData(User.Sword.Level).code);
         for (int slotIndex = 0; slotIndex < GameConstants.Rules.ArtifactSlotCount; slotIndex++)
         {
-            enhanceEquipmentSelect.SetArtifactName(slotIndex, GetEquippedArtifactName(slotIndex));
+            // 빈 슬롯이면 이미지 주소 없이 회색 상자를 둔다
+            string imageCode = GetEquippedArtifact(slotIndex)?.ArtifactCode;
+            enhanceEquipmentSelect.SetArtifact(slotIndex, GetEquippedArtifactName(slotIndex), imageCode);
         }
     }
 
@@ -147,6 +149,7 @@ public class EnhanceTab : LobbyTab
         SwordData current = GetSwordData(User.Sword.Level);
         SwordData next = GetSwordData(User.Sword.Level + 1);
 
+        enhanceEquipmentInfo.SetSwordImage(current.code);
         enhanceEquipmentInfo.SetEquipment(SwordLevelColor.Format(current.level), current.name);
         enhanceEquipmentInfo.ShowStatRows(SwordStatRowCount);
         SetStatRow(0, spriteAttack, "공격력", current.attackPower, next?.attackPower, FormatInteger);
@@ -184,6 +187,7 @@ public class EnhanceTab : LobbyTab
         UserArtifact artifact = GetEquippedArtifact(slotIndex);
         if (artifact == null)
         {
+            enhanceEquipmentInfo.SetArtifactImage(null);
             enhanceEquipmentInfo.SetEquipment(string.Empty, EmptySlotName);
             enhanceEquipmentInfo.ShowEmptyGuide();
             return;
@@ -193,6 +197,7 @@ public class EnhanceTab : LobbyTab
         IReadOnlyList<ArtifactStatData> stats = GameDB.GetArtifactStats(artifact.ArtifactCode);
         bool canEnhance = GetArtifactEnhanceData(artifact) != null;
 
+        enhanceEquipmentInfo.SetArtifactImage(artifact.ArtifactCode);
         enhanceEquipmentInfo.SetEquipment($"Lv. {artifact.Level.ToString()}", data.name);
         enhanceEquipmentInfo.ShowStatRows(stats.Count);
         for (int i = 0; i < stats.Count; i++)
@@ -463,8 +468,11 @@ public class EnhanceTab : LobbyTab
             new EnhancePopup.StatInfo(spriteMaxHp, "최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
         };
         string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
+        // 성공하면 새 검을, 실패하면 파괴되는 원래 검을 보여 준다. 실패 연출이 이 검을 어둡게 만든다
+        string imageCode = isSuccess ? after.code : before.code;
 
-        return new EnhancePopup.ResultInfo(isSuccess, SwordLevelColor.Format(levelBefore), SwordLevelColor.Format(levelAfter), after.name, message, stats);
+        return new EnhancePopup.ResultInfo(isSuccess, SwordLevelColor.Format(levelBefore), SwordLevelColor.Format(levelAfter), after.name, message, stats,
+            imageCode);
     }
 
     private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
@@ -477,7 +485,7 @@ public class EnhanceTab : LobbyTab
             .ToList();
 
         return new EnhancePopup.ResultInfo(true, $"Lv. {levelBefore.ToString()}", $"Lv. {artifact.Level.ToString()}", data.name,
-            string.Empty, stats);
+            string.Empty, stats, artifact.ArtifactCode);
     }
 
     // 응답에는 장착한 아티팩트만 들어 있으므로, 응답에 없는 아티팩트는 장착 해제된 것이다
@@ -521,7 +529,7 @@ public class EnhanceTab : LobbyTab
     private void RefreshAfterRequest()
     {
         RefreshCombatStats();
-        RefreshEquipmentNames();
+        RefreshEquipmentButtons();
 
         if (isSwordSelected)
         {

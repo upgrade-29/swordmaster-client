@@ -20,10 +20,16 @@ public class EnhanceEquipmentInfo : MonoBehaviour
 
     [ReadOnly] [SerializeField] private GameObject objEmptyGuide;
 
+    // 이미지를 못 읽었거나 빈 슬롯일 때 보여줄 회색 상자 색
+    private Color colorSwordPlaceholder;
+    private Color colorArtifactPlaceholder;
+
     private void Awake()
     {
         imgSword = GameUtil.Bind<Image>(transform, "EquipmentRow/EquipmentImage/SwordImage");
         imgArtifact = GameUtil.Bind<Image>(transform, "EquipmentRow/EquipmentImage/ArtifactImage");
+        colorSwordPlaceholder = imgSword.color;
+        colorArtifactPlaceholder = imgArtifact.color;
         txtLevel = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentName/NameRow/Level");
         txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "EquipmentName/NameRow/Name");
 
@@ -43,6 +49,17 @@ public class EnhanceEquipmentInfo : MonoBehaviour
         txtLevel.gameObject.SetActive(string.IsNullOrEmpty(level) == false);
         txtLevel.text = level;
         txtName.text = name;
+    }
+
+    public void SetSwordImage(string imageCode)
+    {
+        SetImage(imgSword, imageCode, colorSwordPlaceholder);
+    }
+
+    // 빈 슬롯이면 imageCode에 null을 넘긴다
+    public void SetArtifactImage(string imageCode)
+    {
+        SetImage(imgArtifact, imageCode, colorArtifactPlaceholder);
     }
 
     public void SetStatRow(int index, Sprite icon, string name, string current, string next)
@@ -84,5 +101,13 @@ public class EnhanceEquipmentInfo : MonoBehaviour
     {
         imgSword.gameObject.SetActive(false);
         imgArtifact.gameObject.SetActive(true);
+    }
+
+    // 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다
+    private static void SetImage(Image image, string imageCode, Color placeholderColor)
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
+        image.sprite = sprite;
+        image.color = sprite != null ? Color.white : placeholderColor;
     }
 }

@@ -41,14 +41,17 @@ public class EnhanceEquipmentSelect : MonoBehaviour
         }
     }
 
-    public void SetSwordName(string name)
+    public void SetSword(string name, string imageCode)
     {
         swordEquipmentButton.SetName(name);
+        swordEquipmentButton.SetIcon(imageCode);
     }
 
-    public void SetArtifactName(int slotIndex, string name)
+    // 빈 슬롯이면 imageCode에 null을 넘긴다
+    public void SetArtifact(int slotIndex, string name, string imageCode)
     {
         listArtifactEquipmentButton[slotIndex].SetName(name);
+        listArtifactEquipmentButton[slotIndex].SetIcon(imageCode);
     }
 
     public void SetSelectedSword()
