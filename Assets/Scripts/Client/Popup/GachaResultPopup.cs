@@ -1,89 +1,550 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 가챠 결과 한 건의 아이콘과 텍스트를 표시하고 다음 입력만 Presenter에 전달한다.
+// 가챠 결과를 상자 열기 연출로 보여 준다. 상자를 누르면 떨리면서 틈으로 빛이 새어 나오고, 뚜껑이 들리는 중에 글로우가 터지고,
+// 다 열리면 광선이 하나씩 돌면서 뻗어 나온 뒤 멈춘다
+// 빛 색은 뽑은 유물의 최고 등급으로 정한다. 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 그 자리에 왼쪽 위부터 보상을 채운 뒤 닫기 버튼을 켠다
+// 그리는 순서는 새는 빛 > 상자(애니메이션) > 틈 빛 > 광선 > 글로우 > 상자 앞부분이라서 빛이 상자 안에서 나오는 것처럼 보인다
+// 앞부분은 두 장이다. 열리는 중에는 뚜껑과 겹치지 않는 몸통만(FrontOpening), 다 열린 뒤에는 앞 테두리까지(Front) 덮는다
 public class GachaResultPopup : BasePopup
 {
-    [ReadOnly] [SerializeField] private TextMeshProUGUI titleText;
-    [ReadOnly] [SerializeField] private Image rewardIcon;
-    [ReadOnly] [SerializeField] private TextMeshProUGUI rewardNameText;
-    [ReadOnly] [SerializeField] private TextMeshProUGUI rewardAmountText;
-    [ReadOnly] [SerializeField] private TextMeshProUGUI progressText;
-    [ReadOnly] [SerializeField] private ButtonUI nextButton;
-    [ReadOnly] [SerializeField] private TextMeshProUGUI nextButtonLabel;
+    private static readonly int AnimOpenTrigger = Animator.StringToHash("Open");
+    private static readonly int AnimOpenState = Animator.StringToHash("Open");
 
-    private RewardResponse reward;
-    private int index;
-    private int totalCount;
-    private Sprite rewardSprite;
+    [ReadOnly] [SerializeField] private RectTransform rectChestArea;
+    [ReadOnly] [SerializeField] private CanvasGroup canvasGroupChestArea;
+    [ReadOnly] [SerializeField] private RectTransform rectChest;
+    [ReadOnly] [SerializeField] private ButtonUI btnChest;
+    [ReadOnly] [SerializeField] private Animator animatorChest;
+    [ReadOnly] [SerializeField] private Image imgLeakGlow;
+    [ReadOnly] [SerializeField] private Image imgSeamLight;
+    [ReadOnly] [SerializeField] private Image imgChestFront;
+    [ReadOnly] [SerializeField] private Image imgChestFrontOpening;
+    [ReadOnly] [SerializeField] private Image imgGlow;
+    [ReadOnly] [SerializeField] private RectTransform rectRays;
+    [ReadOnly] [SerializeField] private CanvasGroup canvasGroupRays;
+    [ReadOnly] [SerializeField] private List<Image> listRay = new List<Image>();
+    [ReadOnly] [SerializeField] private List<float> listRayAngle = new List<float>(); // 프리팹에 놓인 각 광선의 각도. 연출이 끝나면 여기서 멈춘다
+    [ReadOnly] [SerializeField] private RectTransform rectRewardGrid;
+    [ReadOnly] [SerializeField] private GameObject objSlotTemplate;
+    [ReadOnly] [SerializeField] private ButtonUI btnClose;
+
+    [Header("떨림")]
+    [SerializeField] private float shakeDuration = 1f;     // 상자를 누른 뒤 떨리는 시간(초)
+    [SerializeField] private float shakeStrength = 12f;    // 좌우·위아래로 떨리는 폭(유닛)
+    [SerializeField] private float shakeAngle = 6f;        // 기울어지며 떨리는 각도(도)
+    [SerializeField] private int shakeVibrato = 30;        // 떨리는 동안 흔들리는 횟수
+
+    [Header("새어 나오는 빛")]
+    [SerializeField] [Range(0f, 1f)] private float leakGlowAlpha = 0.7f; // 떨림이 끝날 때 상자 뒤 빛의 밝기
+    [SerializeField] private float leakGlowStartScale = 0.6f;            // 상자 뒤 빛이 커지기 시작하는 크기
+    [SerializeField] [Range(0f, 1f)] private float seamAlpha = 1f;       // 뚜껑 틈 빛의 밝기
+    [SerializeField] private float seamFlickerScale = 2f;                // 틈 빛이 깜빡일 때 두꺼워지는 배율
+    [SerializeField] private float seamFlickerDuration = 0.07f;          // 틈 빛이 한 번 깜빡이는 시간(초)
+
+    [Header("글로우 (열리는 중에 터진다)")]
+    [SerializeField] [Range(0f, 1f)] private float glowStartTime = 0.3f; // 열림 애니메이션의 이 지점(0~1)에서 터진다
+    [SerializeField] [Range(0f, 1f)] private float glowAlpha = 0.8f;
+    [SerializeField] private float glowDuration = 0.5f;    // 글로우가 터졌다가 자리 잡는 시간(초)
+    [SerializeField] private float glowStartScale = 0.3f;  // 글로우가 나오기 시작할 때의 크기(원래 크기에 대한 비율)
+    [SerializeField] private float glowPunchScale = 1.4f;  // 글로우가 순간 커졌다 돌아오는 크기
+    [SerializeField] private float stagePunch = 0.06f;     // 글로우가 터질 때 상자와 빛이 함께 튀는 크기
+
+    [Header("광선 (다 열린 뒤 하나씩 나온다)")]
+    [SerializeField] [Range(0f, 1f)] private float rayAlpha = 0.8f;
+    [SerializeField] private float rayDuration = 0.5f;     // 광선 하나가 돌면서 뻗어 나오는 시간(초)
+    [SerializeField] private float rayInterval = 0.12f;    // 다음 광선이 나오기까지의 간격(초)
+    [SerializeField] private float rayRotation = 50f;      // 광선이 제자리까지 돌아 들어오는 각도(도)
+
+    [Header("등급별 빛 색")]
+    [SerializeField] private Color colorCommon = new Color32(0xC8, 0xC8, 0xC8, 0xFF);
+    [SerializeField] private Color colorRare = new Color32(0x4D, 0xB8, 0xFF, 0xFF);
+    [SerializeField] private Color colorEpic = new Color32(0xB4, 0x5C, 0xFF, 0xFF);
+    [SerializeField] private Color colorLegendary = new Color32(0xFD, 0xCF, 0x17, 0xFF);
+
+    [Header("상자")]
+    [SerializeField] private ArtifactGrade goldChestMinGrade = ArtifactGrade.Epic; // 이 등급 이상이 나오면 금 상자를 쓴다
+    [SerializeField] private RuntimeAnimatorController goldChestController;        // 셋 중 하나라도 비어 있으면 나무 상자를 쓴다
+    [SerializeField] private Sprite goldChestFront;
+    [SerializeField] private Sprite goldChestFrontOpening;
+
+    [Header("보상")]
+    [SerializeField] private float iconDelay = 2f;         // 상자가 열리고 상자를 치우기까지(초)
+    [SerializeField] private float chestHideDuration = 0.3f; // 상자와 빛이 작아지며 사라지는 시간(초). 그 뒤 같은 자리에 보상이 나온다
+    [SerializeField] private float chestHideScale = 0.6f;    // 상자가 사라질 때의 끝 크기
+    [SerializeField] private float iconStartScale = 2.5f;  // 아이콘이 나타날 때의 크기(칸 크기에 대한 비율)
+    [SerializeField] private float iconDuration = 0.18f;   // 아이콘 하나가 칸에 박히기까지의 시간(초)
+    [SerializeField] private float iconInterval = 0.08f;   // 다음 아이콘이 나오기까지의 간격(초)
+    [SerializeField] private float iconLandPunch = 0.15f;  // 칸에 박힐 때 찌그러지는 정도
+
+    [Header("등급 테두리")]
+    [SerializeField] private Sprite gradeFrameCommon;
+    [SerializeField] private Sprite gradeFrameRare;
+    [SerializeField] private Sprite gradeFrameEpic;
+    [SerializeField] private Sprite gradeFrameLegendary;
+
+    // 보상 칸에 쓰는 오브젝트 묶음. SlotTemplate을 복제해서 만든다
+    private class RewardSlot
+    {
+        public readonly RectTransform rect;
+        public readonly CanvasGroup canvasGroup;
+        public readonly Image imgIcon;
+        public readonly Image imgGradeFrame;
+        public readonly TextMeshProUGUI txtAmount;
+
+        public RewardSlot(GameObject obj)
+        {
+            rect = (RectTransform)obj.transform;
+            canvasGroup = GameUtil.TryGetComponent<CanvasGroup>(obj);
+            imgIcon = GameUtil.Bind<Image>(obj, "Icon");
+            imgGradeFrame = GameUtil.Bind<Image>(obj, "GradeFrame");
+            txtAmount = GameUtil.Bind<TextMeshProUGUI>(obj, "Amount");
+        }
+    }
+
+    private IReadOnlyList<RewardResponse> rewards;
     private GameDB gameDB;
-    private Action onNext;
+    private Func<RewardResponse, Sprite> getRewardIcon;
+    private readonly List<RewardSlot> listSlot = new List<RewardSlot>();
+
+    // 나무 상자는 프리팹에 넣어 둔 컨트롤러와 앞부분 이미지를 쓴다
+    private RuntimeAnimatorController woodChestController;
+    private Sprite woodChestFront;
+    private Sprite woodChestFrontOpening;
+    private Vector2 vecChestPosition;
+    private bool isFinished;
+
+    private Coroutine coOpenChest;
+    private Tween tweenSeamFlicker;
+    // 여러 연출이 동시에 돌아서 한꺼번에 멈출 수 있게 모아 둔다
+    private readonly List<Tween> listTween = new List<Tween>();
 
     protected override void Awake()
     {
         base.Awake();
 
-        titleText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Header/Title");
-        rewardIcon = GameUtil.Bind<Image>(transform, "Panel/RewardBox/RewardIcon");
-        rewardNameText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardName");
-        rewardAmountText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RewardBox/RewardAmount");
-        progressText = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/ProgressText");
-        nextButton = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/NextButton");
-        nextButtonLabel = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/NextButton/Label");
+        rectChestArea = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea");
+        canvasGroupChestArea = GameUtil.Bind<CanvasGroup>(transform, "Panel/Stage/ChestArea");
+        rectChest = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea/Chest");
+        btnChest = GameUtil.Bind<ButtonUI>(transform, "Panel/Stage/ChestArea/Chest");
+        animatorChest = GameUtil.Bind<Animator>(transform, "Panel/Stage/ChestArea/Chest");
+        imgLeakGlow = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/LeakGlow");
+        imgSeamLight = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/SeamLight");
+        imgChestFront = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/ChestFront");
+        imgChestFrontOpening = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/ChestFrontOpening");
+        imgGlow = GameUtil.Bind<Image>(transform, "Panel/Stage/ChestArea/Glow");
+        rectRays = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/ChestArea/Rays");
+        canvasGroupRays = GameUtil.Bind<CanvasGroup>(transform, "Panel/Stage/ChestArea/Rays");
+        foreach (Transform ray in rectRays)
+        {
+            listRay.Add(GameUtil.TryGetComponent<Image>(ray.gameObject));
+            listRayAngle.Add(Mathf.DeltaAngle(0f, ray.localEulerAngles.z)); // 328도가 아니라 -32도로 받는다
+        }
+        rectRewardGrid = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid");
+        objSlotTemplate = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid/SlotTemplate").gameObject;
+        btnClose = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/CloseButton");
 
-        nextButton.OnClickEvent += OnClickNext;
+        woodChestController = animatorChest.runtimeAnimatorController;
+        woodChestFront = imgChestFront.sprite;
+        woodChestFrontOpening = imgChestFrontOpening.sprite;
+        vecChestPosition = rectChest.anchoredPosition;
+
+        btnChest.OnClickEvent += OnClickChest;
+        btnClose.OnClickEvent += OnClickClose;
+    }
+
+    protected override void OnDisable()
+    {
+        base.OnDisable();
+
+        StopEffect();
     }
 
     private void OnDestroy()
     {
-        if (nextButton != null)
+        if (btnChest != null)
         {
-            nextButton.OnClickEvent -= OnClickNext;
+            btnChest.OnClickEvent -= OnClickChest;
+        }
+
+        if (btnClose != null)
+        {
+            btnClose.OnClickEvent -= OnClickClose;
         }
     }
 
-    // 보상 한 건마다 다시 Setup하고 Open한다. 이미 열려 있으면 Open이 새 보상만 다시 반영한다
-    public void Setup(RewardResponse reward, int index, int totalCount, Sprite rewardSprite, GameDB gameDB,
-        Action onNext)
+    // 서버가 준 보상 목록을 그대로 받는다. 상자 종류와 빛 색은 그중 유물의 최고 등급으로 정한다
+    // 아이콘은 보상마다 getRewardIcon으로 받는다(유물 이미지, 재화 아이콘 등은 부르는 쪽이 정한다)
+    public void Setup(IReadOnlyList<RewardResponse> rewards, GameDB gameDB, Func<RewardResponse, Sprite> getRewardIcon)
     {
-        this.reward = reward;
-        this.index = index;
-        this.totalCount = totalCount;
-        this.rewardSprite = rewardSprite;
+        this.rewards = rewards;
         this.gameDB = gameDB;
-        this.onNext = onNext;
+        this.getRewardIcon = getRewardIcon;
     }
 
-    // 보상 타입 아이콘을 재사용하고 개별 유물 Sprite 매핑 없이 이름 또는 코드 문자열을 표시한다.
     protected override void OnOpen()
     {
         base.OnOpen();
 
-        titleText.text = "가챠 결과";
-        rewardIcon.sprite = rewardSprite;
-        rewardNameText.text = GetRewardName(reward, gameDB);
-        rewardAmountText.text = reward.amount.ToString();
-        progressText.text = $"{index + 1} / {totalCount}";
-        nextButtonLabel.text = index + 1 == totalCount ? "닫기" : "다음";
-        nextButton.Interactable = true;
+        ArtifactGrade bestGrade = GetBestGrade(rewards, gameDB);
+        ResetEffect(bestGrade);
     }
 
-    private static string GetRewardName(RewardResponse reward, GameDB gameDB)
+    // 연출 중에는 바깥을 눌러도 닫지 않는다
+    protected override void OnClickDimmed()
     {
-        if (reward.rewardType == RewardType.Artifact && string.IsNullOrEmpty(reward.rewardCode) == false)
+        if (isFinished == false)
         {
-            ArtifactData artifact = gameDB.artifacts.FirstOrDefault(data => data.code == reward.rewardCode);
-            return artifact != null ? artifact.name : reward.rewardCode;
+            return;
         }
 
-        return string.IsNullOrEmpty(reward.rewardCode) ? reward.rewardType.ToString() : reward.rewardCode;
+        base.OnClickDimmed();
     }
 
-    private void OnClickNext()
+    // 다시 열 때도 닫힌 상자에서 시작한다
+    private void ResetEffect(ArtifactGrade bestGrade)
     {
-        onNext?.Invoke();
+        StopEffect();
+        isFinished = false;
+
+        bool useGoldChest = bestGrade >= goldChestMinGrade && goldChestController != null && goldChestFront != null &&
+                            goldChestFrontOpening != null;
+        animatorChest.runtimeAnimatorController = useGoldChest ? goldChestController : woodChestController;
+        imgChestFront.sprite = useGoldChest ? goldChestFront : woodChestFront;
+        imgChestFrontOpening.sprite = useGoldChest ? goldChestFrontOpening : woodChestFrontOpening;
+        animatorChest.Rebind();
+        animatorChest.Update(0f);
+
+        rectChestArea.localScale = Vector3.one;
+        canvasGroupChestArea.alpha = 1f;
+        canvasGroupChestArea.blocksRaycasts = true;
+        rectChest.anchoredPosition = vecChestPosition;
+        rectChest.localRotation = Quaternion.identity;
+        btnChest.Interactable = true;
+
+        Color color = GetGradeColor(bestGrade);
+        SetColor(imgLeakGlow, color, 0f);
+        SetColor(imgSeamLight, color, 0f);
+        SetColor(imgGlow, color, 0f);
+        for (int i = 0; i < listRay.Count; i++)
+        {
+            SetColor(listRay[i], color, 1f);
+            listRay[i].rectTransform.localRotation = Quaternion.Euler(0f, 0f, listRayAngle[i]);
+            listRay[i].rectTransform.localScale = new Vector3(1f, 0f, 1f);
+        }
+        canvasGroupRays.alpha = 0f;
+        imgSeamLight.rectTransform.localScale = Vector3.one;
+
+        imgLeakGlow.gameObject.SetActive(false);
+        imgSeamLight.gameObject.SetActive(false);
+        imgChestFront.gameObject.SetActive(false);
+        imgChestFrontOpening.gameObject.SetActive(false);
+        imgGlow.gameObject.SetActive(false);
+        rectRays.gameObject.SetActive(false);
+
+        ClearRewardSlots();
+
+        btnClose.Interactable = false;
+    }
+
+    private void OnClickChest()
+    {
+        if (coOpenChest != null)
+        {
+            return;
+        }
+
+        btnChest.Interactable = false;
+        coOpenChest = StartCoroutine(CoOpenChest());
+    }
+
+    // 떨림(빛이 샌다) > 열리는 중 글로우가 터진다 > 다 열리면 광선 > 대기 > 보상 순서로 진행한다
+    // 팝업과 애니메이터 모두 시간 배율과 관계없이 재생한다
+    private IEnumerator CoOpenChest()
+    {
+        Sequence leak = PlayLeak();
+        yield return leak.WaitForCompletion();
+
+        rectChest.anchoredPosition = vecChestPosition;
+        rectChest.localRotation = Quaternion.identity;
+
+        // 뚜껑이 들리면 틈이 없어지므로 틈 빛을 끈다
+        tweenSeamFlicker.Kill();
+        imgSeamLight.gameObject.SetActive(false);
+        animatorChest.SetTrigger(AnimOpenTrigger);
+        yield return new WaitUntil(() => GetOpenAnimationTime() >= glowStartTime);
+
+        PlayGlowBurst();
+        yield return new WaitUntil(() => GetOpenAnimationTime() >= 1f);
+
+        // 다 열리면 앞 테두리까지 덮는 이미지로 바꾼다
+        imgChestFrontOpening.gameObject.SetActive(false);
+        imgChestFront.gameObject.SetActive(true);
+        PlayRays();
+        yield return new WaitForSecondsRealtime(iconDelay);
+
+        Sequence hide = HideChest();
+        yield return hide.WaitForCompletion();
+
+        ShowRewards();
+        coOpenChest = null;
+    }
+
+    // 보상이 나올 자리를 비우려고 상자와 빛을 작아지며 사라지게 한다
+    private Sequence HideChest()
+    {
+        canvasGroupChestArea.blocksRaycasts = false;
+
+        Sequence sequence = CreateSequence();
+        sequence.Join(canvasGroupChestArea.DOFade(0f, chestHideDuration).SetEase(Ease.InQuad));
+        sequence.Join(rectChestArea.DOScale(chestHideScale, chestHideDuration).SetEase(Ease.InBack));
+        AddTween(sequence);
+        return sequence;
+    }
+
+    // 열림 애니메이션이 어디까지 재생됐는지(0~1). 아직 Open 상태가 아니면 0이다
+    // Animator 창에서 Open 상태의 Speed나 키프레임을 바꿔도 실제 재생 위치를 따른다
+    private float GetOpenAnimationTime()
+    {
+        if (animatorChest.IsInTransition(0))
+        {
+            return 0f;
+        }
+
+        AnimatorStateInfo state = animatorChest.GetCurrentAnimatorStateInfo(0);
+        return state.shortNameHash == AnimOpenState ? state.normalizedTime : 0f;
+    }
+
+    // 상자가 떨리는 동안 뒤쪽 빛과 뚜껑 틈 빛이 점점 밝아진다. 틈 빛은 두께가 바뀌며 깜빡인다
+    private Sequence PlayLeak()
+    {
+        imgLeakGlow.gameObject.SetActive(true);
+        imgSeamLight.gameObject.SetActive(true);
+        imgLeakGlow.rectTransform.localScale = Vector3.one * leakGlowStartScale;
+
+        Sequence sequence = CreateSequence();
+        sequence.Join(rectChest.DOShakeAnchorPos(shakeDuration, shakeStrength, shakeVibrato, 90f, false, false));
+        sequence.Join(rectChest.DOShakeRotation(shakeDuration, new Vector3(0f, 0f, shakeAngle), shakeVibrato, 90f, false));
+        sequence.Join(imgLeakGlow.DOFade(leakGlowAlpha, shakeDuration).SetEase(Ease.InQuad));
+        sequence.Join(imgLeakGlow.rectTransform.DOScale(1f, shakeDuration).SetEase(Ease.InQuad));
+        sequence.Join(imgSeamLight.DOFade(seamAlpha, shakeDuration).SetEase(Ease.InQuad));
+        AddTween(sequence);
+
+        tweenSeamFlicker = imgSeamLight.rectTransform.DOScaleY(seamFlickerScale, seamFlickerDuration)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo);
+        AddTween(tweenSeamFlicker);
+        return sequence;
+    }
+
+    // 뚜껑이 들리는 중에 글로우가 순간 크게 번졌다가 자리 잡는다. 앞부분은 뚜껑과 겹치지 않는 몸통만 덮는다
+    private void PlayGlowBurst()
+    {
+        imgChestFrontOpening.gameObject.SetActive(true);
+        imgGlow.gameObject.SetActive(true);
+        imgGlow.rectTransform.localScale = Vector3.one * glowStartScale;
+
+        float flashDuration = glowDuration * 0.3f;
+        Sequence sequence = CreateSequence();
+        sequence.Insert(0f, rectChestArea.DOPunchScale(Vector3.one * stagePunch, glowDuration, 6, 0.5f));
+        sequence.Insert(0f, imgLeakGlow.DOFade(0f, glowDuration));
+        sequence.Insert(0f, imgGlow.DOFade(glowAlpha, flashDuration));
+        sequence.Insert(0f, imgGlow.rectTransform.DOScale(glowPunchScale, flashDuration).SetEase(Ease.OutQuad));
+        sequence.Insert(flashDuration, imgGlow.rectTransform.DOScale(Vector3.one, glowDuration - flashDuration)
+            .From(Vector3.one * glowPunchScale, false)
+            .SetEase(Ease.InOutSine));
+        AddTween(sequence);
+    }
+
+    // 광선이 rayInterval 간격으로 하나씩, 바깥쪽에서 돌아 들어오며 입구에서 뻗어 나간다. 제자리에 닿으면 멈춘다
+    private void PlayRays()
+    {
+        rectRays.gameObject.SetActive(true);
+
+        Sequence sequence = CreateSequence();
+        sequence.Insert(0f, canvasGroupRays.DOFade(rayAlpha, rayDuration * 0.3f));
+        for (int i = 0; i < listRay.Count; i++)
+        {
+            RectTransform ray = listRay[i].rectTransform;
+            float angle = listRayAngle[i];
+            // 기울어진 광선은 기운 쪽 바깥에서, 가운데 광선은 번갈아 가며 한쪽에서 들어온다
+            float side = angle > 0f ? 1f : angle < 0f ? -1f : (i % 2 == 0 ? 1f : -1f);
+            ray.localRotation = Quaternion.Euler(0f, 0f, angle + side * rayRotation);
+
+            float start = i * rayInterval;
+            sequence.Insert(start, ray.DOScaleY(1f, rayDuration).SetEase(Ease.OutBack));
+            sequence.Insert(start, ray.DOLocalRotate(new Vector3(0f, 0f, angle), rayDuration).SetEase(Ease.OutBack));
+        }
+        AddTween(sequence);
+    }
+
+    // 보상 아이콘이 iconInterval 간격으로 하나씩, 크게 나타났다가 줄어들며 칸에 박힌다. 다 박히면 닫기를 켠다
+    private void ShowRewards()
+    {
+        Sequence sequence = CreateSequence();
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            RewardSlot slot = CreateRewardSlot(rewards[i]);
+            slot.canvasGroup.alpha = 0f;
+            slot.rect.localScale = Vector3.one * iconStartScale;
+
+            float start = i * iconInterval;
+            sequence.Insert(start, slot.canvasGroup.DOFade(1f, iconDuration * 0.5f));
+            sequence.Insert(start, slot.rect.DOScale(1f, iconDuration).SetEase(Ease.InQuad));
+            // 박히는 순간 가로로 퍼지고 세로로 눌렸다가 돌아온다. 같은 크기를 앞에서도 바꾸므로 시작 값을 직접 정한다
+            Vector3 squash = new Vector3(1f + iconLandPunch, 1f - iconLandPunch, 1f);
+            sequence.Insert(start + iconDuration,
+                slot.rect.DOScale(Vector3.one, iconDuration).From(squash, false).SetEase(Ease.OutBack));
+        }
+        sequence.OnComplete(OnRewardsShown);
+        AddTween(sequence);
+    }
+
+    private void OnRewardsShown()
+    {
+        isFinished = true;
+        btnClose.Interactable = true;
+    }
+
+    private RewardSlot CreateRewardSlot(RewardResponse reward)
+    {
+        GameObject obj = Instantiate(objSlotTemplate, rectRewardGrid);
+        obj.name = $"Slot_{listSlot.Count:00}";
+        obj.SetActive(true);
+
+        var slot = new RewardSlot(obj);
+        slot.imgIcon.sprite = getRewardIcon?.Invoke(reward);
+        slot.imgIcon.enabled = slot.imgIcon.sprite != null;
+
+        Sprite gradeFrame = GetGradeFrame(reward);
+        slot.imgGradeFrame.sprite = gradeFrame;
+        slot.imgGradeFrame.enabled = gradeFrame != null;
+
+        // 유물 1개처럼 1이면 수량을 쓰지 않는다
+        slot.txtAmount.text = reward.amount > 1 ? reward.amount.ToString("N0") : string.Empty;
+
+        listSlot.Add(slot);
+        return slot;
+    }
+
+    private void ClearRewardSlots()
+    {
+        foreach (RewardSlot slot in listSlot)
+        {
+            Destroy(slot.rect.gameObject);
+        }
+        listSlot.Clear();
+    }
+
+    // 유물이 아니거나 등급을 모르면 테두리를 쓰지 않는다
+    private Sprite GetGradeFrame(RewardResponse reward)
+    {
+        if (reward.rewardType != RewardType.Artifact)
+        {
+            return null;
+        }
+
+        ArtifactData artifact = gameDB.artifacts.FirstOrDefault(data => data.code == reward.rewardCode);
+        Sprite frame = null;
+        switch (artifact?.grade)
+        {
+            case ArtifactGrade.Common:
+                frame = gradeFrameCommon;
+                break;
+            case ArtifactGrade.Rare:
+                frame = gradeFrameRare;
+                break;
+            case ArtifactGrade.Epic:
+                frame = gradeFrameEpic;
+                break;
+            case ArtifactGrade.Legendary:
+                frame = gradeFrameLegendary;
+                break;
+        }
+
+        return frame;
+    }
+
+    private void OnClickClose()
+    {
+        Close();
+    }
+
+    private Sequence CreateSequence()
+    {
+        return DOTween.Sequence()
+            .SetUpdate(true)
+            .SetLink(gameObject);
+    }
+
+    private void AddTween(Tween tween)
+    {
+        listTween.Add(tween.SetUpdate(true).SetLink(gameObject));
+    }
+
+    private void StopEffect()
+    {
+        if (coOpenChest != null)
+        {
+            StopCoroutine(coOpenChest);
+            coOpenChest = null;
+        }
+
+        foreach (Tween tween in listTween)
+        {
+            tween.Kill();
+        }
+        listTween.Clear();
+    }
+
+    private static void SetColor(Image image, Color color, float alpha)
+    {
+        image.color = new Color(color.r, color.g, color.b, alpha);
+    }
+
+    private Color GetGradeColor(ArtifactGrade grade)
+    {
+        Color color = colorCommon;
+        switch (grade)
+        {
+            case ArtifactGrade.Rare:
+                color = colorRare;
+                break;
+            case ArtifactGrade.Epic:
+                color = colorEpic;
+                break;
+            case ArtifactGrade.Legendary:
+                color = colorLegendary;
+                break;
+        }
+
+        return color;
+    }
+
+    // 유물이 아닌 보상만 있으면 일반 등급으로 본다
+    private static ArtifactGrade GetBestGrade(IReadOnlyList<RewardResponse> rewards, GameDB gameDB)
+    {
+        ArtifactGrade bestGrade = ArtifactGrade.Common;
+        foreach (RewardResponse reward in rewards)
+        {
+            if (reward.rewardType != RewardType.Artifact)
+            {
+                continue;
+            }
+
+            ArtifactData artifact = gameDB.artifacts.FirstOrDefault(data => data.code == reward.rewardCode);
+            if (artifact != null && artifact.grade > bestGrade)
+            {
+                bestGrade = artifact.grade;
+            }
+        }
+
+        return bestGrade;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 상점 상품 목록을 만들고 구매를 요청한다. 구매 성공 여부와 재화는 서버 응답을 그대로 따른다.
 // 탭 안쪽 세로 스크롤과 바깥쪽 가로 탭 스와이프의 라우팅은 기반 클래스 LobbyTab이 담당한다.
@@ -9,6 +10,8 @@ public class ShopTab : LobbyTab
     [ReadOnly] [SerializeField] private GameObject objViewport;
     [ReadOnly] [SerializeField] private RectTransform contentTransform;
     [ReadOnly] [SerializeField] private GameObject objEmptyPanel;
+    [ReadOnly] [SerializeField] private Image headerImage;
+    [ReadOnly] [SerializeField] private GameObject objHeaderPlaceholderText; // 이미지가 없을 때 보여줄 "임시 이미지" 글자
 
     [SerializeField] private ShopSection sectionPrefab;
     [SerializeField] private ShopProductItem itemPrefab;
@@ -27,7 +30,6 @@ public class ShopTab : LobbyTab
     // 재전송할 때도 같은 값을 보낸다. 서버는 같은 requestId를 다시 처리하지 않고 처음 응답을 돌려준다
     private Guid purchaseRequestId;
     private bool isWaitingRetry;
-    private GachaResultPresenter gachaResultPresenter;
 
     protected override void Awake()
     {
@@ -36,25 +38,29 @@ public class ShopTab : LobbyTab
         objViewport = GameUtil.Bind<RectTransform>(transform, "Viewport").gameObject;
         contentTransform = GameUtil.Bind<RectTransform>(transform, "Viewport/Content");
         objEmptyPanel = GameUtil.Bind<RectTransform>(transform, "EmptyPanel").gameObject;
+        headerImage = GameUtil.Bind<Image>(transform, "Viewport/Content/ShopHeader");
+        objHeaderPlaceholderText = GameUtil.Bind<RectTransform>(transform, "Viewport/Content/ShopHeader/Text (TMP)").gameObject;
     }
 
     private void Start()
     {
-        InitializeGachaResultPresenter();
-
+        InitHeaderImage();
         InitProductList();
     }
 
-    private void OnDisable()
+    // 미리 읽은 이미지가 없으면 회색 상자와 임시 글자를 그대로 둔다
+    private void InitHeaderImage()
     {
-        gachaResultPresenter?.Cancel();
-    }
+        Sprite sprite = ResourceManager.Instance.GetSprite(GameConstants.AddressableAddresses.ShopHeader);
+        if (sprite == null)
+        {
+            return;
+        }
 
-    protected override void OnDestroy()
-    {
-        base.OnDestroy();
-
-        gachaResultPresenter?.Cancel();
+        headerImage.sprite = sprite;
+        headerImage.color = Color.white;
+        headerImage.preserveAspect = true;
+        objHeaderPlaceholderText.SetActive(false);
     }
 
     // 섹션 순서는 상품 목록에서 각 카테고리가 처음 나오는 순서를 따른다.
@@ -75,8 +81,7 @@ public class ShopTab : LobbyTab
                 Sprite rewardIcon = reward == null
                     ? null
                     : GetRewardIcon(reward.rewardType);
-                // 상품 이미지는 아직 없어서 기본 이미지를 쓴다
-                item.SetProduct(product, reward, spriteFallback, GetCurrencyIcon(product.priceType), rewardIcon);
+                item.SetProduct(product, reward, GetProductIcon(reward), GetCurrencyIcon(product.priceType), rewardIcon);
                 item.OnClickPurchaseEvent += OnClickPurchase;
             }
         }
@@ -126,7 +131,7 @@ public class ShopTab : LobbyTab
 
     private void OnClickPurchase(ShopProductItem item)
     {
-        if (gachaResultPresenter?.IsPlaying == true)
+        if (GachaResultPopup.IsOpened)
         {
             return;
         }
@@ -180,10 +185,9 @@ public class ShopTab : LobbyTab
             EndPurchase();
             ApplyPurchaseResult(response);
 
-            if (purchasedProduct.category == ShopCategory.Gacha && response.rewards.Count > 0 &&
-                gachaResultPresenter.Play(response.rewards) == false)
+            if (purchasedProduct.category == ShopCategory.Gacha && response.rewards.Count > 0)
             {
-                Debug.LogWarning("이전 가챠 결과 연출이 끝나지 않아 이번 결과 연출을 시작하지 않습니다.");
+                ShowGachaResult(response.rewards);
             }
 
             return;
@@ -261,15 +265,50 @@ public class ShopTab : LobbyTab
         }
     }
 
-    private void InitializeGachaResultPresenter()
+    private void ShowGachaResult(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards)
     {
-        gachaResultPresenter = new GachaResultPresenter(ShowGachaReward, GachaResultPopup.Close);
+        GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon);
+        GachaResultPopup.Open();
     }
 
-    private void ShowGachaReward(RewardResponse reward, int index, int totalCount)
+    // 유물은 미리 읽은 유물 이미지를, 재화는 재화 아이콘을 쓴다. 유물 이미지가 없으면 기본 이미지를 쓴다
+    private Sprite GetGachaRewardIcon(RewardResponse reward)
     {
-        GachaResultPopup.Setup(reward, index, totalCount, GetRewardIcon(reward.rewardType), GameDB, OnGachaNextRequested);
-        GachaResultPopup.Open();
+        if (reward.rewardType == RewardType.Artifact)
+        {
+            Sprite sprite = ResourceManager.Instance.GetSprite(reward.rewardCode);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+        }
+
+        return GetRewardIcon(reward.rewardType);
+    }
+
+    // 상품 이미지는 대표 보상으로 고른다. 유물은 code 끝의 종류 이름(VITAL_ORB → ORB)으로 찾는다.
+    // 가챠처럼 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
+    private Sprite GetProductIcon(ShopProductRewardData reward)
+    {
+        string address = null;
+        switch (reward?.rewardType)
+        {
+            case RewardType.Gold:
+                address = GameConstants.AddressableAddresses.ShopIconGold;
+                break;
+            case RewardType.Diamond:
+                address = GameConstants.AddressableAddresses.ShopIconDiamond;
+                break;
+            case RewardType.Artifact:
+                string kind = reward.rewardCode.Substring(reward.rewardCode.LastIndexOf('_') + 1);
+                address = GameConstants.AddressableAddresses.ShopIconArtifactPrefix + kind;
+                break;
+        }
+
+        Sprite sprite = ResourceManager.Instance.GetSprite(address);
+        return sprite != null
+            ? sprite
+            : spriteFallback;
     }
 
     private Sprite GetCurrencyIcon(PriceType priceType)
@@ -325,11 +364,6 @@ public class ShopTab : LobbyTab
         }
 
         return label;
-    }
-
-    private void OnGachaNextRequested()
-    {
-        gachaResultPresenter?.Advance();
     }
 
     // 서버 오류 코드는 code를 우선하고, 이전 서버의 message 코드도 호환한다.
