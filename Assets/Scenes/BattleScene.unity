@@ -1507,6 +1507,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83c623bb11e0ad34188eda6b0142b98a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnitView
+  idlePhase: 0.5
 --- !u!212 &462802555
 SpriteRenderer:
   serializedVersion: 2
@@ -3678,6 +3679,7 @@ MonoBehaviour:
   txtStageName: {fileID: 0}
   txtSubStage: {fileID: 0}
   txtTime: {fileID: 0}
+  rectTimerIcon: {fileID: 0}
   txtCountdown: {fileID: 0}
   imgCountdownDim: {fileID: 0}
   txtGold: {fileID: 0}
@@ -6177,6 +6179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83c623bb11e0ad34188eda6b0142b98a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnitView
+  idlePhase: 0
 --- !u!212 &1798712488
 SpriteRenderer:
   serializedVersion: 2

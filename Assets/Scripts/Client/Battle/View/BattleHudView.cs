@@ -20,9 +20,23 @@ public class BattleHudView : MonoBehaviour
     private const float CountdownDimAlpha = 0.45f;
     private const float CountdownDimFadeDuration = 0.2f;
 
+    // 남은 시간 경고: 경고 시간부터 숫자를 경고색으로 바꾸고, 정수 초가 바뀔 때마다 숫자가 맥박치고 모래시계가 흔들린다
+    // 남은 시간(게임 시간)에서 바로 계산하므로 배속에 맞춰 빨라지고, 일시 정지하면 함께 멈춘다
+    public const double TimeWarningSeconds = 5d;
+    private static readonly Color TimeWarningColor = new Color32(0xFF, 0x5A, 0x5A, 0xFF);
+    private const float TimePulseScale = 1.25f;
+    private const double TimePulseFinalSeconds = 3d; // 이 시간부터는 커지는 양을 TimePulseFinalBoost배로 늘린다
+    private const float TimePulseFinalBoost = 1.2f;
+    private const float TimePulseUpDuration = 0.08f;
+    private const float TimePulseDownDuration = 0.25f;
+    private const Ease TimePulseDownEase = Ease.OutCubic;
+    private const float TimerIconShakeAngle = 15f;
+    private const float TimerIconShakeDuration = 0.3f;
+
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtStageName;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtSubStage;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtTime;
+    [ReadOnly] [SerializeField] private RectTransform rectTimerIcon;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtCountdown;
     [ReadOnly] [SerializeField] private Image imgCountdownDim;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtGold;
@@ -38,12 +52,15 @@ public class BattleHudView : MonoBehaviour
     public Vector3 GoldIconPosition => rectGoldIcon.position;
 
     private bool isCountdownShown;
+    private Color colorTime; // 경고 전 시간 숫자 색
 
     private void Awake()
     {
         txtStageName = GameUtil.Bind<TextMeshProUGUI>(transform, "TopPanel/StageNameText");
         txtSubStage = GameUtil.Bind<TextMeshProUGUI>(transform, "TopPanel/SubStageText");
         txtTime = GameUtil.Bind<TextMeshProUGUI>(transform, "Timer/TimeText");
+        rectTimerIcon = GameUtil.Bind<RectTransform>(transform, "Timer/TimerIcon");
+        colorTime = txtTime.color;
         txtCountdown = GameUtil.Bind<TextMeshProUGUI>(transform, "CountdownText");
         imgCountdownDim = GameUtil.Bind<Image>(transform, "CountdownDim");
         txtGold = GameUtil.Bind<TextMeshProUGUI>(transform, "GoldText");
@@ -125,13 +142,57 @@ public class BattleHudView : MonoBehaviour
         imgCountdownDim.DOFade(CountdownDimAlpha, CountdownDimFadeDuration);
     }
 
+    /// <summary>
+    /// 남은 시간을 표시한다. 매 프레임 불러서 TimeWarningSeconds 이하면 경고 연출을 함께 계산한다.
+    /// </summary>
     public void SetRemainingTime(double seconds)
     {
         txtTime.text = $"{Math.Max(0d, seconds).ToString("0.0")}s";
+
+        bool isWarning = seconds <= TimeWarningSeconds;
+        txtTime.color = isWarning ? TimeWarningColor : colorTime;
+
+        float scale = 1f;
+        float angle = 0f;
+        if (isWarning && seconds > 0d)
+        {
+            double second = Math.Ceiling(seconds);
+            float time = (float)(second - seconds); // 이 정수 초에 들어온 뒤 흐른 시간(0~1초)
+
+            float boost = second <= TimePulseFinalSeconds ? TimePulseFinalBoost : 1f;
+            float peak = 1f + (TimePulseScale - 1f) * boost;
+            scale = time < TimePulseUpDuration
+                ? DOVirtual.EasedValue(1f, peak, time / TimePulseUpDuration, Ease.OutQuad)
+                : DOVirtual.EasedValue(peak, 1f, Mathf.Clamp01((time - TimePulseUpDuration) / TimePulseDownDuration), TimePulseDownEase);
+
+            float shake = Mathf.Clamp01(time / TimerIconShakeDuration);
+            angle = Mathf.Sin(shake * Mathf.PI * 3f) * TimerIconShakeAngle * (1f - shake);
+        }
+
+        txtTime.rectTransform.localScale = Vector3.one * scale;
+        rectTimerIcon.localEulerAngles = new Vector3(0f, 0f, angle);
     }
 
     public void SetGold(long gold)
     {
         txtGold.text = gold.ToString(GameConstants.NumberFormats.Integer);
+    }
+
+    /// <summary>
+    /// 처치 동전이 골드 표시에 닿을 때 아이콘과 숫자를 한 번 튀게 한다. 연달아 닿으면 처음부터 다시 튄다. speed는 전투 배속이다.
+    /// </summary>
+    public void PlayGoldArrived(float speed)
+    {
+        rectGoldIcon.DOKill();
+        Tween tween = DOVirtual.Float(0f, 1f, GameConstants.CurrencyArrive.PunchDuration, progress =>
+            {
+                float wave = Mathf.Sin(progress * Mathf.PI);
+                rectGoldIcon.localScale = Vector3.one * (1f + (GameConstants.CurrencyArrive.IconPunchScale - 1f) * wave);
+                txtGold.rectTransform.localScale = Vector3.one * (1f + (GameConstants.CurrencyArrive.TextPunchScale - 1f) * wave);
+            })
+            .SetEase(Ease.Linear)
+            .SetTarget(rectGoldIcon)
+            .SetLink(gameObject);
+        tween.timeScale = speed;
     }
 }

@@ -127,6 +127,7 @@ public class LobbyController : MonoBehaviour
             arrivedCount++;
             AddFlying(type, -(arrivedCount == coinCount ? amountPerCoin + remainder : amountPerCoin));
             RefreshCurrencies();
+            view.PlayCurrencyArrived(type);
         });
     }
 

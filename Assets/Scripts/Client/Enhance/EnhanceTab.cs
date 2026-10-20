@@ -41,6 +41,9 @@ public class EnhanceTab : LobbyTab
     // 결과를 알 수 없어 다시 보내기를 기다리는 요청. 같은 요청 정보(같은 requestId)를 그대로 다시 보낸다
     private Action retryRequest;
 
+    private long combatPower;
+    private Color? statChangeColor; // 요청 결과로 갱신하는 동안만 능력치 줄 강조 색을 넣는다
+
     protected override void Awake()
     {
         base.Awake();
@@ -104,12 +107,13 @@ public class EnhanceTab : LobbyTab
         }
     }
 
-    private void RefreshCombatStats()
+    // animate면 전투력이 지금 숫자에서 새 숫자까지 올라가거나 내려간다
+    private void RefreshCombatStats(bool animate = false)
     {
         CombatStat stat = StatCalculator.CalculatePlayer(GameDB, User);
-        long combatPower = CombatPowerCalculator.Calculate(stat, GameDB);
+        combatPower = CombatPowerCalculator.Calculate(stat, GameDB);
 
-        enhanceTitle.SetCombatPower(FormatInteger(combatPower));
+        enhanceTitle.SetCombatPower(combatPower, animate);
         enhanceStatsPanel.SetStats(
             FormatInteger(stat.attack),
             FormatInteger(stat.maxHp),
@@ -170,7 +174,7 @@ public class EnhanceTab : LobbyTab
             ? format(next.Value)
             : EmptyValue;
 
-        enhanceEquipmentInfo.SetStatRow(index, icon, name, format(current), nextText);
+        enhanceEquipmentInfo.SetStatRow(index, icon, name, format(current), nextText, statChangeColor);
     }
 
     private void RefreshSwordAction()
@@ -464,7 +468,7 @@ public class EnhanceTab : LobbyTab
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
         SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceSell);
-        RefreshAfterRequest();
+        RefreshAfterRequest(true);
     }
 
     private void ApplyArtifactEnhance(EnhanceApi.ArtifactEnhanceResponse response)
@@ -478,10 +482,11 @@ public class EnhanceTab : LobbyTab
         }
 
         SyncCurrencies(response.currenciesResponse);
-        RefreshAfterRequest();
 
+        // 검 강화와 같이, 연출보다 먼저 강화 결과가 탭에 드러나지 않도록 탭 갱신은 강화 팝업의 확인을 누른 뒤에 한다
         if (enhanced == null)
         {
+            RefreshAfterRequest(true);
             return;
         }
 
@@ -530,7 +535,7 @@ public class EnhanceTab : LobbyTab
         }
 
         SoundManager.Instance.PlaySfx(GameConstants.Sounds.ArtifactEquip);
-        RefreshAfterRequest();
+        RefreshAfterRequest(false);
     }
 
     private void SyncCurrencies(UserCurrencies currencies)
@@ -559,18 +564,31 @@ public class EnhanceTab : LobbyTab
         DialogPopup.Open();
     }
 
-    private void RefreshAfterRequest()
+    // 요청 결과를 탭에 반영한다. 전투력은 연출과 함께 바꾸고, highlightStats면 같은 장비의 능력치가 바뀐 값을
+    // 전투력이 오르면 초록, 내리면 빨강으로 강조한다. 장착/해제는 능력치 줄이 다른 장비로 바뀌므로 강조하지 않는다
+    private void RefreshAfterRequest(bool highlightStats)
     {
-        RefreshCombatStats();
+        long combatPowerBefore = combatPower;
+        RefreshCombatStats(true);
         RefreshEquipmentButtons();
+
+        if (highlightStats)
+        {
+            statChangeColor = combatPower >= combatPowerBefore
+                ? GameConstants.Colors.StatIncrease
+                : GameConstants.Colors.StatDecrease;
+        }
 
         if (isSwordSelected)
         {
             SelectSword();
-            return;
+        }
+        else
+        {
+            SelectArtifact(selectedArtifactSlot);
         }
 
-        SelectArtifact(selectedArtifactSlot);
+        statChangeColor = null;
     }
 
     private void OnResponse<T>(HttpRequestInfo<T> requestInfo, Action<T> applyResponse, bool holdsTopNotices, HttpError error, T response)
@@ -685,13 +703,14 @@ public class EnhanceTab : LobbyTab
     private void OnConfirmSwordEnhance()
     {
         EnhancePopup.Close();
-        RefreshAfterRequest();
+        RefreshAfterRequest(true);
         ChatClient.Instance.ReleaseTopNotices();
     }
 
     private void OnConfirmArtifactEnhance()
     {
         EnhancePopup.Close();
+        RefreshAfterRequest(true);
     }
 
     private void OnClickCombatPower()

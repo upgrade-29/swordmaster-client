@@ -21,6 +21,7 @@ public class BattleHudPresenter : IDisposable
     private long displayedGold;
     private int flyingCoinCount;
     private double lastCountdownNumber;
+    private double lastTimeWarningSecond; // 남은 시간 경고 효과음을 낸 마지막 정수 초. 세부스테이지마다 0으로 되돌린다
 
     // 처치 연출에서 적이 튕겨 날아가기 시작하는 시각(Time.time). 동전은 이때보다 먼저 나오지 않는다
     private float enemyDefeatTime;
@@ -91,6 +92,7 @@ public class BattleHudPresenter : IDisposable
         namePlateView.SetEnemyName(subStage.Enemy.name);
         SetHp(subStage.PlayerHp, subStage.EnemyHp, subStage);
         hud.SetRemainingTime(subStage.TimeLimit);
+        lastTimeWarningSecond = 0;
     }
 
     private void OnCountdownTicked(float remaining)
@@ -112,9 +114,18 @@ public class BattleHudPresenter : IDisposable
         SoundManager.Instance.PlaySfx(GameConstants.Sounds.BattleStart);
     }
 
+    // 남은 시간 경고 중에는 정수 초가 바뀔 때마다 효과음을 낸다. 숫자 맥박과 같은 순간이다
     private void OnSubStageAdvanced(BattleSubStage subStage)
     {
-        hud.SetRemainingTime(subStage.TimeLimit - subStage.Elapsed);
+        double remaining = subStage.TimeLimit - subStage.Elapsed;
+        hud.SetRemainingTime(remaining);
+
+        double second = Math.Ceiling(remaining);
+        if (remaining > 0d && remaining <= BattleHudView.TimeWarningSeconds && second != lastTimeWarningSecond)
+        {
+            lastTimeWarningSecond = second;
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.TimeWarning);
+        }
     }
 
     // 맞은 쪽은 줄어드는 연출, 흡혈한 쪽은 차오르는 연출이 나온다
@@ -134,6 +145,15 @@ public class BattleHudPresenter : IDisposable
             enemyDefeatTime = Time.time + flyStartDelay;
             DOVirtual.DelayedCall(flyStartDelay, () => SetEnemyUiVisible(false, EnemyUiFadeDuration / manager.Speed), false)
                 .SetTarget(this);
+
+            // 일반 적을 처치하면 적이 다 날아간 뒤 처치 회복만큼 체력바를 채운다. 다음 세부스테이지는 이 체력으로 시작한다
+            if (subStage.IsBoss == false && subStage.HealOnKill > 0)
+            {
+                double healedHp = battleEvent.playerHp + subStage.HealOnKill;
+                float knockoutEnd = (BattleUnitView.AttackHitDelay + BattleUnitView.DefeatDuration) / manager.Speed;
+                DOVirtual.DelayedCall(knockoutEnd, () => hud.PlayerHpBar.ChangeHp(healedHp, manager.Session.playerStat.maxHp, manager.Speed), false)
+                    .SetTarget(this);
+            }
         }
     }
 
@@ -177,6 +197,7 @@ public class BattleHudPresenter : IDisposable
     {
         flyingCoinCount--;
         ShowGold(flyingCoinCount == 0 ? confirmedGold : Math.Min(displayedGold + gold, confirmedGold));
+        hud.PlayGoldArrived(manager.Speed);
     }
 
     // 포기로 끝나면 검증 응답 없이 끝나므로 최종 보상으로 한 번 더 맞춘다
