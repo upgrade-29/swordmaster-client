@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 
 // BattleManager가 알려주는 진행 상황으로 상단 HUD(스테이지, 남은 시간, HP바, 모은 골드)를 갱신한다
 // 적을 처치하면 적 자리에서 동전을 띄우고, 동전이 골드 HUD에 닿을 때마다 처치 골드를 나눠서 올린다
@@ -6,6 +7,7 @@ public class BattleHudPresenter : IDisposable
 {
     private const int EnemyCoinCount = 6;
     private const int BossCoinCount = 12;
+    private const float EnemyUiFadeDuration = 0.2f; // 적 이름판과 체력바가 처치 때 사라지고 다음 적 도착 때 나타나는 시간
 
     private readonly BattleManager manager;
     private readonly BattleHudView hud;
@@ -49,20 +51,35 @@ public class BattleHudPresenter : IDisposable
         manager.AttackApplied -= OnAttackApplied;
         manager.SubStageVerified -= OnSubStageVerified;
         manager.BattleEnded -= OnBattleEnded;
+        DOTween.Kill(this);
+    }
+
+    /// <summary>
+    /// 다음 적이 도착했을 때 적 이름과 체력을 바꾸고 이름판과 체력바를 보여 준다.
+    /// </summary>
+    public void ShowNextEnemy(BattleSubStage next)
+    {
+        namePlateView.SetEnemyName(next.Enemy.name);
+        hud.EnemyHpBar.SetHp(next.EnemyHp, next.EnemyStat.maxHp);
+        SetEnemyUiVisible(true, EnemyUiFadeDuration / manager.Speed);
     }
 
     // 골드는 서버 세션 값으로 시작한다. 새 전투면 0, 재접속이면 끊기기 전까지 모은 골드
+    // 재도전이면 지난 전투에서 숨긴 적 이름판과 체력바를 바로 다시 보여 준다
     private void OnCountdownStarted(BattleSubStage subStage)
     {
         SetUp(subStage);
+        SetEnemyUiVisible(true, 0f);
         confirmedGold = manager.Session.accumulatedGold;
         ShowGold(confirmedGold);
     }
 
     // 세부스테이지 시작 상태로 스테이지 표시, 적 이름, HP바, 남은 시간을 세팅한다
     // 재도전이면 지난 전투에서 줄어든 HP가 여기서 다시 세팅된다
+    // 아직 나오지 않은 체력바 반응이 새로 세팅한 HP를 덮어쓰지 않게 먼저 버린다
     private void SetUp(BattleSubStage subStage)
     {
+        DOTween.Kill(this);
         hud.SetStage(manager.Stage.name, manager.Session.stage, subStage.SubStageIndex + 1, subStage.IsBoss);
         namePlateView.SetEnemyName(subStage.Enemy.name);
         SetHp(subStage.PlayerHp, subStage.EnemyHp, subStage);
@@ -84,9 +101,29 @@ public class BattleHudPresenter : IDisposable
         hud.SetRemainingTime(subStage.TimeLimit - subStage.Elapsed);
     }
 
+    // 맞은 쪽은 줄어드는 연출, 흡혈한 쪽은 차오르는 연출이 나온다
+    // 검이 닿는 순간에 반응하도록 공격 모션만큼 늦춘다
     private void OnAttackApplied(BattleSubStage subStage, BattleEvent battleEvent)
     {
-        SetHp(battleEvent.playerHp, battleEvent.enemyHp, subStage);
+        DOVirtual.DelayedCall(BattleUnitView.AttackHitDelay / manager.Speed, () =>
+        {
+            hud.PlayerHpBar.ChangeHp(battleEvent.playerHp, manager.Session.playerStat.maxHp);
+            hud.EnemyHpBar.ChangeHp(battleEvent.enemyHp, subStage.EnemyStat.maxHp);
+        }, false).SetTarget(this);
+
+        // 처치했으면 적이 튕겨 날아가기 시작할 때 이름판과 체력바를 숨긴다
+        if (battleEvent.enemyHp <= 0)
+        {
+            float flyStartDelay = BattleUnitView.AttackHitDelay + BattleUnitView.DefeatHitstopDuration;
+            DOVirtual.DelayedCall(flyStartDelay / manager.Speed, () => SetEnemyUiVisible(false, EnemyUiFadeDuration / manager.Speed), false)
+                .SetTarget(this);
+        }
+    }
+
+    private void SetEnemyUiVisible(bool visible, float duration)
+    {
+        namePlateView.SetEnemyVisible(visible, duration);
+        hud.EnemyHpBar.SetVisible(visible, duration);
     }
 
     // 처치 골드는 서버 검증을 통과한 뒤 동전으로 날아와서 늘어난다
