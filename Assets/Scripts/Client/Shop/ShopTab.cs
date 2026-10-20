@@ -272,15 +272,15 @@ public class ShopTab : LobbyTab
         GachaResultPopup.Open();
     }
 
-    private Sprite GetCurrencyIcon(CurrencyType currencyType)
+    private Sprite GetCurrencyIcon(PriceType priceType)
     {
         Sprite icon = spriteFallback;
-        switch (currencyType)
+        switch (priceType)
         {
-            case CurrencyType.Gold:
+            case PriceType.Gold:
                 icon = spriteGold;
                 break;
-            case CurrencyType.Diamond:
+            case PriceType.Diamond:
                 icon = spriteDiamond;
                 break;
         }
