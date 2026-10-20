@@ -66,7 +66,10 @@ public class GachaResultPopup : BasePopup
 
     [Header("광선 (다 열린 뒤 하나씩 나온다)")]
     [SerializeField] [Range(0f, 1f)] private float rayAlpha = 0.8f;
-    [SerializeField] private float rayDuration = 0.5f;     // 광선 하나가 돌면서 뻗어 나오는 시간(초)
+    [SerializeField] private float rayDuration = 0.5f;     // 광선 하나가 돌아 들어와 제자리에 멈추기까지의 시간(초)
+    [SerializeField] private float rayStartLength = 320f;  // 처음 튀어나올 때의 길이(유닛)
+    [SerializeField] private float rayPopDuration = 0.08f; // 입구에서 짧게 튀어나오는 시간(초)
+    [SerializeField] private float rayGrowDuration = 0.15f; // 튀어나온 뒤 화면 위 끝까지 길어지는 시간(초). 회전이 끝나기 전에 다 길어지게 짧게 둔다
     [SerializeField] private float rayInterval = 0.12f;    // 다음 광선이 나오기까지의 간격(초)
     [SerializeField] private float rayRotation = 50f;      // 광선이 제자리까지 돌아 들어오는 각도(도)
     [SerializeField] private float raySpacing = 32f;       // 광선 사이 각도(도). 가운데를 기준으로 좌우 같은 간격으로 벌린다
@@ -429,10 +432,11 @@ public class GachaResultPopup : BasePopup
         AddTween(sequence);
     }
 
-    // 광선이 rayInterval 간격으로 하나씩, 바깥쪽에서 돌아 들어오며 입구에서 뻗어 나간다. 제자리에 닿으면 멈춘다
+    // 광선이 rayInterval 간격으로 하나씩, 바깥쪽에서 돌아 들어오며 입구에서 짧게 튀어나온 뒤 화면 위 끝까지 길어진다. 제자리에 닿으면 멈춘다
     private void PlayRays()
     {
         rectRays.gameObject.SetActive(true);
+        float screenTop = GetScreenTopY();
 
         Sequence sequence = CreateSequence();
         sequence.Insert(0f, canvasGroupRays.DOFade(rayAlpha, rayDuration * 0.3f));
@@ -444,11 +448,31 @@ public class GachaResultPopup : BasePopup
             float side = angle > 0f ? 1f : angle < 0f ? -1f : (i % 2 == 0 ? 1f : -1f);
             ray.localRotation = Quaternion.Euler(0f, 0f, angle + side * rayRotation);
 
+            // 짧게 튀어나올 때는 화면 끝까지의 길이에 대한 비율만큼 줄여 둔다
+            float length = GetRayLength(angle, screenTop);
+            ray.sizeDelta = new Vector2(ray.sizeDelta.x, length);
+
             float start = i * rayInterval;
-            sequence.Insert(start, ray.DOScaleY(1f, rayDuration).SetEase(Ease.OutBack));
             sequence.Insert(start, ray.DOLocalRotate(new Vector3(0f, 0f, angle), rayDuration).SetEase(Ease.OutBack));
+            sequence.Insert(start, ray.DOScaleY(rayStartLength / length, rayPopDuration).SetEase(Ease.OutQuad));
+            sequence.Insert(start + rayPopDuration, ray.DOScaleY(1f, rayGrowDuration).SetEase(Ease.OutCubic));
         }
         AddTween(sequence);
+    }
+
+    // 기울어진 광선은 그만큼 더 길어야 위 끝에 닿는다
+    private float GetRayLength(float angle, float screenTop)
+    {
+        return Mathf.Max(screenTop / Mathf.Cos(angle * Mathf.Deg2Rad), rayStartLength);
+    }
+
+    // 화면 위 끝이 광선 시작점(Rays)에서 얼마나 위에 있는지(Rays 기준 유닛)
+    private float GetScreenTopY()
+    {
+        var canvasRect = (RectTransform)GetComponentInParent<Canvas>().rootCanvas.transform;
+        var corners = new Vector3[4];
+        canvasRect.GetWorldCorners(corners);
+        return rectRays.InverseTransformPoint(corners[1]).y; // 1번이 왼쪽 위
     }
 
     // 보상 아이콘이 iconInterval 간격으로 하나씩, 크게 나타났다가 줄어들며 칸에 박힌다. 다 박히면 닫기를 켠다
