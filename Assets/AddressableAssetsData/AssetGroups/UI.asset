@@ -21,8 +21,32 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 00ece4a7770957a4d90abfb1a50c85f6
+    m_Address: ICON_GOLD_LARGE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 140779ef0318b954facacc4f6b2d6eb4
+    m_Address: ICON_DIAMOND_SMALL
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21c422a3258bd9a48b776fe198ec25cf
     m_Address: SHOP_HEADER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 78f842c2723681943aea6c790392bc82
+    m_Address: ICON_DIAMOND_MIDDLE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7aabdf7410e00e94fb6e6b40d945157d
+    m_Address: ICON_GOLD_MIDDLE
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
@@ -57,8 +81,20 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bac0ba609e2e5564eb71bf7f6527f677
+    m_Address: ICON_GOLD_SMALL
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d3932af332fc91f409570475ccd74850
     m_Address: SHOP_ICON_DIAMOND
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d441d7699fb1e7f44823e4192674805a
+    m_Address: ICON_DIAMOND_LARGE
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
