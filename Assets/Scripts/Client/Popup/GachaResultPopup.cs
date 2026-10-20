@@ -14,14 +14,18 @@ using UnityEngine.UI;
 // 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 결과 패널을 띄운 뒤 왼쪽 위부터 보상을 채우고 닫기 버튼을 켠다
 // 그리는 순서는 새는 빛 > 상자(애니메이션) > 틈 빛 > 광선 > 글로우 > 상자 앞부분이라서 빛이 상자 안에서 나오는 것처럼 보인다
 // 앞부분은 두 장이다. 열리는 중에는 뚜껑과 겹치지 않는 몸통만(FrontOpening), 다 열린 뒤에는 앞 테두리까지(Front) 덮는다
-// 연출 중에 누르면 한 단계씩 건너뛴다. 상자가 열리는 중이면 다 열리고 빛이 자리 잡은 모습으로, 그 뒤면 보상이 다 채워진 결과 패널로 바로 간다
+// 연출 중에 누르면 건너뛴다. 상자가 열리는 중이면 다 열리고 빛이 자리 잡은 모습으로, 결과 패널이 뜬 뒤면 보상이 다 채워진 모습으로 바로 간다
+// 상자가 열린 채 보이는 동안 누르면 기다리지 않고 바로 상자를 치우지만, 결과 패널 연출은 그대로 보여 준다
+// 상자를 건너뛰려고 연타한 클릭이 결과 연출까지 건너뛰지 않게, 상자가 사라지는 중의 클릭은 무시한다
 public class GachaResultPopup : BasePopup, IPointerClickHandler
 {
     private enum EffectPhase
     {
         Ready,     // 상자를 누르기 전
         Opening,   // 떨림부터 광선이 나오기 시작할 때까지
-        Revealing, // 상자가 열린 뒤 결과 패널에 보상이 다 박힐 때까지
+        Opened,    // 상자가 열린 채 보이는 동안(iconDelay). 누르면 기다리지 않고 바로 치운다
+        Hiding,    // 상자가 사라지는 중. 누르는 것을 무시한다
+        Revealing, // 결과 패널이 뜨고 보상이 다 박힐 때까지
         Finished,
     }
 
@@ -250,13 +254,16 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         Skip();
     }
 
-    // 상자를 누르기 전이나 다 끝난 뒤에는 할 일이 없다
+    // 상자를 누르기 전, 상자가 사라지는 중, 다 끝난 뒤에는 할 일이 없다
     private void Skip()
     {
         switch (phase)
         {
             case EffectPhase.Opening:
                 SkipToOpenedChest();
+                break;
+            case EffectPhase.Opened:
+                SkipChestWait();
                 break;
             case EffectPhase.Revealing:
                 SkipToResult();
@@ -372,18 +379,23 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         imgChestFrontOpening.gameObject.SetActive(false);
         imgChestFront.gameObject.SetActive(true);
         PlayRays();
-        phase = EffectPhase.Revealing;
-        yield return CoRevealResult();
+        phase = EffectPhase.Opened;
+        yield return CoRevealResult(true);
     }
 
-    // 열린 상자를 iconDelay초 보여 준 뒤 치우고, 결과 패널을 띄워 보상을 채운다
-    private IEnumerator CoRevealResult()
+    // 열린 상자를 iconDelay초 보여 준 뒤 치우고, 결과 패널을 띄워 보상을 채운다. waitChest가 false면 기다리지 않고 바로 치운다
+    private IEnumerator CoRevealResult(bool waitChest)
     {
-        yield return new WaitForSecondsRealtime(iconDelay);
+        if (waitChest)
+        {
+            yield return new WaitForSecondsRealtime(iconDelay);
+        }
 
+        phase = EffectPhase.Hiding;
         Sequence hide = HideChest();
         yield return hide.WaitForCompletion();
 
+        phase = EffectPhase.Revealing;
         Sequence panel = ShowResultPanel();
         yield return panel.WaitForCompletion();
 
@@ -423,8 +435,19 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             ray.localScale = Vector3.one;
         }
 
-        phase = EffectPhase.Revealing;
-        coOpenChest = StartCoroutine(CoRevealResult());
+        phase = EffectPhase.Opened;
+        coOpenChest = StartCoroutine(CoRevealResult(true));
+    }
+
+    // 열린 상자를 보여 주는 시간만 건너뛰고 바로 상자를 치운다. 광선처럼 아직 도는 연출은 상자와 함께 사라지게 그대로 둔다
+    private void SkipChestWait()
+    {
+        if (coOpenChest != null)
+        {
+            StopCoroutine(coOpenChest);
+        }
+
+        coOpenChest = StartCoroutine(CoRevealResult(false));
     }
 
     // 상자를 치우고 결과 패널에 보상을 다 채운 모습으로 바로 맞춘 뒤 닫기를 켠다
