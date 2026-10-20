@@ -5,6 +5,7 @@ using System.Linq;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // 가챠 결과를 상자 열기 연출로 보여 준다. 상자를 누르면 떨리면서 틈으로 빛이 새어 나오고, 화면이 순간 하얘지면서 뚜껑이 들리고, 들리는 중에 글로우가 터지고,
@@ -13,8 +14,17 @@ using UnityEngine.UI;
 // 상자가 열리고 iconDelay초가 지나면 상자를 치우고, 결과 패널을 띄운 뒤 왼쪽 위부터 보상을 채우고 닫기 버튼을 켠다
 // 그리는 순서는 새는 빛 > 상자(애니메이션) > 틈 빛 > 광선 > 글로우 > 상자 앞부분이라서 빛이 상자 안에서 나오는 것처럼 보인다
 // 앞부분은 두 장이다. 열리는 중에는 뚜껑과 겹치지 않는 몸통만(FrontOpening), 다 열린 뒤에는 앞 테두리까지(Front) 덮는다
-public class GachaResultPopup : BasePopup
+// 연출 중에 누르면 한 단계씩 건너뛴다. 상자가 열리는 중이면 다 열리고 빛이 자리 잡은 모습으로, 그 뒤면 보상이 다 채워진 결과 패널로 바로 간다
+public class GachaResultPopup : BasePopup, IPointerClickHandler
 {
+    private enum EffectPhase
+    {
+        Ready,     // 상자를 누르기 전
+        Opening,   // 떨림부터 광선이 나오기 시작할 때까지
+        Revealing, // 상자가 열린 뒤 결과 패널에 보상이 다 박힐 때까지
+        Finished,
+    }
+
     private static readonly int AnimOpenTrigger = Animator.StringToHash("Open");
     private static readonly int AnimOpenState = Animator.StringToHash("Open");
 
@@ -95,6 +105,7 @@ public class GachaResultPopup : BasePopup
     [SerializeField] private float iconDuration = 0.18f;   // 아이콘 하나가 칸에 박히기까지의 시간(초)
     [SerializeField] private float iconInterval = 0.08f;   // 다음 아이콘이 나오기까지의 간격(초)
     [SerializeField] private float iconLandPunch = 0.15f;  // 칸에 박힐 때 찌그러지는 정도
+    [SerializeField] private float outsideCloseDelay = 0.5f; // 보상이 다 나온 뒤 이 시간(초) 동안은 바깥을 눌러도 닫지 않는다. 건너뛰려고 연타하다 바로 닫히지 않게 한다
 
     [Header("등급 테두리")]
     [SerializeField] private Sprite gradeFrameCommon;
@@ -134,7 +145,8 @@ public class GachaResultPopup : BasePopup
     private Vector2 vecWoodChestFrontPosition;
     private Vector2 vecWoodChestFrontOpeningPosition;
     private Vector2 vecChestPosition; // 이번에 쓰는 상자의 제자리. 떨림이 끝나면 여기로 돌아온다
-    private bool isFinished;
+    private EffectPhase phase;
+    private float finishedTime; // 보상이 다 나온 시각(시간 배율과 관계없는 시간)
 
     private Coroutine coOpenChest;
     private Tween tweenSeamFlicker;
@@ -215,10 +227,16 @@ public class GachaResultPopup : BasePopup
         ResetEffect(bestGrade);
     }
 
-    // 연출 중에는 바깥을 눌러도 닫지 않는다
+    // 연출 중에 바깥을 누르면 닫지 않고 연출을 건너뛴다. 다 끝난 직후에도 잠깐은 닫지 않는다
     protected override void OnClickDimmed()
     {
-        if (isFinished == false)
+        if (phase != EffectPhase.Finished)
+        {
+            Skip();
+            return;
+        }
+
+        if (Time.unscaledTime - finishedTime < outsideCloseDelay)
         {
             return;
         }
@@ -226,11 +244,31 @@ public class GachaResultPopup : BasePopup
         base.OnClickDimmed();
     }
 
+    // 결과 패널이나 빛처럼 버튼이 아닌 곳을 누르면 여기로 올라온다
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        Skip();
+    }
+
+    // 상자를 누르기 전이나 다 끝난 뒤에는 할 일이 없다
+    private void Skip()
+    {
+        switch (phase)
+        {
+            case EffectPhase.Opening:
+                SkipToOpenedChest();
+                break;
+            case EffectPhase.Revealing:
+                SkipToResult();
+                break;
+        }
+    }
+
     // 다시 열 때도 닫힌 상자에서 시작한다
     private void ResetEffect(ArtifactGrade bestGrade)
     {
         StopEffect();
-        isFinished = false;
+        phase = EffectPhase.Ready;
 
         bool useGoldChest = bestGrade >= goldChestMinGrade && goldChestController != null && goldChestFront != null &&
                             goldChestFrontOpening != null;
@@ -292,14 +330,16 @@ public class GachaResultPopup : BasePopup
         btnClose.Interactable = false;
     }
 
+    // 처음 누르면 상자를 열고, 연출 중에 다시 누르면 건너뛴다
     private void OnClickChest()
     {
-        if (coOpenChest != null)
+        if (phase != EffectPhase.Ready)
         {
+            Skip();
             return;
         }
 
-        btnChest.Interactable = false;
+        phase = EffectPhase.Opening;
         coOpenChest = StartCoroutine(CoOpenChest());
     }
 
@@ -332,6 +372,13 @@ public class GachaResultPopup : BasePopup
         imgChestFrontOpening.gameObject.SetActive(false);
         imgChestFront.gameObject.SetActive(true);
         PlayRays();
+        phase = EffectPhase.Revealing;
+        yield return CoRevealResult();
+    }
+
+    // 열린 상자를 iconDelay초 보여 준 뒤 치우고, 결과 패널을 띄워 보상을 채운다
+    private IEnumerator CoRevealResult()
+    {
         yield return new WaitForSecondsRealtime(iconDelay);
 
         Sequence hide = HideChest();
@@ -342,6 +389,68 @@ public class GachaResultPopup : BasePopup
 
         ShowRewards();
         coOpenChest = null;
+    }
+
+    // 떨림, 섬광, 열림, 글로우, 광선을 끝난 모습으로 바로 맞춘다. 상자를 보여 주는 시간(iconDelay)부터 다시 이어 간다
+    private void SkipToOpenedChest()
+    {
+        StopEffect();
+
+        rectChestArea.localScale = Vector3.one;
+        rectChest.anchoredPosition = vecChestPosition;
+        rectChest.localRotation = Quaternion.identity;
+        imgLeakGlow.gameObject.SetActive(false);
+        imgSeamLight.gameObject.SetActive(false);
+        SetColor(imgFlash, imgFlash.color, 0f);
+
+        animatorChest.Play(AnimOpenState, 0, 1f);
+        animatorChest.Update(0f);
+        imgChestFrontOpening.gameObject.SetActive(false);
+        imgChestFront.gameObject.SetActive(true);
+
+        imgGlow.gameObject.SetActive(true);
+        SetColor(imgGlow, imgGlow.color, glowAlpha);
+        imgGlow.rectTransform.localScale = Vector3.one;
+
+        rectRays.gameObject.SetActive(true);
+        canvasGroupRays.alpha = rayAlpha;
+        float screenTop = GetScreenTopY();
+        for (int i = 0; i < listRayAngle.Count; i++)
+        {
+            RectTransform ray = listRay[i].rectTransform;
+            ray.localRotation = Quaternion.Euler(0f, 0f, listRayAngle[i]);
+            ray.sizeDelta = new Vector2(ray.sizeDelta.x, GetRayLength(listRayAngle[i], screenTop));
+            ray.localScale = Vector3.one;
+        }
+
+        phase = EffectPhase.Revealing;
+        coOpenChest = StartCoroutine(CoRevealResult());
+    }
+
+    // 상자를 치우고 결과 패널에 보상을 다 채운 모습으로 바로 맞춘 뒤 닫기를 켠다
+    private void SkipToResult()
+    {
+        StopEffect();
+
+        SetColor(imgFlash, imgFlash.color, 0f);
+        canvasGroupChestArea.alpha = 0f;
+        canvasGroupChestArea.blocksRaycasts = false;
+
+        rectResultPanel.gameObject.SetActive(true);
+        rectResultPanel.localScale = Vector3.one;
+
+        // 아이콘이 박히는 중이었으면 이미 만든 칸은 그대로 두고 나머지만 만든다
+        for (int i = listSlot.Count; i < rewards.Count; i++)
+        {
+            CreateRewardSlot(rewards[i]);
+        }
+        foreach (RewardSlot slot in listSlot)
+        {
+            slot.canvasGroup.alpha = 1f;
+            slot.rect.localScale = Vector3.one;
+        }
+
+        OnRewardsShown();
     }
 
     // 보상이 나올 자리를 비우려고 상자와 빛을 작아지며 사라지게 한다
@@ -499,7 +608,9 @@ public class GachaResultPopup : BasePopup
 
     private void OnRewardsShown()
     {
-        isFinished = true;
+        phase = EffectPhase.Finished;
+        finishedTime = Time.unscaledTime;
+        coOpenChest = null;
         btnClose.Interactable = true;
     }
 
