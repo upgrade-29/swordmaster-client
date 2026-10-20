@@ -103,6 +103,15 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
         return null;
     }
 
+    /// <summary>
+    /// 이미지가 있을 수도 없을 수도 있는 주소에 쓴다. 없으면 경고 없이 false를 돌려준다.
+    /// </summary>
+    public bool TryGetSprite(string address, out Sprite sprite)
+    {
+        sprite = null;
+        return string.IsNullOrEmpty(address) == false && dicSprite.TryGetValue(address, out sprite);
+    }
+
     private void AddPreloaded(string address, AsyncOperationHandle<Sprite> handle)
     {
         if (handle.Status != AsyncOperationStatus.Succeeded)

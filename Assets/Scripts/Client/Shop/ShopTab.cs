@@ -106,7 +106,7 @@ public class ShopTab : LobbyTab
                 Sprite rewardIcon = reward == null
                     ? null
                     : GetRewardIcon(reward.rewardType);
-                item.SetProduct(product, reward, GetProductIcon(reward), GetCurrencyIcon(product.priceType), rewardIcon);
+                item.SetProduct(product, reward, GetProductIcon(product, reward), GetCurrencyIcon(product.priceType), rewardIcon);
                 item.OnClickPurchaseEvent += OnClickPurchase;
             }
         }
@@ -380,10 +380,16 @@ public class ShopTab : LobbyTab
         return GetRewardIcon(reward.rewardType);
     }
 
-    // 상품 이미지는 대표 보상으로 고른다. 유물은 code 끝의 종류 이름(VITAL_ORB → ORB)으로 찾는다.
-    // 골드 뽑기는 골드 상품과 같은 골드 주머니 이미지를 쓴다. 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
-    private Sprite GetProductIcon(ShopProductRewardData reward)
+    // 상품 iconCode로 등록된 이미지(골드 주머니/자루/상자 등)가 있으면 그것을 쓴다.
+    // 없으면 대표 보상으로 고른다. 유물은 code 끝의 종류 이름(VITAL_ORB → ORB)으로 찾는다.
+    // 골드 뽑기는 골드 상품과 같은 골드 이미지를 쓴다. 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
+    private Sprite GetProductIcon(ShopProductData product, ShopProductRewardData reward)
     {
+        if (ResourceManager.Instance.TryGetSprite(product.iconCode, out Sprite productSprite))
+        {
+            return productSprite;
+        }
+
         string address = null;
         switch (reward?.rewardType)
         {
