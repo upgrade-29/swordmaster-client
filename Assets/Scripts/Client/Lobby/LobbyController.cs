@@ -20,6 +20,7 @@ public class LobbyController : MonoBehaviour
     private User User => GameSession.Instance.User;
     private LobbyOptionPopup OptionPopup => Popup.Instance.Get<LobbyOptionPopup>();
     private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
+    private RankingPopup RankingPopup => Popup.Instance.Get<RankingPopup>();
 
     private LobbyTabType currentTab;
     // 날아가는 중이라 아직 탑UI 숫자에 더하지 않은 재화. 유저 재화는 이미 서버 값이고, 표시만 이만큼 빼서 보여준다
@@ -47,6 +48,7 @@ public class LobbyController : MonoBehaviour
         view.OnSwipeEndEvent += OnSwipeEnd;
         view.OnUpdateTabLayoutEvent += OnUpdateTabLayout;
         view.OnClickMenuEvent += OnClickMenu;
+        view.OnClickRankingEvent += OnClickRanking;
     }
 
     private void Start()
@@ -60,6 +62,7 @@ public class LobbyController : MonoBehaviour
         RefreshCurrencies();
 
         OptionPopup.LogoutClicked += OnLogoutClicked;
+        RankingPopup.OnSelectTypeEvent += OnSelectRankingType;
     }
 
     private void OnDestroy()
@@ -74,6 +77,7 @@ public class LobbyController : MonoBehaviour
         if (Popup.IsInitialize())
         {
             OptionPopup.LogoutClicked -= OnLogoutClicked;
+            RankingPopup.OnSelectTypeEvent -= OnSelectRankingType;
         }
 
         if (view == null)
@@ -85,6 +89,7 @@ public class LobbyController : MonoBehaviour
         view.OnSwipeEndEvent -= OnSwipeEnd;
         view.OnUpdateTabLayoutEvent -= OnUpdateTabLayout;
         view.OnClickMenuEvent -= OnClickMenu;
+        view.OnClickRankingEvent -= OnClickRanking;
     }
 
     public void ChangeTab(LobbyTabType tab)
@@ -191,6 +196,31 @@ public class LobbyController : MonoBehaviour
     private void OnClickMenu()
     {
         OptionPopup.Open();
+    }
+
+    private void OnClickRanking()
+    {
+        RankingPopup.Open();
+    }
+
+    // 팝업이 종류를 고를 때마다 새로 받는다. 늦게 온 응답은 팝업이 종류를 보고 버린다
+    private void OnSelectRankingType(RankingType type)
+    {
+        HttpRequest.Request(RankingApi.Get(type), (error, response) =>
+        {
+            if (this == null)
+            {
+                return;
+            }
+
+            if (error != null)
+            {
+                RankingPopup.SetFailed(type);
+                return;
+            }
+
+            RankingPopup.SetRanking(type, response);
+        }, showLoading: false);
     }
 
     private void OnLogoutClicked()
