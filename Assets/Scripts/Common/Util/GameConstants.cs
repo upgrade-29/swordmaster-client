@@ -61,6 +61,11 @@ public static class GameConstants
     public static class AddressableAddresses
     {
         public const string ShopHeader = "SHOP_HEADER";
+
+        // 상점 상품 카드 이미지. 유물 이미지는 유물 code 끝의 종류 이름(ORB 등)을 붙여 찾는다
+        public const string ShopIconGold = "SHOP_ICON_GOLD";
+        public const string ShopIconDiamond = "SHOP_ICON_DIAMOND";
+        public const string ShopIconArtifactPrefix = "SHOP_ICON_ARTIFACT_";
     }
 
     // Color는 const가 될 수 없어서 static readonly로 둔다

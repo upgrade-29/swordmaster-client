@@ -21,6 +21,42 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9188ceb6cd06e9540bdf6fe1c3ba9999
+    m_Address: SHOP_ICON_ARTIFACT_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af63739cdd178544ebbb6b5348947582
+    m_Address: SHOP_ICON_ARTIFACT_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b10f6c5436588da4787fd51f25d6c103
+    m_Address: SHOP_ICON_ARTIFACT_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b24d803fe420c1d44b23600c98b21d32
+    m_Address: SHOP_ICON_ARTIFACT_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6e33dc5596202745bfd8f0be9dcf5dc
+    m_Address: SHOP_ICON_GOLD
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3932af332fc91f409570475ccd74850
+    m_Address: SHOP_ICON_DIAMOND
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: c82b8690fb1d9f54daec3fd62bc4501a, type: 2}
   m_SchemaSet:

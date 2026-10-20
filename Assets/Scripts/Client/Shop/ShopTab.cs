@@ -81,8 +81,7 @@ public class ShopTab : LobbyTab
                 Sprite rewardIcon = reward == null
                     ? null
                     : GetRewardIcon(reward.rewardType);
-                // 상품 이미지는 아직 없어서 기본 이미지를 쓴다
-                item.SetProduct(product, reward, spriteFallback, GetCurrencyIcon(product.priceType), rewardIcon);
+                item.SetProduct(product, reward, GetProductIcon(reward), GetCurrencyIcon(product.priceType), rewardIcon);
                 item.OnClickPurchaseEvent += OnClickPurchase;
             }
         }
@@ -285,6 +284,31 @@ public class ShopTab : LobbyTab
         }
 
         return GetRewardIcon(reward.rewardType);
+    }
+
+    // 상품 이미지는 대표 보상으로 고른다. 유물은 code 끝의 종류 이름(VITAL_ORB → ORB)으로 찾는다.
+    // 가챠처럼 이미지가 정해지지 않았거나 미리 읽은 이미지가 없으면 기본 이미지를 쓴다
+    private Sprite GetProductIcon(ShopProductRewardData reward)
+    {
+        string address = null;
+        switch (reward?.rewardType)
+        {
+            case RewardType.Gold:
+                address = GameConstants.AddressableAddresses.ShopIconGold;
+                break;
+            case RewardType.Diamond:
+                address = GameConstants.AddressableAddresses.ShopIconDiamond;
+                break;
+            case RewardType.Artifact:
+                string kind = reward.rewardCode.Substring(reward.rewardCode.LastIndexOf('_') + 1);
+                address = GameConstants.AddressableAddresses.ShopIconArtifactPrefix + kind;
+                break;
+        }
+
+        Sprite sprite = ResourceManager.Instance.GetSprite(address);
+        return sprite != null
+            ? sprite
+            : spriteFallback;
     }
 
     private Sprite GetCurrencyIcon(PriceType priceType)
