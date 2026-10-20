@@ -110,6 +110,11 @@ public class LobbyView : MonoBehaviour
         return playerInfo.GetCurrencyIconPosition(type);
     }
 
+    public void PlayCurrencyArrived(CurrencyType type)
+    {
+        playerInfo.PlayCurrencyArrived(type);
+    }
+
     public void SetSelectedTab(LobbyTabType selectedTab)
     {
         foreach (var lobbyTabButton in listLobbyTabButton)

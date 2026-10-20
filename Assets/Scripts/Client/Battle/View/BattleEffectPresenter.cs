@@ -210,6 +210,13 @@ public class BattleEffectPresenter : IDisposable
         {
             isDefeatPlaying = true;
             DOVirtual.DelayedCall((knockoutEnd + NextEnemyWaitDuration) / manager.Speed, () => isDefeatPlaying = false, false).SetTarget(this);
+
+            // 일반 적을 처치하면 적이 다 날아간 뒤 회복량을 보여 준다. 보스를 처치하면 전투가 끝나서 회복하지 않는다
+            double healOnKill = subStage.HealOnKill;
+            if (subStage.IsBoss == false && healOnKill > 0)
+            {
+                DOVirtual.DelayedCall(knockoutEnd / manager.Speed, () => PlayKillHeal(healOnKill), false).SetTarget(this);
+            }
         }
 
         // 보스는 마지막 세부스테이지라서 보스를 처치하면 승리다
@@ -284,6 +291,15 @@ public class BattleEffectPresenter : IDisposable
             Vector3 position = attacker.HeadPosition + new Vector3(outward * LifestealOffset.x, LifestealOffset.y, 0f);
             damageFloaters.Show(position, $"+{battleEvent.lifesteal.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, 1f, false, manager.Speed);
         }
+    }
+
+    // 처치 회복은 흡혈과 같은 연출로 플레이어 머리 위에 띄운다. 이때는 데미지 숫자가 없어서 비키지 않는다
+    private void PlayKillHeal(double healOnKill)
+    {
+        playerView.PlayHeal(manager.Speed);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.Heal);
+        damageFloaters.Show(playerView.HeadPosition, $"+{healOnKill.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, 1f, false,
+            manager.Speed);
     }
 
     // 새 흔들림이 오면 이전 흔들림을 끝내고 다시 흔든다. 흔들림 값만 따로 두어서 확대 이동은 그대로 남는다

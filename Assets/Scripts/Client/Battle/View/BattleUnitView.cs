@@ -52,7 +52,14 @@ public class BattleUnitView : MonoBehaviour
     // 그림자: 검 그림 아래 끝 높이의 바닥에 붙어 있고, 검이 높이 뜰수록 작고 옅어진다
     private const float ShadowFadeHeight = 1.5f; // 검이 제자리보다 이만큼 높이 뜨면 그림자가 다 사라진다
 
+    // 대기: 위치를 움직이는 연출이 없을 때 제자리에서 천천히 오르내린다. 연출이 끝나면 서서히 다시 시작한다
+    private const float IdleHeight = 0.06f;
+    private const float IdlePeriod = 1.6f; // 한 번 오르내리는 시간(1배속 기준)
+    private const float IdleResumeDuration = 0.2f;
+
     private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount"); // SwordMaster/SpriteFlash 셰이더의 흰색으로 덮는 정도
+
+    [SerializeField] [Range(0f, 1f)] private float idlePhase; // 대기 박자를 주기의 이 비율만큼 어긋낸다. 두 유닛이 똑같이 움직이지 않게 한다
 
     private SpriteRenderer spriteRenderer;
     private SpriteRenderer shadowRenderer;
@@ -67,6 +74,12 @@ public class BattleUnitView : MonoBehaviour
     private Tween attackTween;
     private Tween hitScaleTween;
     private Tween colorTween;
+    private Tween moveTween; // 걷기, 등장, 처치처럼 공격 말고 위치를 움직이는 연출
+
+    // 대기 모션은 마지막으로 받은 연출의 배속을 따른다
+    private float idleSpeed = 1f;
+    private float idleTime;
+    private float idleWeight; // 0이면 대기 모션 없음, 1이면 전부. 위치 연출이 끝나면 0부터 다시 올라간다
 
     // 데미지 숫자를 띄울 머리 위 위치
     public Vector3 HeadPosition => new Vector3(transform.position.x, spriteRenderer.bounds.max.y, 0f);
@@ -89,6 +102,7 @@ public class BattleUnitView : MonoBehaviour
     // 검은 공격, 걷기, 처치 연출로 돌거나 뜨지만 그림자는 바닥에 남아야 하므로, 연출이 끝난 뒤의 위치를 보고 매 프레임 맞춘다
     private void LateUpdate()
     {
+        UpdateIdle();
         UpdateShadow();
     }
 
@@ -116,6 +130,7 @@ public class BattleUnitView : MonoBehaviour
     {
         // 공격 간격이 연출보다 짧으면 이전 연출을 끝낸 자리에서 다시 시작해야 위치가 밀리지 않는다
         CompleteIfActive(attackTween);
+        idleSpeed = speed;
 
         float facing = Mathf.Sign(targetPosition.x - vecBasePosition.x);
         attackTween = DOVirtual.Float(0f, AttackDuration, AttackDuration, time => ApplyAttackPose(time, facing))
@@ -176,6 +191,8 @@ public class BattleUnitView : MonoBehaviour
             .SetEase(Ease.Linear)
             .SetTarget(transform);
         flyTween.timeScale = speed;
+        moveTween = flyTween;
+        idleSpeed = speed;
     }
 
     // 오른쪽으로 distance만큼 떨어진 곳에서 제자리까지 다가온다. 배경 스크롤과 같은 곡선을 넘겨받아 땅에 붙어 오는 것처럼 보인다
@@ -186,6 +203,8 @@ public class BattleUnitView : MonoBehaviour
 
         Tween tween = transform.DOMoveX(vecBasePosition.x, duration).SetEase(ease);
         tween.timeScale = speed;
+        moveTween = tween;
+        idleSpeed = speed;
     }
 
     // 제자리에서 위아래로 통통 튀며 걷는다
@@ -200,6 +219,8 @@ public class BattleUnitView : MonoBehaviour
             .SetTarget(transform)
             .OnComplete(() => transform.position = vecBasePosition);
         tween.timeScale = speed;
+        moveTween = tween;
+        idleSpeed = speed;
     }
 
     // 재도전처럼 연출 도중에 처음 상태로 돌아가야 할 때 쓴다
@@ -212,6 +233,28 @@ public class BattleUnitView : MonoBehaviour
         spriteRenderer.color = baseColor;
         spriteRenderer.enabled = true;
         SetFlashAmount(0f);
+    }
+
+    // 공격이나 걷기, 등장, 처치가 위치를 움직이는 동안에는 쉬고, 끝나면 IdleResumeDuration 동안 서서히 다시 오르내린다
+    // 피격 크기 변화와 깜빡임은 위치를 움직이지 않으므로 함께 나온다
+    // 대기 시간은 쉬는 동안에도 계속 세서, 두 유닛이 같은 시계로 idlePhase만큼 어긋난 박자를 지킨다
+    private void UpdateIdle()
+    {
+        float deltaTime = Time.deltaTime * idleSpeed;
+        idleTime += deltaTime;
+
+        bool isMoving = (attackTween != null && attackTween.IsActive()) || (moveTween != null && moveTween.IsActive());
+        if (isMoving)
+        {
+            idleWeight = 0f;
+            return;
+        }
+
+        idleWeight = Mathf.Min(1f, idleWeight + deltaTime / IdleResumeDuration);
+
+        float cycle = idleTime / IdlePeriod + idlePhase;
+        float height = IdleHeight * (1f - Mathf.Cos(cycle * Mathf.PI * 2f)) * 0.5f;
+        transform.position = vecBasePosition + Vector3.up * (height * idleWeight);
     }
 
     // 가로 위치만 검을 따라가고, 높이는 제자리 검 그림의 아래 끝에 고정한다. 검의 회전과 피격 크기 변화는 따라가지 않는다

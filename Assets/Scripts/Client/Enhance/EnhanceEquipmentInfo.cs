@@ -62,9 +62,10 @@ public class EnhanceEquipmentInfo : MonoBehaviour
         SetImage(imgArtifact, imageCode, colorArtifactPlaceholder);
     }
 
-    public void SetStatRow(int index, Sprite icon, string name, string current, string next)
+    // changedColor를 넘기면 같은 능력치의 현재 값이 바뀐 경우에만 그 색으로 강조한다
+    public void SetStatRow(int index, Sprite icon, string name, string current, string next, Color? changedColor = null)
     {
-        listEnhanceStatRow[index].Set(icon, name, current, next);
+        listEnhanceStatRow[index].Set(icon, name, current, next, changedColor);
     }
 
     public void ShowStatRows(int rowCount)

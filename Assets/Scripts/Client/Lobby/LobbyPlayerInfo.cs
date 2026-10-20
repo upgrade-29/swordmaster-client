@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
@@ -65,6 +66,26 @@ public class LobbyPlayerInfo : MonoBehaviour
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);
         }
+    }
+
+    /// <summary>
+    /// 날아온 재화가 닿을 때 그 재화의 아이콘과 숫자를 한 번 튀게 한다. 연달아 닿으면 처음부터 다시 튄다.
+    /// </summary>
+    public void PlayCurrencyArrived(CurrencyType type)
+    {
+        RectTransform rectIcon = type == CurrencyType.Gold ? rectGoldIcon : rectDiamondIcon;
+        RectTransform rectValue = type == CurrencyType.Gold ? txtGold.rectTransform : txtDiamond.rectTransform;
+
+        rectIcon.DOKill();
+        DOVirtual.Float(0f, 1f, GameConstants.CurrencyArrive.PunchDuration, progress =>
+            {
+                float wave = Mathf.Sin(progress * Mathf.PI);
+                rectIcon.localScale = Vector3.one * (1f + (GameConstants.CurrencyArrive.IconPunchScale - 1f) * wave);
+                rectValue.localScale = Vector3.one * (1f + (GameConstants.CurrencyArrive.TextPunchScale - 1f) * wave);
+            })
+            .SetEase(Ease.Linear)
+            .SetTarget(rectIcon)
+            .SetLink(gameObject);
     }
 
     private void OnClickMenu()

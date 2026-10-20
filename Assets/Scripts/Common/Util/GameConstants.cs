@@ -40,6 +40,14 @@ public static class GameConstants
         public const float StrongHitDamageRatio = 0.5f; // 최대 체력 대비 이 비율 이상을 잃으면 가장 세게 맞은 것으로 본다
     }
 
+    // 날아온 재화가 재화 표시에 닿을 때 아이콘과 숫자가 한 번 튀는 연출. 전투 골드와 로비 상단 재화가 함께 쓴다
+    public static class CurrencyArrive
+    {
+        public const float IconPunchScale = 1.15f;
+        public const float TextPunchScale = 1.1f;
+        public const float PunchDuration = 0.15f; // 1배속 기준
+    }
+
     public static class NumberFormats
     {
         public const string Integer = "N0";     // 1,234
@@ -74,6 +82,7 @@ public static class GameConstants
         public const string Knockout = "Sound/SFX/sfx_battle_knockout";
         public const string Heal = "Sound/SFX/sfx_battle_heal";
         public const string Countdown = "Sound/SFX/sfx_battle_countdown";
+        public const string TimeWarning = "Sound/SFX/sfx_battle_countdown"; // TODO: [김우진] 남은 시간 경고 전용 효과음이 생기면 경로를 바꾼다
         public const string BattleStart = "Sound/SFX/sfx_battle_start";
         public const string BossWarning = "Sound/SFX/sfx_battle_boss_warning";
         public const string EnemyEntrance = "Sound/SFX/sfx_battle_enemy_entrance";
@@ -139,6 +148,9 @@ public static class GameConstants
         public static readonly Color CritLabel = new Color32(0xFF, 0x8A, 0x3D, 0xFF); // 치명타 숫자 위의 CRITICAL 글자
         public static readonly Color UnitHit = new Color(1f, 0.35f, 0.35f);
         public static readonly Color Heal = new Color(0.4f, 1f, 0.5f); // 회복 깜빡임과 생명력 흡수 숫자
+
+        public static readonly Color StatIncrease = new Color32(0x5B, 0xE3, 0x7A, 0xFF); // 강화 탭에서 전투력과 능력치가 오를 때
+        public static readonly Color StatDecrease = new Color32(0xFF, 0x5A, 0x5A, 0xFF); // 강화 탭에서 전투력과 능력치가 내릴 때
     }
 
     // 검 강화 단계 글자(+3)의 재질 구간별 색. TMP 리치 텍스트 태그에 넣는 16진수 값이다
