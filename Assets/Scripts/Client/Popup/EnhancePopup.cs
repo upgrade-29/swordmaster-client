@@ -59,10 +59,12 @@ public class EnhancePopup : BasePopup
         public readonly string name;
         public readonly string message; // 레벨 아래에 덧붙이는 문구. 없으면 빈 문자열
         public readonly IReadOnlyList<StatInfo> stats;
-        public readonly string imageCode; // 가운데에 보여 줄 검이나 아티팩트의 이미지 주소
+        // 가운데에 보여 줄 검이나 아티팩트의 이미지 주소. 연출 동안은 Before를 보여 주고, 성공하면 빛이 터질 때 After로 바꾼다
+        public readonly string imageCodeBefore;
+        public readonly string imageCodeAfter;
 
         public ResultInfo(bool isSuccess, string levelBefore, string levelAfter, string name, string message,
-            IReadOnlyList<StatInfo> stats, string imageCode)
+            IReadOnlyList<StatInfo> stats, string imageCodeBefore, string imageCodeAfter)
         {
             this.isSuccess = isSuccess;
             this.levelBefore = levelBefore;
@@ -70,7 +72,8 @@ public class EnhancePopup : BasePopup
             this.name = name;
             this.message = message;
             this.stats = stats;
-            this.imageCode = imageCode;
+            this.imageCodeBefore = imageCodeBefore;
+            this.imageCodeAfter = imageCodeAfter;
         }
     }
 
@@ -158,7 +161,7 @@ public class EnhancePopup : BasePopup
         txtMessage.text = result.message;
         txtMessage.gameObject.SetActive(string.IsNullOrEmpty(result.message) == false);
         txtName.text = result.name;
-        SetImage(result.imageCode);
+        SetImage(result.imageCodeBefore);
         ShowStats(result.stats);
 
         PlayEnhanceSequence();
@@ -186,6 +189,13 @@ public class EnhancePopup : BasePopup
             ? sprite.rect.size * GameConstants.ArtPixel.UiScale
             : vecSwordPlaceholderSize;
         colorSword = sprite != null ? Color.white : colorSwordPlaceholder;
+    }
+
+    // 성공 연출에서 빛이 터질 때 결과 검으로 바꾼다. 연출을 건너뛰어도 완료 때 한 번 더 불러 결과 검이 남게 한다
+    private void ShowResultImage()
+    {
+        SetImage(result.imageCodeAfter);
+        imgSword.color = colorSword;
     }
 
     private void ShowStats(IReadOnlyList<StatInfo> stats)
@@ -283,6 +293,7 @@ public class EnhancePopup : BasePopup
         sequence.Insert(start + FlashInDuration, imgFlash.DOFade(0f, FlashOutDuration));
 
         float burstStart = start + FlashInDuration;
+        sequence.InsertCallback(burstStart, ShowResultImage);
         sequence.Insert(burstStart, imgGlow.rectTransform.DOScale(BurstScale, BurstDuration));
         sequence.Insert(burstStart, imgGlow.DOFade(0f, BurstDuration));
         sequence.Insert(burstStart, rectRays.DOScale(BurstScale, BurstDuration));
@@ -316,6 +327,11 @@ public class EnhancePopup : BasePopup
     private void OnEnhanceSequenceComplete()
     {
         seqEnhance = null;
+        if (result.isSuccess)
+        {
+            ShowResultImage();
+        }
+
         canvasGroupResult.interactable = true;
         canvasGroupResult.blocksRaycasts = true;
     }
