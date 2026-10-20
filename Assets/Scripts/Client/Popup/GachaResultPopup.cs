@@ -31,7 +31,7 @@ public class GachaResultPopup : BasePopup
     [ReadOnly] [SerializeField] private RectTransform rectRays;
     [ReadOnly] [SerializeField] private CanvasGroup canvasGroupRays;
     [ReadOnly] [SerializeField] private List<Image> listRay = new List<Image>();
-    [ReadOnly] [SerializeField] private List<float> listRayAngle = new List<float>(); // 프리팹에 놓인 각 광선의 각도. 연출이 끝나면 여기서 멈춘다
+    [ReadOnly] [SerializeField] private List<float> listRayAngle = new List<float>(); // 이번에 쓰는 광선들이 연출 끝에 멈출 각도. 등급에 따라 정한다
     [ReadOnly] [SerializeField] private RectTransform rectResultPanel;
     [ReadOnly] [SerializeField] private RectTransform rectRewardGrid;
     [ReadOnly] [SerializeField] private GameObject objSlotTemplate;
@@ -69,6 +69,7 @@ public class GachaResultPopup : BasePopup
     [SerializeField] private float rayDuration = 0.5f;     // 광선 하나가 돌면서 뻗어 나오는 시간(초)
     [SerializeField] private float rayInterval = 0.12f;    // 다음 광선이 나오기까지의 간격(초)
     [SerializeField] private float rayRotation = 50f;      // 광선이 제자리까지 돌아 들어오는 각도(도)
+    [SerializeField] private float raySpacing = 32f;       // 광선 사이 각도(도). 가운데를 기준으로 좌우 같은 간격으로 벌린다
 
     [Header("등급별 빛 색")]
     [SerializeField] private Color colorCommon = new Color32(0xC8, 0xC8, 0xC8, 0xFF);
@@ -156,7 +157,6 @@ public class GachaResultPopup : BasePopup
         foreach (Transform ray in rectRays)
         {
             listRay.Add(GameUtil.TryGetComponent<Image>(ray.gameObject));
-            listRayAngle.Add(Mathf.DeltaAngle(0f, ray.localEulerAngles.z)); // 328도가 아니라 -32도로 받는다
         }
         rectResultPanel = GameUtil.Bind<RectTransform>(transform, "Panel");
         rectRewardGrid = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid");
@@ -252,10 +252,23 @@ public class GachaResultPopup : BasePopup
         SetColor(imgLeakGlow, color, 0f);
         SetColor(imgSeamLight, color, 0f);
         SetColor(imgGlow, color, 0f);
+        // 일반 1개, 희귀 2개, 영웅 3개, 전설 4개를 쓰고 나머지는 끈다. 프리팹에 놓인 광선 수보다 많이 쓰지는 않는다
+        int rayCount = Mathf.Min(GetRayCount(bestGrade), listRay.Count);
+        listRayAngle.Clear();
         for (int i = 0; i < listRay.Count; i++)
         {
+            bool isUsed = i < rayCount;
+            listRay[i].gameObject.SetActive(isUsed);
+            if (isUsed == false)
+            {
+                continue;
+            }
+
+            // 왼쪽부터 raySpacing 간격으로 놓는다. 4개면 48, 16, -16, -48도
+            float angle = ((rayCount - 1) * 0.5f - i) * raySpacing;
+            listRayAngle.Add(angle);
             SetColor(listRay[i], color, 1f);
-            listRay[i].rectTransform.localRotation = Quaternion.Euler(0f, 0f, listRayAngle[i]);
+            listRay[i].rectTransform.localRotation = Quaternion.Euler(0f, 0f, angle);
             listRay[i].rectTransform.localScale = new Vector3(1f, 0f, 1f);
         }
         canvasGroupRays.alpha = 0f;
@@ -423,7 +436,7 @@ public class GachaResultPopup : BasePopup
 
         Sequence sequence = CreateSequence();
         sequence.Insert(0f, canvasGroupRays.DOFade(rayAlpha, rayDuration * 0.3f));
-        for (int i = 0; i < listRay.Count; i++)
+        for (int i = 0; i < listRayAngle.Count; i++)
         {
             RectTransform ray = listRay[i].rectTransform;
             float angle = listRayAngle[i];
@@ -579,6 +592,25 @@ public class GachaResultPopup : BasePopup
         }
 
         return color;
+    }
+
+    private static int GetRayCount(ArtifactGrade grade)
+    {
+        int count = 1;
+        switch (grade)
+        {
+            case ArtifactGrade.Rare:
+                count = 2;
+                break;
+            case ArtifactGrade.Epic:
+                count = 3;
+                break;
+            case ArtifactGrade.Legendary:
+                count = 4;
+                break;
+        }
+
+        return count;
     }
 
     // 유물이 아닌 보상만 있으면 일반 등급으로 본다
