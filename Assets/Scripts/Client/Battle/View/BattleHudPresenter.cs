@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using UnityEngine;
 
 // BattleManager가 알려주는 진행 상황으로 상단 HUD(스테이지, 남은 시간, HP바, 모은 골드)를 갱신한다
 // 적을 처치하면 적 자리에서 동전을 띄우고, 동전이 골드 HUD에 닿을 때마다 처치 골드를 나눠서 올린다
@@ -20,6 +21,10 @@ public class BattleHudPresenter : IDisposable
     private long displayedGold;
     private int flyingCoinCount;
     private double lastCountdownNumber;
+
+    // 처치 연출에서 적이 튕겨 날아가기 시작하는 시각(Time.time). 동전은 이때보다 먼저 나오지 않는다
+    private float enemyDefeatTime;
+    private Tween coinDelay;
 
     public BattleHudPresenter(BattleManager manager, BattleHudView hud, NamePlateView namePlateView, BattleUnitView enemyView,
         CoinFlyView coinFlyView, string playerNickname)
@@ -53,6 +58,7 @@ public class BattleHudPresenter : IDisposable
         manager.SubStageVerified -= OnSubStageVerified;
         manager.BattleEnded -= OnBattleEnded;
         DOTween.Kill(this);
+        coinDelay?.Kill();
     }
 
     /// <summary>
@@ -124,8 +130,9 @@ public class BattleHudPresenter : IDisposable
         // 처치했으면 적이 튕겨 날아가기 시작할 때 이름판과 체력바를 숨긴다
         if (battleEvent.enemyHp <= 0)
         {
-            float flyStartDelay = BattleUnitView.AttackHitDelay + BattleUnitView.DefeatHitstopDuration;
-            DOVirtual.DelayedCall(flyStartDelay / manager.Speed, () => SetEnemyUiVisible(false, EnemyUiFadeDuration / manager.Speed), false)
+            float flyStartDelay = (BattleUnitView.AttackHitDelay + BattleUnitView.DefeatHitstopDuration) / manager.Speed;
+            enemyDefeatTime = Time.time + flyStartDelay;
+            DOVirtual.DelayedCall(flyStartDelay, () => SetEnemyUiVisible(false, EnemyUiFadeDuration / manager.Speed), false)
                 .SetTarget(this);
         }
     }
@@ -137,6 +144,7 @@ public class BattleHudPresenter : IDisposable
     }
 
     // 처치 골드는 서버 검증을 통과한 뒤 동전으로 날아와서 늘어난다
+    // 한 방에 처치하면 검이 닿기도 전에 응답이 오므로, 적이 튕겨 날아가기 시작할 때까지 동전을 늦춘다
     // 처치 골드를 동전 수로 나눈 몫만큼 동전마다 올리고, 나머지는 마지막 동전에 얹어 소수점이 생기지 않게 한다
     private void OnSubStageVerified(BattleSubStage subStage, BattleApi.BattleResultVerifyResponse response)
     {
@@ -153,11 +161,15 @@ public class BattleHudPresenter : IDisposable
         var arrivedCount = 0;
 
         flyingCoinCount += coinCount;
-        coinFlyView.Play(enemyView.CenterPosition, hud.GoldIconPosition, coinCount, manager.Speed, () =>
-        {
-            arrivedCount++;
-            OnCoinArrived(arrivedCount == coinCount ? goldPerCoin + remainder : goldPerCoin);
-        });
+
+        // 다음 세부스테이지의 SetUp이 DOTween.Kill(this)로 지우지 않게 따로 들고 있는다
+        float delay = Mathf.Max(0f, enemyDefeatTime - Time.time);
+        coinDelay = DOVirtual.DelayedCall(delay, () =>
+            coinFlyView.Play(enemyView.CenterPosition, hud.GoldIconPosition, coinCount, manager.Speed, () =>
+            {
+                arrivedCount++;
+                OnCoinArrived(arrivedCount == coinCount ? goldPerCoin + remainder : goldPerCoin);
+            }), false);
     }
 
     // 날아가는 동전이 모두 닿으면 서버가 확정한 값과 정확히 맞춘다
