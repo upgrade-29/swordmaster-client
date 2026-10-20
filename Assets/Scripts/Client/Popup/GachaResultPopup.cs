@@ -281,6 +281,8 @@ public class GachaResultPopup : BasePopup
         yield return new WaitUntil(() => GetOpenAnimationTime() >= glowStartTime);
 
         PlayGlowBurst();
+        bool isRare = GetBestGrade(rewards, gameDB) >= goldChestMinGrade;
+        SoundManager.Instance.PlaySfx(isRare ? GameConstants.Sounds.GachaRevealRare : GameConstants.Sounds.GachaReveal);
         yield return new WaitUntil(() => GetOpenAnimationTime() >= 1f);
 
         // 다 열리면 앞 테두리까지 덮는 이미지로 바꾼다

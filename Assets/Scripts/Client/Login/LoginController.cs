@@ -46,6 +46,7 @@ public class LoginController : MonoBehaviour
 
     private void Start()
     {
+        SoundManager.Instance.StopBgm();
         signupView.Hide();
 
         // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 터치 없이 바로 로그인 화면을 띄운다

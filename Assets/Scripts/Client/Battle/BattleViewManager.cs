@@ -132,6 +132,7 @@ public class BattleViewManager : MonoBehaviour
         DialogPopup.OnOpenEvent += OnPausePopupChanged;
         DialogPopup.OnCloseEvent += OnPausePopupChanged;
 
+        SoundManager.Instance.PlayBgm(GameConstants.Sounds.BgmBattle);
         manager.EnterBattle(session);
     }
 

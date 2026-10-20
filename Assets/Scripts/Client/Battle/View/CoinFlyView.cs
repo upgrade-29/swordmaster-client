@@ -76,6 +76,7 @@ public class CoinFlyView : MonoBehaviour
                 .OnComplete(() =>
                 {
                     Release(idleCoins, coin);
+                    SoundManager.Instance.PlaySfx(GameConstants.Sounds.Coin);
                     PlayPop(end, speed);
                     onCoinArrived?.Invoke();
                 });

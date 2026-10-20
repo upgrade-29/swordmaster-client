@@ -115,6 +115,7 @@ public class BattleEffectPresenter : IDisposable
         enemyView.SetSprite(next.Enemy.code);
         enemyView.PlayEntrance(EntranceDistance, EntranceDuration, EntranceEase, speed);
         playerView.PlayWalk(EntranceDuration, speed);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnemyEntrance);
         backgroundView.Scroll(EntranceDistance, EntranceDuration, EntranceEase, speed);
         if (next.IsBoss)
         {
@@ -181,6 +182,7 @@ public class BattleEffectPresenter : IDisposable
         BattleUnitView target = isPlayerAttack ? enemyView : playerView;
 
         attacker.PlayAttack(target.transform.position, manager.Speed);
+        SoundManager.Instance.PlayRandomSfx(GameConstants.Sounds.Swings);
 
         // 처치는 공격하는 순간 정해지므로, 검증 응답이 먼저 와도 다음 적 등장이 처치 연출을 기다리게 바로 표시한다
         bool isDefeat = isPlayerAttack && battleEvent.enemyHp <= 0;
@@ -212,6 +214,7 @@ public class BattleEffectPresenter : IDisposable
         if (isKnockout)
         {
             attacker.Freeze(BattleUnitView.DefeatHitstopDuration / manager.Speed);
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.Knockout);
             target.PlayDefeat(Mathf.Sign(target.transform.position.x - attacker.transform.position.x), manager.Speed);
             ShakeCamera(DefeatShakeStrength, DefeatShakeDuration);
 
@@ -226,6 +229,15 @@ public class BattleEffectPresenter : IDisposable
         else
         {
             target.PlayHit(battleEvent.isCrit, manager.Speed);
+            if (battleEvent.isCrit)
+            {
+                SoundManager.Instance.PlaySfx(GameConstants.Sounds.HitCrit);
+            }
+            else
+            {
+                SoundManager.Instance.PlayRandomSfx(GameConstants.Sounds.Hits);
+            }
+
             float hitStrength = Mathf.Clamp01((float)(battleEvent.damage / targetMaxHp) / GameConstants.BattleEffect.StrongHitDamageRatio);
             float strengthScale = Mathf.Lerp(1f, StrongHitShakeScale, hitStrength);
             if (isPlayerAttack)
@@ -248,6 +260,7 @@ public class BattleEffectPresenter : IDisposable
         if (battleEvent.lifesteal > 0)
         {
             attacker.PlayHeal(manager.Speed);
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.Heal);
             var outward = Mathf.Sign(attacker.transform.position.x - target.transform.position.x);
             Vector3 position = attacker.HeadPosition + new Vector3(outward * LifestealOffset.x, LifestealOffset.y, 0f);
             damageFloaters.Show(position, $"+{battleEvent.lifesteal.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, 1f, false, manager.Speed);

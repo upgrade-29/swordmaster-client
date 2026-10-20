@@ -19,6 +19,7 @@ public class BattleHudPresenter : IDisposable
     private long confirmedGold;
     private long displayedGold;
     private int flyingCoinCount;
+    private double lastCountdownNumber;
 
     public BattleHudPresenter(BattleManager manager, BattleHudView hud, NamePlateView namePlateView, BattleUnitView enemyView,
         CoinFlyView coinFlyView, string playerNickname)
@@ -89,11 +90,20 @@ public class BattleHudPresenter : IDisposable
     private void OnCountdownTicked(float remaining)
     {
         hud.SetStartCountdown(remaining);
+
+        double number = Math.Ceiling(remaining);
+        if (number != lastCountdownNumber)
+        {
+            lastCountdownNumber = number;
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.Countdown);
+        }
     }
 
     private void OnBattleStarted(BattleApi.BattleSessionInfoResponse session)
     {
+        lastCountdownNumber = 0;
         hud.HideStartCountdown();
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.BattleStart);
     }
 
     private void OnSubStageAdvanced(BattleSubStage subStage)

@@ -125,6 +125,7 @@ public class ShopTab : LobbyTab
 
     private void ShowAlert(string title, string message)
     {
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiError);
         DialogPopup.Setup(title, message, new DialogPopup.DialogPopupButtonInfo("확인", OnCloseAlert));
         DialogPopup.Open();
     }
@@ -236,6 +237,7 @@ public class ShopTab : LobbyTab
         User.Currencies.SyncFrom(response.currencies);
         ApplyChangedArtifacts(response.changedArtifacts);
         GameSession.Instance.NotifyChangeCurrencies();
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.ShopPurchase);
     }
 
     // null은 서버가 필드를 보내지 않은 경우이고 빈 배열은 변경 항목이 없음을 뜻한다. 둘 다 사용자 상태는 바꾸지 않는다.

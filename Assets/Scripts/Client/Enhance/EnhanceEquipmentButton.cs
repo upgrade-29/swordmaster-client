@@ -31,8 +31,10 @@ public class EnhanceEquipmentButton : MonoBehaviour
     }
 
     // 아이콘 칸 크기는 프리팹에서 원본의 정수 배율로 맞춰 둔다. 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다
+    // 빈 슬롯이면 imageCode에 null을 넘기고, 아이콘을 숨긴다
     public void SetIcon(string imageCode)
     {
+        imgIcon.enabled = string.IsNullOrEmpty(imageCode) == false;
         Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
         imgIcon.sprite = sprite;
         imgIcon.color = sprite != null ? Color.white : colorIconPlaceholder;

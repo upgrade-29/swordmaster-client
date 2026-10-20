@@ -89,6 +89,7 @@ public class ButtonUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void OnClick()
     {
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiClick);
         OnClickEvent.Invoke();
     }
 }

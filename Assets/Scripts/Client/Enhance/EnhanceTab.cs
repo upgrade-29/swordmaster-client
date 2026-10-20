@@ -117,7 +117,7 @@ public class EnhanceTab : LobbyTab
         enhanceEquipmentSelect.SetSword($"검 {SwordLevelColor.Format(User.Sword.Level)}", GetSwordData(User.Sword.Level).code);
         for (int slotIndex = 0; slotIndex < GameConstants.Rules.ArtifactSlotCount; slotIndex++)
         {
-            // 빈 슬롯이면 이미지 주소 없이 회색 상자를 둔다
+            // 빈 슬롯이면 이미지 주소 없이 넘겨서 아이콘을 숨긴다
             string imageCode = GetEquippedArtifact(slotIndex)?.ArtifactCode;
             enhanceEquipmentSelect.SetArtifact(slotIndex, GetEquippedArtifactName(slotIndex), imageCode);
         }
@@ -432,6 +432,7 @@ public class EnhanceTab : LobbyTab
     {
         User.Sword.SetLevel(response.swordResponse.level);
         SyncCurrencies(response.currenciesResponse);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceSell);
         RefreshAfterRequest();
     }
 
@@ -497,6 +498,7 @@ public class EnhanceTab : LobbyTab
             artifact.SetEquippedSlot(equipped?.equipSlot);
         }
 
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.ArtifactEquip);
         RefreshAfterRequest();
     }
 

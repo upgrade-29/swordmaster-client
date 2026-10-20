@@ -45,6 +45,7 @@ public class LobbyController : MonoBehaviour
 
     private void Start()
     {
+        SoundManager.Instance.PlayBgm(GameConstants.Sounds.BgmLobby);
         view.SetSelectedTab(currentTab);
         view.SetTrackPosition(GetTrackPosition(currentTab));
         view.SetNickname(User.Nickname);

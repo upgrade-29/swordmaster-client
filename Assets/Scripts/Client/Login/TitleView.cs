@@ -130,6 +130,7 @@ public class TitleView : MonoBehaviour
 
     private void OnClickTouch()
     {
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.TitleTouch);
         OnClickTouchEvent.Invoke();
     }
 }

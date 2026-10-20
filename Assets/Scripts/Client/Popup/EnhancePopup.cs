@@ -275,6 +275,7 @@ public class EnhancePopup : BasePopup
     private void AppendCharge(Sequence sequence)
     {
         float start = sequence.Duration();
+        sequence.InsertCallback(start, () => SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceCharge));
         sequence.Insert(start, imgGlow.rectTransform.DOScale(1f, ChargeDuration).SetEase(Ease.InQuad));
         sequence.Insert(start, imgGlow.DOFade(GlowMaxAlpha, ChargeDuration));
         sequence.Insert(start, canvasGroupRays.DOFade(RayMaxAlpha, ChargeDuration * 0.5f));
@@ -293,6 +294,7 @@ public class EnhancePopup : BasePopup
         // 섬광이 가장 밝아 결과 제목이 나타나는 순간에 강화된 이미지로 바꾼다
         float burstStart = start + FlashInDuration;
         sequence.InsertCallback(burstStart, ShowResultImage);
+        sequence.InsertCallback(burstStart, () => SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceSuccess));
         sequence.Insert(burstStart, imgGlow.rectTransform.DOScale(BurstScale, BurstDuration));
         sequence.Insert(burstStart, imgGlow.DOFade(0f, BurstDuration));
         sequence.Insert(burstStart, rectRays.DOScale(BurstScale, BurstDuration));
@@ -306,6 +308,7 @@ public class EnhancePopup : BasePopup
     private void AppendFail(Sequence sequence)
     {
         float start = sequence.Duration();
+        sequence.InsertCallback(start, () => SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceFail));
         sequence.Insert(start, imgSword.rectTransform.DOAnchorPos(vecSwordPosition, FlashInDuration));
         sequence.Insert(start, imgGlow.DOColor(GameConstants.Colors.EnhanceFailGlow, FailDuration));
         sequence.Insert(start, imgGlow.rectTransform.DOScale(FailGlowScale, FailDuration));

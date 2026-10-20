@@ -60,6 +60,7 @@ public class BossWarningView : MonoBehaviour
 
         bossNameText.text = bossName;
         gameObject.SetActive(true);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.BossWarning);
 
         float tileWidth = GetBandTileWidth();
         ApplyTime(0f, duration, tileWidth);

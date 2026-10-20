@@ -52,6 +52,50 @@ public static class GameConstants
         public const string DamageFont = "TMP/Galmuri11-Bold_Outline SDF";
     }
 
+    // Resources/Sound 아래 클립 경로
+    public static class Sounds
+    {
+        public const string BgmLobby = "Sound/BGM/lobby";
+        public const string BgmBattle = "Sound/BGM/battle";
+
+        public static readonly string[] Swings =
+        {
+            "Sound/SFX/sfx_battle_swing_01",
+            "Sound/SFX/sfx_battle_swing_02",
+            "Sound/SFX/sfx_battle_swing_03",
+        };
+        public static readonly string[] Hits =
+        {
+            "Sound/SFX/sfx_battle_hit_01",
+            "Sound/SFX/sfx_battle_hit_02",
+            "Sound/SFX/sfx_battle_hit_03",
+        };
+        public const string HitCrit = "Sound/SFX/sfx_battle_hit_crit";
+        public const string Knockout = "Sound/SFX/sfx_battle_knockout";
+        public const string Heal = "Sound/SFX/sfx_battle_heal";
+        public const string Countdown = "Sound/SFX/sfx_battle_countdown";
+        public const string BattleStart = "Sound/SFX/sfx_battle_start";
+        public const string BossWarning = "Sound/SFX/sfx_battle_boss_warning";
+        public const string EnemyEntrance = "Sound/SFX/sfx_battle_enemy_entrance";
+        public const string Coin = "Sound/SFX/sfx_battle_coin";
+
+        public const string EnhanceCharge = "Sound/SFX/sfx_enhance_charge";
+        public const string EnhanceSuccess = "Sound/SFX/sfx_enhance_success";
+        public const string EnhanceFail = "Sound/SFX/sfx_enhance_fail";
+        public const string EnhanceSell = "Sound/SFX/sfx_enhance_sell";
+        public const string ArtifactEquip = "Sound/SFX/sfx_artifact_equip";
+
+        public const string ShopPurchase = "Sound/SFX/sfx_shop_purchase";
+        public const string GachaReveal = "Sound/SFX/sfx_shop_gacha_reveal";
+        public const string GachaRevealRare = "Sound/SFX/sfx_shop_gacha_reveal_rare";
+
+        public const string UiClick = "Sound/SFX/sfx_ui_click";
+        public const string UiPopupOpen = "Sound/SFX/sfx_ui_popup_open";
+        public const string UiPopupClose = "Sound/SFX/sfx_ui_popup_close";
+        public const string UiError = "Sound/SFX/sfx_ui_error";
+        public const string TitleTouch = "Sound/SFX/sfx_title_touch";
+    }
+
     public static class AddressableLabels
     {
         public const string Preload = "preload"; // 시작할 때 타이틀 화면에서 한 번에 읽어 두는 리소스

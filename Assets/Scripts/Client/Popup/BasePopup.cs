@@ -51,6 +51,7 @@ public class BasePopup : MonoBehaviour
             gameObject.SetActive(true);
             canvasGroup.blocksRaycasts = true;
             OnOpenEvent.Invoke(this);
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiPopupOpen);
             PlayOpenAnimation();
         }
 
@@ -68,6 +69,7 @@ public class BasePopup : MonoBehaviour
         isOpened = false;
         canvasGroup.blocksRaycasts = false;
         OnCloseEvent.Invoke(this);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiPopupClose);
 
         KillTransition();
         seqTransition = CreateCloseSequence()

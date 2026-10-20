@@ -20,7 +20,7 @@ public class EnhanceEquipmentInfo : MonoBehaviour
 
     [ReadOnly] [SerializeField] private GameObject objEmptyGuide;
 
-    // 이미지를 못 읽었거나 빈 슬롯일 때 보여줄 회색 상자 색
+    // 이미지를 못 읽었을 때 보여줄 회색 상자 색. 빈 슬롯이면 이미지를 숨긴다
     private Color colorSwordPlaceholder;
     private Color colorArtifactPlaceholder;
 
@@ -103,9 +103,10 @@ public class EnhanceEquipmentInfo : MonoBehaviour
         imgArtifact.gameObject.SetActive(true);
     }
 
-    // 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다
+    // 미리 읽은 이미지가 없으면 회색 상자를 그대로 둔다. 빈 슬롯이면 숨긴다
     private static void SetImage(Image image, string imageCode, Color placeholderColor)
     {
+        image.enabled = string.IsNullOrEmpty(imageCode) == false;
         Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
         image.sprite = sprite;
         image.color = sprite != null ? Color.white : placeholderColor;
