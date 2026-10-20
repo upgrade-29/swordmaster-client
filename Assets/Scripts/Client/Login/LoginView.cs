@@ -14,12 +14,16 @@ public class LoginView : MonoBehaviour
     [ReadOnly] [SerializeField] private Button loginButton;
     [ReadOnly] [SerializeField] private Button signupButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI resultText;
+    [ReadOnly][SerializeField] private Button googleButton;
+
+    private string googleToken = "108416504166-s6e69s8oo6fh27s58dko1t2aajj5fevt.apps.googleusercontent.com";
 
     // onSubmit 직후 입력칸이 스스로 비활성화되므로, 다음 칸 포커스는 다음 프레임에 준다
     private TMP_InputField pendingFocusInput;
 
     public event Action<string, string> OnClickLoginEvent = delegate { };
     public event Action OnClickSignupEvent = delegate { };
+    public event Action OnClickGoogleEvent = delegate { };
 
     private void Awake()
     {
@@ -28,10 +32,12 @@ public class LoginView : MonoBehaviour
         passwordInput = GameUtil.Bind<TMP_InputField>(transform, "LoginPanel/PasswordInput");
         loginButton = GameUtil.Bind<Button>(transform, "LoginPanel/LoginButton");
         signupButton = GameUtil.Bind<Button>(transform, "LoginPanel/SignupButton");
+        googleButton = GameUtil.Bind<Button>(transform, "LoginPanel/GoogleButton");
         resultText = GameUtil.Bind<TextMeshProUGUI>(transform, "LoginPanel/ResultText");
 
         loginButton.onClick.AddListener(OnClickLogin);
         signupButton.onClick.AddListener(OnClickSignup);
+        googleButton.onClick.AddListener(OnClickGoogle);
         idInput.onSubmit.AddListener(OnSubmitId);
         passwordInput.onSubmit.AddListener(OnSubmitPassword);
         resultText.text = string.Empty;
@@ -62,6 +68,11 @@ public class LoginView : MonoBehaviour
         if (loginButton != null)
         {
             loginButton.onClick.RemoveListener(OnClickLogin);
+        }
+
+        if (googleButton != null)
+        {
+            googleButton.onClick.RemoveListener(OnClickGoogle);
         }
 
         if (idInput != null)
@@ -115,6 +126,7 @@ public class LoginView : MonoBehaviour
         passwordInput.interactable = interactable;
         loginButton.interactable = interactable;
         signupButton.interactable = interactable;
+        googleButton.interactable = interactable;
     }
 
     private void OnClickLogin()
@@ -149,5 +161,10 @@ public class LoginView : MonoBehaviour
     private void OnClickSignup()
     {
         OnClickSignupEvent.Invoke();
+    }
+
+    private void OnClickGoogle()
+    {
+        OnClickGoogleEvent.Invoke();
     }
 }
