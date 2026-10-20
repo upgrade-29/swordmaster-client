@@ -14,7 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Stage
   m_GUID: 23a7f8ffb7609424ebec7e250ce1ada2
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 90d9b47ebca5bae4dba98a4a98611887
+    m_Address: STAGE_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afe15a17856a1414c852d166236dd5d8
+    m_Address: STAGE_03
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e8cca76ff02221645b9370c6f4f5e23c
+    m_Address: STAGE_02
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: c82b8690fb1d9f54daec3fd62bc4501a, type: 2}
   m_SchemaSet:

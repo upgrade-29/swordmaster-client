@@ -14,7 +14,175 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Artifact
   m_GUID: 96a2d8da1d371c745a4226b261337024
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 015bfd3b56bea8344a44c8541cd0aea9
+    m_Address: GREED_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 039bec248a17bee42956287d8b160875
+    m_Address: GALE_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b24ebc410426b645a6a5088d1c4c192
+    m_Address: EXECUTIONER_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23b9368ba81cb2c47bc01709ae0ab46b
+    m_Address: CHRONO_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25e9b959c63edc240a4205656ddcbbb8
+    m_Address: HAWK_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d5c62a207360104dba54dad8863e13f
+    m_Address: THUNDER_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38f8838d3548a8d4182fa7890ea88bf3
+    m_Address: FOCUS_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a87035bed82a074ebb3afe4481212fc
+    m_Address: BLOOD_LORD_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4364080842320a44ba7a3f9d7896d4ab
+    m_Address: VITAL_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5038240ef8e216b4aba0a12b773c1c5b
+    m_Address: THUNDER_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50a5c4d2c2ac56947a5e54a251fc7630
+    m_Address: UNYIELDING_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54129e392b61e154eb14b07d16e8bb7f
+    m_Address: UNYIELDING_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b25ae951c5b909498618c3c2cba0b4a
+    m_Address: HUNTER_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5bb4b55dc81e8594083deabaa3f05ee2
+    m_Address: WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 63b0c1dd177eb3c4d844d4d6ef03605b
+    m_Address: FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6a619e22ac3c4e14cba240197887fa4c
+    m_Address: GUARDIAN_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 73cac81dc0b4ae942ba23c64cf86564f
+    m_Address: ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7bc042c7bc03daa4396866a466579a30
+    m_Address: GIANT_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d9a573c76ed236458667536a053a554
+    m_Address: GUARDIAN_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dba6885e785ebb47b862cb5a540ce7b
+    m_Address: HUNTER_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9199a1c5b9f22b5439db0f348047168e
+    m_Address: GREED_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91a6e1faae9bddd4e86aa061f1b0581a
+    m_Address: VAMPIRE_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a3568c86784cca249a22d500a48af694
+    m_Address: VAMPIRE_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aba0c3e082207484b820d00b8c08760e
+    m_Address: SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b35536ddce6f54d408a0380273728a35
+    m_Address: WIND_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c71707597e9d9c64189b19f0e9bd7655
+    m_Address: GALE_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db8363d83a472744d96d68c146b36ad9
+    m_Address: THIRST_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1e8dbe8250067f488332bcba19b299a
+    m_Address: HAWK_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: c82b8690fb1d9f54daec3fd62bc4501a, type: 2}
   m_SchemaSet:
