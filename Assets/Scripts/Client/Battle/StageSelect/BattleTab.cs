@@ -172,6 +172,7 @@ public class BattleTab : LobbyTab
 
         if (error == null)
         {
+            StageSelectController.RememberStage(info.stage);
             BattleEntry.Set(info);
             SceneManager.LoadScene(GameConstants.Scenes.Battle);
             return;
