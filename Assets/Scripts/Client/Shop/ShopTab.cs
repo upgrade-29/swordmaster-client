@@ -20,6 +20,12 @@ public class ShopTab : LobbyTab
     [SerializeField] private Sprite spriteDiamond;
     [SerializeField] private Sprite spriteFallback; // 이미지가 정해지지 않은 상품, 재화, 보상에 쓴다
 
+    // 가챠 결과에서 유물을 눌렀을 때 정보창의 능력치 줄 아이콘. 강화 탭과 같은 이미지를 넣는다
+    [SerializeField] private Sprite spriteAttackSpeed;
+    [SerializeField] private Sprite spriteMaxHp;
+    [SerializeField] private Sprite spriteCritRate;
+    [SerializeField] private Sprite spriteLifesteal;
+
     // 얻은 재화가 탑UI 아이콘에 닿을 때 재생할 반짝임. 스프라이트 시트(gold_effect, diamond_effect)를 자른 순서대로 넣는다
     [SerializeField] private Sprite[] goldPopFrames;
     [SerializeField] private Sprite[] diamondPopFrames;
@@ -360,7 +366,7 @@ public class ShopTab : LobbyTab
         System.Collections.Generic.HashSet<string> newArtifactCodes)
     {
         gachaRewards = rewards;
-        GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon, newArtifactCodes);
+        GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon, CreateGachaArtifactInfo, newArtifactCodes);
         GachaResultPopup.Open();
     }
 
@@ -375,6 +381,47 @@ public class ShopTab : LobbyTab
         System.Collections.Generic.IReadOnlyList<RewardResponse> rewards = gachaRewards;
         gachaRewards = null;
         PlayCurrencyRewardFly(rewards, GachaResultPopup.GetRewardSlotPosition);
+    }
+
+    // 뽑은 결과는 이미 User에 반영했으므로, 능력치는 지금 가진 레벨로 계산한다. 갖고 있지 않으면 1레벨로 본다
+    private GachaResultPopup.ArtifactInfo? CreateGachaArtifactInfo(RewardResponse reward)
+    {
+        ArtifactData data = GameDB.artifacts.FirstOrDefault(x => x.code == reward.rewardCode);
+        if (data == null)
+        {
+            return null;
+        }
+
+        UserArtifact owned = User.GetArtifact(reward.rewardCode);
+        int level = owned?.Level ?? 1;
+        var stats = GameDB.GetArtifactStats(reward.rewardCode)
+            .Select(x => new GachaResultPopup.StatInfo(GetStatIcon(x.statType), ArtifactText.GetStatName(x.statType),
+                ArtifactText.FormatStat(x.statType, StatCalculator.GetArtifactValue(x, level))))
+            .ToList();
+
+        return new GachaResultPopup.ArtifactInfo(data.name, $"{ArtifactText.GetGradeName(data.grade)} · Lv. {level.ToString()}", stats);
+    }
+
+    private Sprite GetStatIcon(StatType statType)
+    {
+        Sprite icon = null;
+        switch (statType)
+        {
+            case StatType.AttackSpeed:
+                icon = spriteAttackSpeed;
+                break;
+            case StatType.MaxHp:
+                icon = spriteMaxHp;
+                break;
+            case StatType.CritRate:
+                icon = spriteCritRate;
+                break;
+            case StatType.Lifesteal:
+                icon = spriteLifesteal;
+                break;
+        }
+
+        return icon;
     }
 
     // 유물은 미리 읽은 유물 이미지를, 재화는 재화 아이콘을 쓴다. 유물 이미지가 없으면 기본 이미지를 쓴다

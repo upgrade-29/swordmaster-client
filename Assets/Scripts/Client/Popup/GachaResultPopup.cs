@@ -17,8 +17,38 @@ using UnityEngine.UI;
 // 연출 중에 누르면 건너뛴다. 상자가 열리는 중이면 다 열리고 빛이 자리 잡은 모습으로, 결과 패널이 뜬 뒤면 보상이 다 채워진 모습으로 바로 간다
 // 상자가 열린 채 보이는 동안 누르면 기다리지 않고 바로 상자를 치우지만, 결과 패널 연출은 그대로 보여 준다
 // 상자를 건너뛰려고 연타한 클릭이 결과 연출까지 건너뛰지 않게, 상자가 사라지는 중의 클릭은 무시한다
+// 보상이 다 나온 뒤 유물 칸을 누르면 정보창을 띄운다. 정보창 바깥을 누르면 정보창만 닫고 결과 팝업은 그대로 둔다
 public class GachaResultPopup : BasePopup, IPointerClickHandler
 {
+    public readonly struct StatInfo
+    {
+        public readonly Sprite icon;
+        public readonly string name;
+        public readonly string value;
+
+        public StatInfo(Sprite icon, string name, string value)
+        {
+            this.icon = icon;
+            this.name = name;
+            this.value = value;
+        }
+    }
+
+    // 정보창에 쓸 유물 내용. 값은 화면에 표시할 문자열로 받는다
+    public readonly struct ArtifactInfo
+    {
+        public readonly string name;
+        public readonly string grade; // "전설 · Lv. 3"처럼 등급 줄에 쓰는 글자
+        public readonly IReadOnlyList<StatInfo> stats;
+
+        public ArtifactInfo(string name, string grade, IReadOnlyList<StatInfo> stats)
+        {
+            this.name = name;
+            this.grade = grade;
+            this.stats = stats;
+        }
+    }
+
     private enum EffectPhase
     {
         Ready,     // 상자를 누르기 전
@@ -51,6 +81,15 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
     [ReadOnly] [SerializeField] private GameObject objSlotTemplate;
     [ReadOnly] [SerializeField] private ButtonUI btnClose;
     [ReadOnly] [SerializeField] private Image imgFlash;
+    [ReadOnly] [SerializeField] private RectTransform rectArtifactInfo;
+    [ReadOnly] [SerializeField] private Button btnArtifactInfoDimmed;
+    [ReadOnly] [SerializeField] private RectTransform rectArtifactInfoPanel;
+    [ReadOnly] [SerializeField] private Image imgArtifactInfoIcon;
+    [ReadOnly] [SerializeField] private Image imgArtifactInfoGradeFrame;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtArtifactInfoName;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtArtifactInfoGrade;
+    [ReadOnly] [SerializeField] private RectTransform rectArtifactInfoStatList;
+    [ReadOnly] [SerializeField] private List<RectTransform> listArtifactInfoStatRow = new List<RectTransform>();
 
     [Header("떨림")]
     [SerializeField] private float shakeDuration = 1f;     // 상자를 누른 뒤 떨리는 시간(초)
@@ -126,6 +165,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         public readonly Image imgGradeFrame;
         public readonly TextMeshProUGUI txtAmount;
         public readonly GameObject objNew;
+        public readonly ButtonUI btnSlot;
 
         public RewardSlot(GameObject obj)
         {
@@ -135,12 +175,15 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             imgGradeFrame = GameUtil.Bind<Image>(obj, "GradeFrame");
             txtAmount = GameUtil.Bind<TextMeshProUGUI>(obj, "Amount");
             objNew = GameUtil.Bind<RectTransform>(obj, "New").gameObject;
+            btnSlot = GameUtil.TryGetComponent<ButtonUI>(obj);
         }
     }
 
     private IReadOnlyList<RewardResponse> rewards;
     private GameDB gameDB;
     private Func<RewardResponse, Sprite> getRewardIcon;
+    private Func<RewardResponse, ArtifactInfo?> getArtifactInfo;
+    private Tween tweenArtifactInfo;
     private ISet<string> newArtifactCodes;
     // 같은 새 유물이 여러 개 나오면 첫 칸에만 NEW를 붙이려고 이미 붙인 코드를 모은다
     private readonly HashSet<string> setShownNewCode = new HashSet<string>();
@@ -187,6 +230,15 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         objSlotTemplate = GameUtil.Bind<RectTransform>(transform, "Panel/Stage/RewardGrid/SlotTemplate").gameObject;
         btnClose = GameUtil.Bind<ButtonUI>(transform, "Panel/Footer/CloseButton");
         imgFlash = GameUtil.Bind<Image>(transform, "Flash");
+        rectArtifactInfo = GameUtil.Bind<RectTransform>(transform, "ArtifactInfo");
+        btnArtifactInfoDimmed = GameUtil.Bind<Button>(transform, "ArtifactInfo/Dimmed");
+        rectArtifactInfoPanel = GameUtil.Bind<RectTransform>(transform, "ArtifactInfo/Panel");
+        imgArtifactInfoIcon = GameUtil.Bind<Image>(transform, "ArtifactInfo/Panel/IconArea/Slot/Icon");
+        imgArtifactInfoGradeFrame = GameUtil.Bind<Image>(transform, "ArtifactInfo/Panel/IconArea/Slot/GradeFrame");
+        txtArtifactInfoName = GameUtil.Bind<TextMeshProUGUI>(transform, "ArtifactInfo/Panel/Name");
+        txtArtifactInfoGrade = GameUtil.Bind<TextMeshProUGUI>(transform, "ArtifactInfo/Panel/Grade");
+        rectArtifactInfoStatList = GameUtil.Bind<RectTransform>(transform, "ArtifactInfo/Panel/StatList");
+        listArtifactInfoStatRow.Add(GameUtil.Bind<RectTransform>(rectArtifactInfoStatList, "StatRow"));
 
         woodChestController = animatorChest.runtimeAnimatorController;
         woodChestFront = imgChestFront.sprite;
@@ -197,6 +249,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
 
         btnChest.OnClickEvent += OnClickChest;
         btnClose.OnClickEvent += OnClickClose;
+        btnArtifactInfoDimmed.onClick.AddListener(HideArtifactInfo);
     }
 
     protected override void OnDisable()
@@ -217,17 +270,24 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         {
             btnClose.OnClickEvent -= OnClickClose;
         }
+
+        if (btnArtifactInfoDimmed != null)
+        {
+            btnArtifactInfoDimmed.onClick.RemoveListener(HideArtifactInfo);
+        }
     }
 
     // 서버가 준 보상 목록을 그대로 받는다. 상자 종류와 빛 색은 그중 유물의 최고 등급으로 정한다
     // 아이콘은 보상마다 getRewardIcon으로 받는다(유물 이미지, 재화 아이콘 등은 부르는 쪽이 정한다)
+    // 유물 칸을 누르면 getArtifactInfo로 정보창 내용을 받는다. null을 돌려주면 정보창을 띄우지 않는다
     // newArtifactCodes는 뽑기 전에 갖고 있지 않던 유물의 코드로, 그 칸에 NEW를 붙인다
     public void Setup(IReadOnlyList<RewardResponse> rewards, GameDB gameDB, Func<RewardResponse, Sprite> getRewardIcon,
-        ISet<string> newArtifactCodes)
+        Func<RewardResponse, ArtifactInfo?> getArtifactInfo, ISet<string> newArtifactCodes)
     {
         this.rewards = rewards;
         this.gameDB = gameDB;
         this.getRewardIcon = getRewardIcon;
+        this.getArtifactInfo = getArtifactInfo;
         this.newArtifactCodes = newArtifactCodes;
     }
 
@@ -348,6 +408,8 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         rectRays.gameObject.SetActive(false);
 
         ClearRewardSlots();
+        tweenArtifactInfo?.Kill();
+        rectArtifactInfo.gameObject.SetActive(false);
 
         // 상자를 다 열 때까지 결과 패널은 숨겨 둔다
         rectResultPanel.gameObject.SetActive(false);
@@ -675,8 +737,84 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
                      newArtifactCodes.Contains(reward.rewardCode) && setShownNewCode.Add(reward.rewardCode);
         slot.objNew.SetActive(isNew);
 
+        // 칸은 다시 열 때 파괴되므로 구독을 따로 풀지 않는다
+        slot.btnSlot.OnClickEvent += () => OnClickSlot(reward, slot);
+
         listSlot.Add(slot);
         return slot;
+    }
+
+    // 칸이 버튼이라 누르면 팝업 쪽 OnPointerClick으로 올라가지 않으므로, 연출 중이면 여기서 건너뛴다
+    private void OnClickSlot(RewardResponse reward, RewardSlot slot)
+    {
+        if (phase != EffectPhase.Finished)
+        {
+            Skip();
+            return;
+        }
+
+        ArtifactInfo? info = reward.rewardType == RewardType.Artifact
+            ? getArtifactInfo?.Invoke(reward)
+            : null;
+        if (info.HasValue == false)
+        {
+            return;
+        }
+
+        ShowArtifactInfo(info.Value, slot);
+    }
+
+    // 아이콘과 등급 테두리는 누른 칸의 것을 그대로 쓴다. 팝업이 열릴 때와 같은 크기 연출로 띄운다
+    private void ShowArtifactInfo(ArtifactInfo info, RewardSlot slot)
+    {
+        imgArtifactInfoIcon.sprite = slot.imgIcon.sprite;
+        imgArtifactInfoIcon.enabled = slot.imgIcon.enabled;
+        imgArtifactInfoGradeFrame.sprite = slot.imgGradeFrame.sprite;
+        imgArtifactInfoGradeFrame.enabled = slot.imgGradeFrame.enabled;
+        txtArtifactInfoName.text = info.name;
+        txtArtifactInfoGrade.text = info.grade;
+        ShowArtifactInfoStats(info.stats);
+
+        rectArtifactInfo.gameObject.SetActive(true);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiPopupOpen);
+
+        tweenArtifactInfo?.Kill();
+        rectArtifactInfoPanel.localScale = Vector3.one * GameConstants.PopupAnimation.OpenStartScale;
+        tweenArtifactInfo = rectArtifactInfoPanel.DOScale(1f, GameConstants.PopupAnimation.OpenDuration)
+            .SetEase(GameConstants.PopupAnimation.OpenScaleEase)
+            .SetUpdate(true)
+            .SetLink(gameObject);
+    }
+
+    private void ShowArtifactInfoStats(IReadOnlyList<StatInfo> stats)
+    {
+        while (listArtifactInfoStatRow.Count < stats.Count)
+        {
+            listArtifactInfoStatRow.Add(Instantiate(listArtifactInfoStatRow[0], rectArtifactInfoStatList));
+        }
+
+        for (int i = 0; i < listArtifactInfoStatRow.Count; i++)
+        {
+            RectTransform row = listArtifactInfoStatRow[i];
+            bool visible = i < stats.Count;
+            row.gameObject.SetActive(visible);
+            if (visible == false)
+            {
+                continue;
+            }
+
+            GameUtil.Bind<Image>(row, "Icon").sprite = stats[i].icon;
+            GameUtil.Bind<TextMeshProUGUI>(row, "Label").text = stats[i].name;
+            GameUtil.Bind<TextMeshProUGUI>(row, "Value").text = stats[i].value;
+        }
+    }
+
+    // 정보창 바깥(정보창의 Dimmed)을 누르면 정보창만 닫는다
+    private void HideArtifactInfo()
+    {
+        tweenArtifactInfo?.Kill();
+        rectArtifactInfo.gameObject.SetActive(false);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiPopupClose);
     }
 
     private void ClearRewardSlots()
