@@ -57,11 +57,14 @@ public class BattleEffectPresenter : IDisposable
     private void OnCountdownStarted(BattleSubStage subStage)
     {
         ResultPopup.Close();
+        enemyView.SetSprite(subStage.Enemy.code);
         enemyView.SetVisible(true);
     }
 
+    // 다음 적의 검 이미지로 바꿔서 보여준다. 보스 경고는 이 뒤에 뜨므로 경고 중에도 보스 이미지가 보인다
     private void OnSubStageStarted(BattleSubStage subStage)
     {
+        enemyView.SetSprite(subStage.Enemy.code);
         enemyView.SetVisible(true);
     }
 

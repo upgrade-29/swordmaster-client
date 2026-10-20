@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -96,6 +97,10 @@ public class BattleViewManager : MonoBehaviour
 
         Debug.Log($"[Battle] Entered from lobby. Start stage {session.stage} (next stage {user.StageProgress.NextStage}), " +
                   $"server {ServerSettings.BaseUrl}");
+
+        // 플레이어는 지금 강화 단계의 검 이미지로 보여준다. 전투 중에는 강화하지 않으므로 한 번만 바꾼다
+        SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
+        playerView.SetSprite(sword.code);
 
         manager.Init(gameDB);
         manager.SetSpeed(speed);

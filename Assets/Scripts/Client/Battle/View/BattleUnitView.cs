@@ -42,6 +42,14 @@ public class BattleUnitView : MonoBehaviour
         spriteRenderer.enabled = visible;
     }
 
+    // 미리 읽은 검 이미지로 바꾼다. 이미지가 없으면 씬에 놓인 자리 표시 이미지를 그대로 둔다
+    public void SetSprite(string imageCode)
+    {
+        Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
+        if (sprite != null)
+            spriteRenderer.sprite = sprite;
+    }
+
     // 상대 쪽으로 살짝 튀어나갔다가 제자리로 돌아온다
     public void PlayAttack(Vector3 targetPosition)
     {
