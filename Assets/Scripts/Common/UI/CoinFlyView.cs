@@ -5,8 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-// 적을 처치하면 적 주변에 동전을 흩뿌리고, 잠깐 뒤 골드 HUD로 빨아들인다. 동전이 HUD에 닿으면 그 자리에서 반짝임이 터진다
-// 화면 전체를 덮는 BattleCanvas/CoinLayer에 붙인다. 자식 CoinTemplate과 PopTemplate을 복제해서 쓰고, 다 쓴 것은 다시 쓴다
+// 출발점 주변에 재화를 흩뿌리고, 잠깐 뒤 재화 HUD로 빨아들인다. 재화가 HUD에 닿으면 그 자리에서 반짝임이 터진다
+// 배틀에서는 처치한 적 자리에서 골드가, 로비 상점에서는 구매한 상품 카드에서 골드나 다이아가 나온다
+// 화면 전체를 덮는 Screen Space Overlay 캔버스의 CoinLayer에 붙인다. 자식 CoinTemplate과 PopTemplate을 복제해서 쓰고, 다 쓴 것은 다시 쓴다
 public class CoinFlyView : MonoBehaviour
 {
     private const float ScatterDuration = 0.45f;
@@ -22,7 +23,8 @@ public class CoinFlyView : MonoBehaviour
     private const float ArriveScale = 0.6f;
     private const float PopFrameRate = 24f; // 반짝임 스프라이트 시트를 1초에 몇 장 넘기는지
 
-    // 동전이 HUD에 닿을 때 재생할 반짝임 프레임. 스프라이트 시트(gold_effect)를 자른 순서대로 넣는다
+    // 동전이 HUD에 닿을 때 재생할 기본 반짝임 프레임. 스프라이트 시트(gold_effect)를 자른 순서대로 넣는다
+    // 다른 재화는 Play에 그 재화의 아이콘과 반짝임 프레임(diamond_effect 등)을 따로 넘긴다
     [SerializeField] private Sprite[] popFrames;
 
     private RectTransform layer;
@@ -50,14 +52,31 @@ public class CoinFlyView : MonoBehaviour
 
     // worldPosition은 적이 서 있던 월드 좌표, targetPosition은 동전이 빨려 들어갈 HUD 자리(캔버스 UI의 월드 좌표)
     // onCoinArrived는 동전 하나가 HUD에 닿을 때마다 불린다. speed는 전투 배속이고, 배속만큼 빨리 끝난다
+    // 동전 그림과 반짝임은 템플릿에 넣어 둔 골드를 쓴다
     public void Play(Vector3 worldPosition, Vector3 targetPosition, int count, float speed, Action onCoinArrived)
     {
         Vector2 start = ToLocal(worldCamera.WorldToScreenPoint(worldPosition));
+        Play(start, targetPosition, count, speed, coinTemplate.sprite, popFrames, onCoinArrived);
+    }
+
+    // uiPosition은 재화가 쏟아질 자리(캔버스 UI의 월드 좌표)다. 상품 카드처럼 UI에서 출발할 때 쓴다
+    // coinSprite와 frames로 날아가는 재화 그림과 도착 반짝임을 정한다. frames가 비어 있으면 반짝임 없이 사라진다
+    public void PlayFromUI(Vector3 uiPosition, Vector3 targetPosition, int count, Sprite coinSprite, Sprite[] frames,
+        Action onCoinArrived)
+    {
+        Vector2 start = ToLocal(RectTransformUtility.WorldToScreenPoint(null, uiPosition));
+        Play(start, targetPosition, count, 1f, coinSprite, frames, onCoinArrived);
+    }
+
+    private void Play(Vector2 start, Vector3 targetPosition, int count, float speed, Sprite coinSprite, Sprite[] frames,
+        Action onCoinArrived)
+    {
         Vector2 end = ToLocal(RectTransformUtility.WorldToScreenPoint(null, targetPosition));
 
         for (var i = 0; i < count; i++)
         {
             Image coin = Get(idleCoins, coinTemplate, "Coin");
+            coin.sprite = coinSprite;
             RectTransform rect = coin.rectTransform;
             rect.localPosition = start;
             rect.localScale = Vector3.one;
@@ -77,7 +96,7 @@ public class CoinFlyView : MonoBehaviour
                 {
                     Release(idleCoins, coin);
                     SoundManager.Instance.PlaySfx(GameConstants.Sounds.Coin);
-                    PlayPop(end, speed);
+                    PlayPop(end, speed, frames);
                     onCoinArrived?.Invoke();
                 });
             sequence.timeScale = speed;
@@ -85,29 +104,29 @@ public class CoinFlyView : MonoBehaviour
     }
 
     // 동전이 닿은 자리에서 반짝임 프레임을 한 번 넘기고 사라진다
-    private void PlayPop(Vector2 position, float speed)
+    private void PlayPop(Vector2 position, float speed, Sprite[] frames)
     {
-        if (popFrames == null || popFrames.Length == 0)
+        if (frames == null || frames.Length == 0)
             return;
 
         Image pop = Get(idlePops, popTemplate, "Pop");
         pop.rectTransform.localPosition = position;
-        pop.sprite = popFrames[0];
+        pop.sprite = frames[0];
 
         // 0부터 프레임 수까지 올리면서 정수 부분을 프레임 번호로 쓴다. 마지막 프레임도 한 프레임 시간만큼 보인다
         var frame = 0f;
         Tween tween = DOTween.To(() => frame, value =>
             {
                 frame = value;
-                pop.sprite = popFrames[Mathf.Min((int)value, popFrames.Length - 1)];
-            }, popFrames.Length, popFrames.Length / PopFrameRate)
+                pop.sprite = frames[Mathf.Min((int)value, frames.Length - 1)];
+            }, frames.Length, frames.Length / PopFrameRate)
             .SetEase(Ease.Linear)
             .SetTarget(pop.rectTransform)
             .OnComplete(() => Release(idlePops, pop));
         tween.timeScale = speed;
     }
 
-    // BattleCanvas는 Screen Space Overlay라 카메라 없이 화면 좌표를 바꾼다
+    // BattleCanvas와 LobbyCanvas는 Screen Space Overlay라 카메라 없이 화면 좌표를 바꾼다
     private Vector2 ToLocal(Vector2 screenPoint)
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(layer, screenPoint, null, out Vector2 local);
