@@ -134,7 +134,10 @@ public class ShopTab : LobbyTab
 
     private void ShowPurchasePopup(ShopProductData product)
     {
-        DialogPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?",
+        string message = product.priceType == PriceType.Free
+            ? $"{product.name}\n무료로 받으시겠습니까?"
+            : $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?";
+        DialogPopup.Setup("구매 확인", message,
             new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmPurchase),
             new DialogPopup.DialogPopupButtonInfo("취소", OnCancelPurchase));
         DialogPopup.Open();
@@ -414,6 +417,10 @@ public class ShopTab : LobbyTab
                 break;
             case PriceType.Diamond:
                 icon = spriteDiamond;
+                break;
+            case PriceType.Free:
+                // 무료 상품은 재화 아이콘 없이 "Free" 글자만 보인다
+                icon = null;
                 break;
         }
 

@@ -70,7 +70,9 @@ public class ShopProductItem : MonoBehaviour
             case ShopProductPurchaseState.Ready:
                 SetLoading(false);
                 actionButton.Interactable = true;
-                actionLabel.text = product.price.ToString(GameConstants.NumberFormats.Integer);
+                actionLabel.text = product.priceType == PriceType.Free
+                    ? "Free"
+                    : product.price.ToString(GameConstants.NumberFormats.Integer);
                 break;
 
             case ShopProductPurchaseState.Purchasing:
