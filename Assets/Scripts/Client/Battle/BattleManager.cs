@@ -10,7 +10,7 @@ using UnityEngine;
 public class BattleManager : MonoBehaviour
 {
     public const float BossWarningDuration = 1.8f; // 1배속 기준. 배속만큼 짧아진다
-    private const float StartDelay = 2f;
+    private const float StartDelay = 3f;
     private const int ReportMaxAttempts = 3; // 통신 오류로 보고 응답을 못 받으면 다시 보낸다. 서버는 같은 보고에 같은 응답을 준다
     private const float RequestRetryDelay = 1f; // 다시 보내기 전에 기다리는 시간(초)
 
