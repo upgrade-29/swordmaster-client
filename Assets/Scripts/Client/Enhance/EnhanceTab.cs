@@ -468,11 +468,11 @@ public class EnhanceTab : LobbyTab
             new EnhancePopup.StatInfo(spriteMaxHp, "최대 체력", FormatInteger(before.maxHp), FormatInteger(after.maxHp)),
         };
         string message = isSuccess ? string.Empty : "검이 파괴되었습니다";
-        // 성공하면 새 검을, 실패하면 파괴되는 원래 검을 보여 준다. 실패 연출이 이 검을 어둡게 만든다
+        // 연출 동안은 원래 검을 보여 주고, 성공하면 결과가 드러날 때 새 검으로 바꾼다. 실패하면 파괴되는 원래 검을 그대로 두고 실패 연출이 어둡게 만든다
         string imageCode = isSuccess ? after.code : before.code;
 
         return new EnhancePopup.ResultInfo(isSuccess, SwordLevelColor.Format(levelBefore), SwordLevelColor.Format(levelAfter), after.name, message, stats,
-            imageCode);
+            before.code, imageCode);
     }
 
     private EnhancePopup.ResultInfo CreateArtifactResult(UserArtifact artifact, int levelBefore)
@@ -485,7 +485,7 @@ public class EnhanceTab : LobbyTab
             .ToList();
 
         return new EnhancePopup.ResultInfo(true, $"Lv. {levelBefore.ToString()}", $"Lv. {artifact.Level.ToString()}", data.name,
-            string.Empty, stats, artifact.ArtifactCode);
+            string.Empty, stats, artifact.ArtifactCode, artifact.ArtifactCode);
     }
 
     // 응답에는 장착한 아티팩트만 들어 있으므로, 응답에 없는 아티팩트는 장착 해제된 것이다

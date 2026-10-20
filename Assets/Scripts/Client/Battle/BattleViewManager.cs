@@ -27,6 +27,7 @@ public class BattleViewManager : MonoBehaviour
     private BattleUnitView enemyView;
     private BossWarningView bossWarningView;
     private BattleBackgroundView backgroundView;
+    private BattleDefeatView defeatView;
     private CoinFlyView coinFlyView;
     private ScreenFader screenFader;
     private Button optionButton;
@@ -51,6 +52,7 @@ public class BattleViewManager : MonoBehaviour
         backgroundView = GameUtil.TryGetComponent<BattleBackgroundView>(GameObject.Find("Background"));
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
         coinFlyView = GameUtil.Bind<CoinFlyView>(GameObject.Find("BattleCanvas"), "CoinLayer");
+        defeatView = GameUtil.Bind<BattleDefeatView>(GameObject.Find("BattleCanvas"), "DefeatOverlay");
         screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
         optionButton = GameUtil.Bind<Button>(GameObject.Find("BattleCanvas"), "Hud/OptionButton");
     }
@@ -111,7 +113,7 @@ public class BattleViewManager : MonoBehaviour
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud, namePlateView, enemyView, coinFlyView, user.Nickname);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
-        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, backgroundView,
+        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, backgroundView, defeatView,
             Camera.main.transform, gameDB, manager.Retry, OnExitClicked);
 
         manager.BusyChanged += OnBusyChanged;
@@ -130,11 +132,13 @@ public class BattleViewManager : MonoBehaviour
     }
 
     // 처치한 적이 날아가고 다음 적이 도착하면, 다음 적의 이름판과 체력바를 보여 주고 잠깐 뒤에 전투를 다시 시작한다
+    // 다음 적이 보스면 다가오는 동안 띄운 보스 경고가 끝날 때까지 더 기다린다
     private IEnumerator PlayNextSubStageTransition(BattleSubStage next)
     {
         yield return effectPresenter.PlayNextEnemyEntrance(next);
         hudPresenter.ShowNextEnemy(next);
         yield return new WaitForSeconds(NextEnemyResumeDelay / manager.Speed);
+        yield return effectPresenter.WaitBossWarning();
     }
 
     // 서버가 확정한 재화, 진행도, 아티팩트를 유저에 반영한다. 로비로 돌아가면 이 유저로 화면을 그린다

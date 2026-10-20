@@ -59,10 +59,11 @@ public class EnhancePopup : BasePopup
         public readonly string name;
         public readonly string message; // 레벨 아래에 덧붙이는 문구. 없으면 빈 문자열
         public readonly IReadOnlyList<StatInfo> stats;
-        public readonly string imageCode; // 가운데에 보여 줄 검이나 아티팩트의 이미지 주소
+        public readonly string imageCodeBefore; // 연출 동안 가운데에 보여 줄 강화 전 검이나 아티팩트의 이미지 주소
+        public readonly string imageCode; // 결과가 드러날 때 바꿔 보여 줄 이미지 주소
 
         public ResultInfo(bool isSuccess, string levelBefore, string levelAfter, string name, string message,
-            IReadOnlyList<StatInfo> stats, string imageCode)
+            IReadOnlyList<StatInfo> stats, string imageCodeBefore, string imageCode)
         {
             this.isSuccess = isSuccess;
             this.levelBefore = levelBefore;
@@ -70,6 +71,7 @@ public class EnhancePopup : BasePopup
             this.name = name;
             this.message = message;
             this.stats = stats;
+            this.imageCodeBefore = imageCodeBefore;
             this.imageCode = imageCode;
         }
     }
@@ -158,7 +160,7 @@ public class EnhancePopup : BasePopup
         txtMessage.text = result.message;
         txtMessage.gameObject.SetActive(string.IsNullOrEmpty(result.message) == false);
         txtName.text = result.name;
-        SetImage(result.imageCode);
+        SetImage(result.imageCodeBefore);
         ShowStats(result.stats);
 
         PlayEnhanceSequence();
@@ -186,6 +188,12 @@ public class EnhancePopup : BasePopup
             ? sprite.rect.size * GameConstants.ArtPixel.UiScale
             : vecSwordPlaceholderSize;
         colorSword = sprite != null ? Color.white : colorSwordPlaceholder;
+    }
+
+    private void ShowResultImage()
+    {
+        SetImage(result.imageCode);
+        imgSword.color = colorSword;
     }
 
     private void ShowStats(IReadOnlyList<StatInfo> stats)
@@ -282,7 +290,9 @@ public class EnhancePopup : BasePopup
         sequence.Insert(start, imgFlash.DOFade(FlashMaxAlpha, FlashInDuration));
         sequence.Insert(start + FlashInDuration, imgFlash.DOFade(0f, FlashOutDuration));
 
+        // 섬광이 가장 밝아 결과 제목이 나타나는 순간에 강화된 이미지로 바꾼다
         float burstStart = start + FlashInDuration;
+        sequence.InsertCallback(burstStart, ShowResultImage);
         sequence.Insert(burstStart, imgGlow.rectTransform.DOScale(BurstScale, BurstDuration));
         sequence.Insert(burstStart, imgGlow.DOFade(0f, BurstDuration));
         sequence.Insert(burstStart, rectRays.DOScale(BurstScale, BurstDuration));
@@ -313,8 +323,14 @@ public class EnhancePopup : BasePopup
         }
     }
 
+    // 화면을 눌러 연출을 건너뛰면 중간 콜백이 불리지 않으므로, 성공이면 여기서도 결과 이미지로 맞춘다
     private void OnEnhanceSequenceComplete()
     {
+        if (result.isSuccess)
+        {
+            ShowResultImage();
+        }
+
         seqEnhance = null;
         canvasGroupResult.interactable = true;
         canvasGroupResult.blocksRaycasts = true;

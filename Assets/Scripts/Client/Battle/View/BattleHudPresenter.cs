@@ -107,8 +107,8 @@ public class BattleHudPresenter : IDisposable
     {
         DOVirtual.DelayedCall(BattleUnitView.AttackHitDelay / manager.Speed, () =>
         {
-            hud.PlayerHpBar.ChangeHp(battleEvent.playerHp, manager.Session.playerStat.maxHp);
-            hud.EnemyHpBar.ChangeHp(battleEvent.enemyHp, subStage.EnemyStat.maxHp);
+            hud.PlayerHpBar.ChangeHp(battleEvent.playerHp, manager.Session.playerStat.maxHp, manager.Speed);
+            hud.EnemyHpBar.ChangeHp(battleEvent.enemyHp, subStage.EnemyStat.maxHp, manager.Speed);
         }, false).SetTarget(this);
 
         // 처치했으면 적이 튕겨 날아가기 시작할 때 이름판과 체력바를 숨긴다
@@ -143,7 +143,7 @@ public class BattleHudPresenter : IDisposable
         var arrivedCount = 0;
 
         flyingCoinCount += coinCount;
-        coinFlyView.Play(enemyView.CenterPosition, hud.GoldIconPosition, coinCount, () =>
+        coinFlyView.Play(enemyView.CenterPosition, hud.GoldIconPosition, coinCount, manager.Speed, () =>
         {
             arrivedCount++;
             OnCoinArrived(arrivedCount == coinCount ? goldPerCoin + remainder : goldPerCoin);

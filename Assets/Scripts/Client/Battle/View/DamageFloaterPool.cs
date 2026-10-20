@@ -98,8 +98,9 @@ public class DamageFloaterPool : IDisposable
 
     /// <summary>
     /// position에서 숫자를 띄운다. 치명타면 sizeScale에 치명타 배율을 더 곱하고 CRITICAL을 붙인다.
+    /// speed는 전투 배속이고, 배속만큼 빨리 끝난다.
     /// </summary>
-    public void Show(Vector3 position, string text, Color color, float sizeScale, bool isCrit)
+    public void Show(Vector3 position, string text, Color color, float sizeScale, bool isCrit, float speed)
     {
         Floater floater = idleFloaters.Count > 0 ? idleFloaters.Pop() : Create();
 
@@ -122,15 +123,17 @@ public class DamageFloaterPool : IDisposable
         Apply(floater, startPosition, arcSign, 0f);
         floater.trnsRoot.gameObject.SetActive(true);
 
-        DOVirtual.Float(0f, Duration, Duration, time => Apply(floater, startPosition, arcSign, time))
+        Tween tween = DOVirtual.Float(0f, Duration, Duration, time => Apply(floater, startPosition, arcSign, time))
             .SetEase(Ease.Linear)
             .SetTarget(floater.trnsRoot)
             .OnComplete(() => Release(floater));
+        tween.timeScale = speed;
 
         if (isCrit)
         {
-            floater.txtNumber.transform.DOShakePosition(ShakeDuration, new Vector3(ShakeStrength, ShakeStrength, 0f),
+            Tween shakeTween = floater.txtNumber.transform.DOShakePosition(ShakeDuration, new Vector3(ShakeStrength, ShakeStrength, 0f),
                 ShakeVibrato, ShakeRandomness);
+            shakeTween.timeScale = speed;
         }
     }
 

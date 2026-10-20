@@ -78,8 +78,9 @@ public class HpBarView : MonoBehaviour
 
     /// <summary>
     /// 맞거나 회복한 체력을 연출과 함께 보여 준다. 잃은 체력이 최대 체력에 비해 클수록 바가 세게 흔들린다.
+    /// speed는 전투 배속이고, 배속만큼 빨리 끝난다.
     /// </summary>
-    public void ChangeHp(double current, double max)
+    public void ChangeHp(double current, double max, float speed)
     {
         double lostHp = currentHp - current;
         currentHp = current;
@@ -88,44 +89,45 @@ public class HpBarView : MonoBehaviour
         float ratio = GetRatio(current, max);
         if (lostHp > 0)
         {
-            PlayDamage(ratio, GetRatio(lostHp, max));
+            PlayDamage(ratio, GetRatio(lostHp, max), speed);
         }
         else if (lostHp < 0)
         {
-            PlayHeal(ratio);
+            PlayHeal(ratio, speed);
         }
     }
 
     // 연타로 맞으면 잔상의 기다림을 처음부터 다시 시작해서, 연타가 끝난 뒤 한 번에 줄어들게 한다
-    private void PlayDamage(float ratio, float lostRatio)
+    private void PlayDamage(float ratio, float lostRatio, float speed)
     {
         imgFill.DOKill();
         imgTrail.DOKill();
         imgFill.color = fillColor;
 
-        imgFill.DOFillAmount(ratio, FillDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
-        imgTrail.DOFillAmount(ratio, TrailDuration).SetDelay(TrailDelay).SetEase(Ease.InOutQuad).SetLink(gameObject);
+        imgFill.DOFillAmount(ratio, FillDuration).SetEase(Ease.OutQuad).SetLink(gameObject).timeScale = speed;
+        imgTrail.DOFillAmount(ratio, TrailDuration).SetDelay(TrailDelay).SetEase(Ease.InOutQuad).SetLink(gameObject).timeScale = speed;
         DOVirtual.Float(0f, 1f, FlashDuration, progress => imgFill.color = Color.Lerp(fillColor, Color.white, GetFlashAmount(progress)))
             .SetEase(Ease.Linear)
             .SetTarget(imgFill)
-            .SetLink(gameObject);
+            .SetLink(gameObject)
+            .timeScale = speed;
 
         float hitStrength = Mathf.Clamp01(lostRatio / GameConstants.BattleEffect.StrongHitDamageRatio);
         float shakeStrength = ShakeStrength * Mathf.Lerp(1f, StrongHitShakeScale, hitStrength);
         rectBar.DOKill();
         rectBar.anchoredPosition = vecBarPosition;
-        rectBar.DOShakeAnchorPos(ShakeDuration, shakeStrength, ShakeVibrato, ShakeRandomness).SetLink(gameObject);
+        rectBar.DOShakeAnchorPos(ShakeDuration, shakeStrength, ShakeVibrato, ShakeRandomness).SetLink(gameObject).timeScale = speed;
     }
 
     // 회복은 잔상 없이 채움과 잔상이 함께 차오른다
-    private void PlayHeal(float ratio)
+    private void PlayHeal(float ratio, float speed)
     {
         imgFill.DOKill();
         imgTrail.DOKill();
         imgFill.color = fillColor;
 
-        imgFill.DOFillAmount(ratio, HealDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
-        imgTrail.DOFillAmount(ratio, HealDuration).SetEase(Ease.OutQuad).SetLink(gameObject);
+        imgFill.DOFillAmount(ratio, HealDuration).SetEase(Ease.OutQuad).SetLink(gameObject).timeScale = speed;
+        imgTrail.DOFillAmount(ratio, HealDuration).SetEase(Ease.OutQuad).SetLink(gameObject).timeScale = speed;
     }
 
     private void StopEffects()
