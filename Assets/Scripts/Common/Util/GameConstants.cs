@@ -9,6 +9,25 @@ public static class GameConstants
         public const string Title = "TitleScene";
         public const string Lobby = "LobbyScene";
         public const string Battle = "BattleScene";
+        public const string Loading = "LoadingScene";
+    }
+
+    // 씬을 바꿀 때 어두워졌다가 로딩 씬을 거쳐 다시 밝아지는 연출. 시간은 모두 실제 시간(초)이다
+    public static class SceneTransition
+    {
+        public const float FadeOutDuration = 0.3f;
+        public const float FadeInDuration = 0.3f;
+        public const float MinLoadingDuration = 1f;   // 읽기가 빨리 끝나도 로딩 화면을 이만큼은 보여 준다
+        public const float ProgressFollowSpeed = 9.75f; // 진행 바가 실제 진행률을 따라가는 빠르기. 클수록 빨리 붙는다
+        public const float ProgressSnapThreshold = 0.995f; // 목표가 100%일 때 이 값을 넘으면 바로 100%로 채운다
+        public const int FadeSortingOrder = 1000;     // 팝업보다 위에 덮는다
+    }
+
+    // 로딩 화면의 검이 위아래로 둥실거리는 모션
+    public static class LoadingSword
+    {
+        public const float BobHeight = 24f; // 아트 6픽셀
+        public const float BobPeriod = 1.6f;
     }
 
     // 팝업과 능력치 패널이 같이 쓰는 열림/닫힘 연출

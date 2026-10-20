@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 // 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 요청은 AuthApi, PlayerApi로 만들어 HttpRequest로 보낸다.
 // 로그인에 성공하면 서버의 플레이어 정보를 받아 GameSession에 넣고 로비 씬으로 넘어간다.
@@ -347,7 +346,7 @@ public class LoginController : MonoBehaviour
     private static void EnterLobby(PlayerApi.PlayerResponse player)
     {
         GameSession.Instance.SetUser(player.ToUser());
-        SceneManager.LoadScene(GameConstants.Scenes.Lobby);
+        SceneLoader.Instance.Load(GameConstants.Scenes.Lobby);
     }
 
     private void OnClickGoogle()

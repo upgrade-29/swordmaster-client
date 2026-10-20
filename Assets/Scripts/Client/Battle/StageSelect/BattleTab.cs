@@ -1,6 +1,5 @@
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BattleTab : LobbyTab
@@ -173,7 +172,7 @@ public class BattleTab : LobbyTab
         if (error == null)
         {
             BattleEntry.Set(info);
-            SceneManager.LoadScene(GameConstants.Scenes.Battle);
+            SceneLoader.Instance.Load(GameConstants.Scenes.Battle);
             return;
         }
 
