@@ -20,8 +20,14 @@ public class ShopTab : LobbyTab
     [SerializeField] private Sprite spriteDiamond;
     [SerializeField] private Sprite spriteFallback; // 이미지가 정해지지 않은 상품, 재화, 보상에 쓴다
 
+    // 얻은 재화가 탑UI 아이콘에 닿을 때 재생할 반짝임. 스프라이트 시트(gold_effect, diamond_effect)를 자른 순서대로 넣는다
+    [SerializeField] private Sprite[] goldPopFrames;
+    [SerializeField] private Sprite[] diamondPopFrames;
+
     private const string ArtifactGachaBoxCode = "ARTIFACT_BOX";
     private const string GoldGachaBoxCode = "GOLD_BOX";
+
+    [ReadOnly] [SerializeField] private LobbyController lobbyController;
 
     private GameDB GameDB =>GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
@@ -43,6 +49,7 @@ public class ShopTab : LobbyTab
         objEmptyPanel = GameUtil.Bind<RectTransform>(transform, "EmptyPanel").gameObject;
         headerImage = GameUtil.Bind<Image>(transform, "Viewport/Content/ShopHeader");
         objHeaderPlaceholderText = GameUtil.Bind<RectTransform>(transform, "Viewport/Content/ShopHeader/Text (TMP)").gameObject;
+        lobbyController = GetComponentInParent<LobbyController>();
     }
 
     private void Start()
@@ -185,13 +192,20 @@ public class ShopTab : LobbyTab
 
         if (error == null)
         {
-            ShopProductData purchasedProduct = purchasingItem.Product;
+            ShopProductItem purchasedItem = purchasingItem;
             EndPurchase();
             ApplyPurchaseResult(response);
 
-            if (purchasedProduct.category == ShopCategory.Gacha && response.rewards.Count > 0)
+            if (purchasedItem.Product.category == ShopCategory.Gacha)
             {
-                ShowGachaResult(response.rewards);
+                if (response.rewards.Count > 0)
+                {
+                    ShowGachaResult(response.rewards);
+                }
+            }
+            else
+            {
+                PlayCurrencyRewardFly(response.rewards, purchasedItem.VisualPosition);
             }
 
             return;
@@ -267,6 +281,23 @@ public class ShopTab : LobbyTab
             }
 
             ownedArtifact.SyncFrom(changedArtifact.ToUserArtifact());
+        }
+    }
+
+    // 보상 중 골드와 다이아만 fromPosition에서 탑UI 재화 아이콘으로 날린다. 재화는 ApplyPurchaseResult에서 이미 반영했다
+    private void PlayCurrencyRewardFly(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards, Vector3 fromPosition)
+    {
+        foreach (RewardResponse reward in rewards)
+        {
+            switch (reward.rewardType)
+            {
+                case RewardType.Gold:
+                    lobbyController.PlayCurrencyFly(CurrencyType.Gold, reward.amount, fromPosition, spriteGold, goldPopFrames);
+                    break;
+                case RewardType.Diamond:
+                    lobbyController.PlayCurrencyFly(CurrencyType.Diamond, reward.amount, fromPosition, spriteDiamond, diamondPopFrames);
+                    break;
+            }
         }
     }
 

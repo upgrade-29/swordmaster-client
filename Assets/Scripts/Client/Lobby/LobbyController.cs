@@ -9,8 +9,10 @@ public class LobbyController : MonoBehaviour
 
     private const string LogoutTitle = "로그아웃";
     private const string LogoutMessage = "로그아웃할까요?\n다음 실행부터 자동 로그인하지 않습니다.";
+    private const int CurrencyCoinCount = 10; // 재화를 얻을 때 날아가는 개수. 얻은 양이 이보다 적으면 그만큼만 날린다
 
     [ReadOnly] [SerializeField] private LobbyView view;
+    [ReadOnly] [SerializeField] private CoinFlyView coinFlyView;
 
     [ReadOnly(true)] [SerializeField] private LobbyTabType startTab = LobbyTabType.Battle;
     [ReadOnly(true)] [SerializeField] private float swipeThresholdRatio = 0.2f; // 이 값보다 많이 움직이면 탭 전환
@@ -20,6 +22,9 @@ public class LobbyController : MonoBehaviour
     private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
 
     private LobbyTabType currentTab;
+    // 날아가는 중이라 아직 탑UI 숫자에 더하지 않은 재화. 유저 재화는 이미 서버 값이고, 표시만 이만큼 빼서 보여준다
+    private long flyingGold;
+    private long flyingDiamond;
 
     public event Action<LobbyTabType> OnChangeTabEvent = delegate { };
 
@@ -35,6 +40,7 @@ public class LobbyController : MonoBehaviour
         }
 
         GameUtil.Bind(gameObject, ref view);
+        coinFlyView = GameUtil.Bind<CoinFlyView>(transform.parent, "CoinLayer");
         currentTab = startTab;
 
         view.OnClickTabButtonEvent += OnClickTabButton;
@@ -89,11 +95,49 @@ public class LobbyController : MonoBehaviour
         OnChangeTabEvent.Invoke(tab);
     }
 
+    // 이미 유저 재화에 반영된 amount를 fromPosition(캔버스 UI의 월드 좌표)에서 쏟아 탑UI 재화 아이콘으로 빨아들인다
+    // 탑UI 숫자는 하나가 닿을 때마다 나눠서 오르고, 마지막 하나가 닿으면 유저 재화와 정확히 같아진다
+    public void PlayCurrencyFly(CurrencyType type, long amount, Vector3 fromPosition, Sprite coinSprite, Sprite[] popFrames)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        var coinCount = (int)Math.Min(CurrencyCoinCount, amount);
+        long amountPerCoin = amount / coinCount;
+        long remainder = amount % coinCount;
+        var arrivedCount = 0;
+
+        AddFlying(type, amount);
+        RefreshCurrencies();
+
+        coinFlyView.PlayFromUI(fromPosition, view.GetCurrencyIconPosition(type), coinCount, coinSprite, popFrames, () =>
+        {
+            arrivedCount++;
+            AddFlying(type, -(arrivedCount == coinCount ? amountPerCoin + remainder : amountPerCoin));
+            RefreshCurrencies();
+        });
+    }
+
+    private void AddFlying(CurrencyType type, long amount)
+    {
+        switch (type)
+        {
+            case CurrencyType.Gold:
+                flyingGold += amount;
+                break;
+            case CurrencyType.Diamond:
+                flyingDiamond += amount;
+                break;
+        }
+    }
+
     private void RefreshCurrencies()
     {
         view.SetCurrencies(
-            User.Currencies.Gold.ToString("N0", CultureInfo.InvariantCulture),
-            User.Currencies.Diamond.ToString("N0", CultureInfo.InvariantCulture));
+            Math.Max(User.Currencies.Gold - flyingGold, 0).ToString("N0", CultureInfo.InvariantCulture),
+            Math.Max(User.Currencies.Diamond - flyingDiamond, 0).ToString("N0", CultureInfo.InvariantCulture));
     }
 
     private LobbyTabType GetSwipeTargetTab(float trackPosition)

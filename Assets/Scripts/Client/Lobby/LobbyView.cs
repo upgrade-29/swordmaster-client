@@ -102,6 +102,11 @@ public class LobbyView : MonoBehaviour
         playerInfo.SetCurrencies(gold, diamond);
     }
 
+    public Vector3 GetCurrencyIconPosition(CurrencyType type)
+    {
+        return playerInfo.GetCurrencyIconPosition(type);
+    }
+
     public void SetSelectedTab(LobbyTabType selectedTab)
     {
         foreach (var lobbyTabButton in listLobbyTabButton)

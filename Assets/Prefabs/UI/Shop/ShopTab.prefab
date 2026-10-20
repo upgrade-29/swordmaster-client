@@ -559,11 +559,30 @@ MonoBehaviour:
   objViewport: {fileID: 0}
   contentTransform: {fileID: 0}
   objEmptyPanel: {fileID: 0}
+  headerImage: {fileID: 0}
+  objHeaderPlaceholderText: {fileID: 0}
   sectionPrefab: {fileID: 2018452990938816630, guid: cec185f3731e96b479dfba70123c9fe3, type: 3}
   itemPrefab: {fileID: 4186944707959806345, guid: 06edd083e33b82d40865a5ab0cd111bd, type: 3}
   spriteGold: {fileID: 21300000, guid: 19ba188f58088484bafd53d989af68b0, type: 3}
   spriteDiamond: {fileID: 21300000, guid: fbfea33e001af5448ab82e73280ae947, type: 3}
   spriteFallback: {fileID: 187011020156873885, guid: 584c78c9720d8364bbe736400374032a, type: 3}
+  goldPopFrames:
+  - {fileID: 779907249, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 1932879732, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 590000975, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 1809469536, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 369213303, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 1844634903, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  - {fileID: 241037892, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
+  diamondPopFrames:
+  - {fileID: 779907249, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 1932879732, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 590000975, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 1809469536, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 369213303, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 1844634903, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  - {fileID: 241037892, guid: 513ee84141834c568bd94c539e82a859, type: 3}
+  lobbyController: {fileID: 0}
 --- !u!1 &7669657070155214297
 GameObject:
   m_ObjectHideFlags: 0

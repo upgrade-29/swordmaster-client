@@ -21,6 +21,8 @@ public class ShopProductItem : MonoBehaviour
 
     private ShopProductData product;
     public ShopProductData Product => product;
+    // 구매로 얻은 재화가 쏟아질 자리(캔버스 UI의 월드 좌표)
+    public Vector3 VisualPosition => productVisual.rectTransform.position;
 
     public event Action<ShopProductItem> OnClickPurchaseEvent = delegate { };
 
