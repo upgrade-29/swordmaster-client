@@ -37,7 +37,7 @@ public static class GameConstants
     public static class ResourcePaths
     {
         public const string GameDB = "Data/game_db"; // 게임 데이터는 아직 서버에서 받지 않아 시트에서 뽑은 파일을 읽는다
-        public const string DamageFont = "TMP/Galmuri11-Bold SDF";
+        public const string DamageFont = "TMP/Galmuri11-Bold_Outline SDF";
     }
 
     public static class AddressableLabels
@@ -62,6 +62,7 @@ public static class GameConstants
         public static readonly Color EnemyDamage = Color.white;
         public static readonly Color PlayerDamage = new Color(1f, 0.4f, 0.4f);
         public static readonly Color CritDamage = new Color(1f, 0.85f, 0.2f);
+        public static readonly Color CritLabel = new Color32(0xFF, 0x8A, 0x3D, 0xFF); // 치명타 숫자 위의 CRITICAL 글자
         public static readonly Color UnitHit = new Color(1f, 0.35f, 0.35f);
         public static readonly Color Heal = new Color(0.4f, 1f, 0.5f); // 회복 깜빡임과 생명력 흡수 숫자
     }

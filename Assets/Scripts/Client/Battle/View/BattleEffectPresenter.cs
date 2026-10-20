@@ -80,7 +80,9 @@ public class BattleEffectPresenter : IDisposable
         target.PlayHit(battleEvent.isCrit);
 
         Color color = battleEvent.isCrit ? GameConstants.Colors.CritDamage : isPlayerAttack ? GameConstants.Colors.EnemyDamage : GameConstants.Colors.PlayerDamage;
-        damageFloaters.Show(target.HeadPosition, battleEvent.damage.ToString(GameConstants.NumberFormats.Decimal), color, battleEvent.isCrit);
+        double targetMaxHp = isPlayerAttack ? subStage.EnemyStat.maxHp : manager.Session.playerStat.maxHp;
+        float sizeScale = DamageFloaterPool.GetSizeScale(battleEvent.damage, targetMaxHp);
+        damageFloaters.Show(target.HeadPosition, battleEvent.damage.ToString(GameConstants.NumberFormats.Decimal), color, sizeScale, battleEvent.isCrit);
 
         // 흡혈은 공격자 머리 위에 회복량을 띄운다. 체력이 가득 차서 회복하지 못했으면 보여주지 않는다
         // 바로 뒤에 맞으면 같은 자리에 데미지 숫자가 뜨므로, 상대 반대쪽 바깥으로 비켜서 띄운다
@@ -89,7 +91,7 @@ public class BattleEffectPresenter : IDisposable
             attacker.PlayHeal();
             var outward = Mathf.Sign(attacker.transform.position.x - target.transform.position.x);
             Vector3 position = attacker.HeadPosition + new Vector3(outward * LifestealOffset.x, LifestealOffset.y, 0f);
-            damageFloaters.Show(position, $"+{battleEvent.lifesteal.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, false);
+            damageFloaters.Show(position, $"+{battleEvent.lifesteal.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, 1f, false);
         }
     }
 
