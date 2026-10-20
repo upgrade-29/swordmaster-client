@@ -7,6 +7,7 @@ public class EnhanceEquipmentButton : MonoBehaviour
 {
     [ReadOnly] [SerializeField] private ButtonUI btnEquipment;
     [ReadOnly] [SerializeField] private Image imgIcon;
+    [ReadOnly] [SerializeField] private Image imgGradeFrame; // 아티팩트 버튼에만 있다
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtName;
     [ReadOnly] [SerializeField] private GameObject objSelectedMark;
 
@@ -18,6 +19,7 @@ public class EnhanceEquipmentButton : MonoBehaviour
     {
         GameUtil.Bind(gameObject, ref btnEquipment);
         imgIcon = GameUtil.Bind<Image>(transform, "Icon");
+        imgGradeFrame = GameUtil.TryBind<Image>(transform, "GradeFrame");
         colorIconPlaceholder = imgIcon.color;
         txtName = GameUtil.Bind<TextMeshProUGUI>(transform, "Label");
         objSelectedMark = GameUtil.Bind<RectTransform>(transform, "Selected").gameObject;
@@ -38,6 +40,18 @@ public class EnhanceEquipmentButton : MonoBehaviour
         Sprite sprite = ResourceManager.Instance.GetSprite(imageCode);
         imgIcon.sprite = sprite;
         imgIcon.color = sprite != null ? Color.white : colorIconPlaceholder;
+    }
+
+    // 장착한 아티팩트 등급의 테두리를 겹친다. 빈 슬롯이면 null을 넘겨 숨긴다
+    public void SetGradeFrame(Sprite gradeFrame)
+    {
+        if (imgGradeFrame == null)
+        {
+            return;
+        }
+
+        imgGradeFrame.sprite = gradeFrame;
+        imgGradeFrame.enabled = gradeFrame != null;
     }
 
     public void SetSelected(bool selected)

@@ -49,9 +49,14 @@ public class BattleUnitView : MonoBehaviour
     private const float WalkHeight = 0.2f;
     private const float WalkStepDuration = 0.3f;
 
+    // 그림자: 검 그림 아래 끝 높이의 바닥에 붙어 있고, 검이 높이 뜰수록 작고 옅어진다
+    private const float ShadowFadeHeight = 1.5f; // 검이 제자리보다 이만큼 높이 뜨면 그림자가 다 사라진다
+
     private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount"); // SwordMaster/SpriteFlash 셰이더의 흰색으로 덮는 정도
 
     private SpriteRenderer spriteRenderer;
+    private SpriteRenderer shadowRenderer;
+    private Color shadowBaseColor;
     private MaterialPropertyBlock propertyBlock;
     private Vector3 vecBasePosition; // 공격 연출이 끝나면 돌아올 제자리
     private Vector3 vecBaseScale;
@@ -77,6 +82,14 @@ public class BattleUnitView : MonoBehaviour
         vecBaseScale = transform.localScale;
         baseColor = spriteRenderer.color;
         propertyBlock = new MaterialPropertyBlock();
+        shadowRenderer = GameUtil.Bind<SpriteRenderer>(transform, "Shadow");
+        shadowBaseColor = shadowRenderer.color;
+    }
+
+    // 검은 공격, 걷기, 처치 연출로 돌거나 뜨지만 그림자는 바닥에 남아야 하므로, 연출이 끝난 뒤의 위치를 보고 매 프레임 맞춘다
+    private void LateUpdate()
+    {
+        UpdateShadow();
     }
 
     private void OnDestroy()
@@ -199,6 +212,26 @@ public class BattleUnitView : MonoBehaviour
         spriteRenderer.color = baseColor;
         spriteRenderer.enabled = true;
         SetFlashAmount(0f);
+    }
+
+    // 가로 위치만 검을 따라가고, 높이는 제자리 검 그림의 아래 끝에 고정한다. 검의 회전과 피격 크기 변화는 따라가지 않는다
+    private void UpdateShadow()
+    {
+        float groundY = vecBasePosition.y + spriteRenderer.sprite.bounds.min.y * vecBaseScale.y;
+        float height = Mathf.Max(0f, transform.position.y - vecBasePosition.y);
+        float ratio = 1f - Mathf.Clamp01(height / ShadowFadeHeight);
+
+        Transform shadowTransform = shadowRenderer.transform;
+        shadowTransform.SetPositionAndRotation(new Vector3(transform.position.x, groundY, 0f), Quaternion.identity);
+        shadowTransform.localScale = new Vector3(
+            vecBaseScale.x / transform.localScale.x * ratio,
+            vecBaseScale.y / transform.localScale.y * ratio,
+            1f);
+
+        shadowRenderer.enabled = spriteRenderer.enabled;
+        Color color = shadowBaseColor;
+        color.a *= ratio * spriteRenderer.color.a;
+        shadowRenderer.color = color;
     }
 
     private void SetFlashAmount(float amount)

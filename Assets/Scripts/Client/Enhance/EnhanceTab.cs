@@ -22,6 +22,12 @@ public class EnhanceTab : LobbyTab
     [SerializeField] private Sprite spriteCritRate;
     [SerializeField] private Sprite spriteLifesteal;
 
+    // 아티팩트 버튼과 교체 창 이미지 칸에 겹치는 등급 테두리
+    [SerializeField] private Sprite spriteGradeFrameCommon;
+    [SerializeField] private Sprite spriteGradeFrameRare;
+    [SerializeField] private Sprite spriteGradeFrameEpic;
+    [SerializeField] private Sprite spriteGradeFrameLegendary;
+
     private GameDB GameDB => GameSession.Instance.GameDB;
     private User User => GameSession.Instance.User;
     private ArtifactChangePopup ArtifactChangePopup => Popup.Instance.Get<ArtifactChangePopup>();
@@ -117,9 +123,10 @@ public class EnhanceTab : LobbyTab
         enhanceEquipmentSelect.SetSword($"검 {SwordLevelColor.Format(User.Sword.Level)}", GetSwordData(User.Sword.Level).code);
         for (int slotIndex = 0; slotIndex < GameConstants.Rules.ArtifactSlotCount; slotIndex++)
         {
-            // 빈 슬롯이면 이미지 주소 없이 넘겨서 아이콘을 숨긴다
+            // 빈 슬롯이면 이미지 주소와 등급 테두리 없이 넘겨서 숨긴다
             string imageCode = GetEquippedArtifact(slotIndex)?.ArtifactCode;
-            enhanceEquipmentSelect.SetArtifact(slotIndex, GetEquippedArtifactName(slotIndex), imageCode);
+            Sprite gradeFrame = imageCode == null ? null : GetGradeFrame(GetArtifactData(imageCode).grade);
+            enhanceEquipmentSelect.SetArtifact(slotIndex, GetEquippedArtifactName(slotIndex), imageCode, gradeFrame);
         }
     }
 
@@ -251,6 +258,28 @@ public class EnhanceTab : LobbyTab
         return GameDB.artifactEnhance.FirstOrDefault(x => x.grade == grade && x.level == artifact.Level);
     }
 
+    private Sprite GetGradeFrame(ArtifactGrade grade)
+    {
+        Sprite frame = null;
+        switch (grade)
+        {
+            case ArtifactGrade.Common:
+                frame = spriteGradeFrameCommon;
+                break;
+            case ArtifactGrade.Rare:
+                frame = spriteGradeFrameRare;
+                break;
+            case ArtifactGrade.Epic:
+                frame = spriteGradeFrameEpic;
+                break;
+            case ArtifactGrade.Legendary:
+                frame = spriteGradeFrameLegendary;
+                break;
+        }
+
+        return frame;
+    }
+
     private static string GetGradeName(ArtifactGrade grade)
     {
         string gradeName = string.Empty;
@@ -375,6 +404,8 @@ public class EnhanceTab : LobbyTab
             GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
+            ResourceManager.Instance.GetSprite(artifact.ArtifactCode),
+            GetGradeFrame(data.grade),
             GetStatIcon(mainStat.statType),
             $"{GetStatName(mainStat.statType)} {value}",
             GetArtifactChangeStatus(artifact),

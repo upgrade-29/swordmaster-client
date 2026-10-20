@@ -8,9 +8,15 @@ using Random = UnityEngine.Random;
 // 출발점 주변에 재화를 흩뿌리고, 잠깐 뒤 재화 HUD로 빨아들인다. 재화가 HUD에 닿으면 그 자리에서 반짝임이 터진다
 // 배틀에서는 처치한 적 자리에서 골드가, 로비 상점에서는 구매한 상품 카드에서 골드나 다이아가 나온다
 // 화면 전체를 덮는 Screen Space Overlay 캔버스의 CoinLayer에 붙인다. 자식 CoinTemplate과 PopTemplate을 복제해서 쓰고, 다 쓴 것은 다시 쓴다
+// 배틀은 동전이 HUD를 가리지 않게 CoinLayer를 Hud 뒤에 두고, 반짝임은 골드 아이콘 위에 보이게 Hud 앞의 CoinPopLayer/PopTemplate을 쓴다
 public class CoinFlyView : MonoBehaviour
 {
-    private const float ScatterDuration = 0.45f;
+    private const string PopLayerName = "CoinPopLayer"; // CoinLayer와 같은 부모 밑에 이 레이어가 있으면 반짝임을 여기에 그린다
+    private const float SpawnInterval = 0.02f; // 한꺼번에 터지지 않고 하나씩 쏟아진다
+    private const float ScatterDuration = 0.5f; // 떨어진 뒤 튕기기까지 합친 시간
+    private const Ease ScatterEase = Ease.OutQuad;
+    private const int BounceCount = 2; // 땅에 떨어진 뒤 튕기는 횟수
+    private const float BounceHeightRatio = 0.25f; // 튕길 때마다 이전 높이의 이 비율로 줄어든다
     private const float ScatterMinDistance = 40f; // 좌우로 튀는 거리
     private const float ScatterMaxDistance = 140f;
     private const float JumpMinPower = 60f; // 떨어지기 전에 위로 솟는 높이
@@ -38,7 +44,8 @@ public class CoinFlyView : MonoBehaviour
     {
         layer = (RectTransform)transform;
         coinTemplate = GameUtil.Bind<Image>(gameObject, "CoinTemplate");
-        popTemplate = GameUtil.Bind<Image>(gameObject, "PopTemplate");
+        Transform popLayer = transform.parent.Find(PopLayerName);
+        popTemplate = GameUtil.Bind<Image>(popLayer != null ? popLayer : transform, "PopTemplate");
         coinTemplate.gameObject.SetActive(false);
         popTemplate.gameObject.SetActive(false);
         worldCamera = Camera.main;
@@ -47,6 +54,8 @@ public class CoinFlyView : MonoBehaviour
     private void OnDestroy()
     {
         foreach (Transform child in transform)
+            child.DOKill();
+        foreach (Transform child in popTemplate.transform.parent)
             child.DOKill();
     }
 
@@ -85,20 +94,19 @@ public class CoinFlyView : MonoBehaviour
             var landing = new Vector2(
                 start.x + side * Random.Range(ScatterMinDistance, ScatterMaxDistance),
                 start.y - Random.Range(DropMinDistance, DropMaxDistance));
+            float jumpPower = Random.Range(JumpMinPower, JumpMaxPower);
 
             // DOLocalJump는 안에서 Sequence를 하나 더 만들어 동전마다 Sequence가 2개가 된다. 동전이 많으면 DOTween 용량을 넘으므로
-            // 포물선을 직접 계산해 트윈 하나로 튄다. 진행도 0~1에서 높이는 4t(1-t)로 가운데에서 jumpPower만큼 솟는다
-            float jumpPower = Random.Range(JumpMinPower, JumpMaxPower);
-            Tween jump = DOTween.To(() => 0f, t =>
-                {
-                    Vector2 position = Vector2.LerpUnclamped(start, landing, t);
-                    position.y += jumpPower * 4f * t * (1f - t);
-                    rect.localPosition = position;
-                }, 1f, ScatterDuration)
-                .SetEase(Ease.OutQuad);
+            // 튕기는 위치를 직접 계산해 트윈 하나로 움직인다
+            Tween scatter = DOVirtual.Float(0f, 1f, ScatterDuration, progress => rect.localPosition = GetScatterPosition(start, landing, jumpPower, progress))
+                .SetEase(ScatterEase);
 
+            // 차례가 올 때까지 숨겨 둔다
+            coin.enabled = false;
             Sequence sequence = DOTween.Sequence()
-                .Append(jump)
+                .AppendInterval(i * SpawnInterval)
+                .AppendCallback(() => coin.enabled = true)
+                .Append(scatter)
                 .AppendInterval(HoldDuration + i * FlyStagger)
                 .Append(rect.DOLocalMove(end, FlyDuration).SetEase(Ease.InCubic))
                 .Join(rect.DOScale(ArriveScale, FlyDuration).SetEase(Ease.InCubic))
@@ -112,6 +120,41 @@ public class CoinFlyView : MonoBehaviour
                 });
             sequence.timeScale = speed;
         }
+    }
+
+    // 처음에는 jumpPower만큼 솟았다가 landing에 떨어지고, 그 자리에서 BounceCount번 튕긴다. progress는 0~1
+    // 튕길 때마다 높이는 BounceHeightRatio배로 줄고, 구간 시간은 높이의 제곱근에 비례해서 실제로 튕기는 것처럼 짧아진다
+    private static Vector2 GetScatterPosition(Vector2 start, Vector2 landing, float jumpPower, float progress)
+    {
+        float totalWeight = 0f;
+        for (int i = 0; i <= BounceCount; i++)
+        {
+            totalWeight += Mathf.Sqrt(Mathf.Pow(BounceHeightRatio, i));
+        }
+
+        float x = Mathf.LerpUnclamped(start.x, landing.x, progress);
+        float remaining = progress * totalWeight;
+        for (int i = 0; i < BounceCount; i++)
+        {
+            float weight = Mathf.Sqrt(Mathf.Pow(BounceHeightRatio, i));
+            if (remaining <= weight)
+            {
+                return new Vector2(x, GetBounceY(start, landing, jumpPower, i, remaining / weight));
+            }
+
+            remaining -= weight;
+        }
+
+        float lastWeight = Mathf.Sqrt(Mathf.Pow(BounceHeightRatio, BounceCount));
+        return new Vector2(x, GetBounceY(start, landing, jumpPower, BounceCount, Mathf.Clamp01(remaining / lastWeight)));
+    }
+
+    // index번째 구간의 높이. 0번은 출발점에서 landing까지 내려가고, 그 뒤로는 landing 높이에서 튕긴다
+    private static float GetBounceY(Vector2 start, Vector2 landing, float jumpPower, int index, float segment)
+    {
+        float baseY = index == 0 ? Mathf.Lerp(start.y, landing.y, segment) : landing.y;
+        float height = jumpPower * Mathf.Pow(BounceHeightRatio, index);
+        return baseY + height * 4f * segment * (1f - segment);
     }
 
     // 동전이 닿은 자리에서 반짝임 프레임을 한 번 넘기고 사라진다
@@ -144,10 +187,11 @@ public class CoinFlyView : MonoBehaviour
         return local;
     }
 
-    // 쉬고 있는 것이 있으면 다시 쓰고, 없으면 템플릿을 복제한다. 나중에 꺼낸 것이 위에 그려지도록 맨 뒤로 보낸다
+    // 쉬고 있는 것이 있으면 다시 쓰고, 없으면 템플릿을 템플릿과 같은 레이어에 복제한다. 나중에 꺼낸 것이 위에 그려지도록 맨 뒤로 보낸다
+    // CoinPopLayer도 화면 전체를 덮으므로 CoinLayer 기준 좌표를 그대로 쓸 수 있다
     private Image Get(Stack<Image> idle, Image template, string name)
     {
-        Image image = idle.Count > 0 ? idle.Pop() : Instantiate(template, layer);
+        Image image = idle.Count > 0 ? idle.Pop() : Instantiate(template, template.transform.parent);
         image.name = name;
         image.transform.SetAsLastSibling();
         image.gameObject.SetActive(true);

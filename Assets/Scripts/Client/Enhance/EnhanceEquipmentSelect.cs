@@ -47,11 +47,12 @@ public class EnhanceEquipmentSelect : MonoBehaviour
         swordEquipmentButton.SetIcon(imageCode);
     }
 
-    // 빈 슬롯이면 imageCode에 null을 넘긴다
-    public void SetArtifact(int slotIndex, string name, string imageCode)
+    // 빈 슬롯이면 imageCode와 gradeFrame에 null을 넘긴다
+    public void SetArtifact(int slotIndex, string name, string imageCode, Sprite gradeFrame)
     {
         listArtifactEquipmentButton[slotIndex].SetName(name);
         listArtifactEquipmentButton[slotIndex].SetIcon(imageCode);
+        listArtifactEquipmentButton[slotIndex].SetGradeFrame(gradeFrame);
     }
 
     public void SetSelectedSword()

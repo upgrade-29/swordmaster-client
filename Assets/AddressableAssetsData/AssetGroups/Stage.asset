@@ -15,26 +15,32 @@ MonoBehaviour:
   m_GroupName: Stage
   m_GUID: 23a7f8ffb7609424ebec7e250ce1ada2
   m_SerializeEntries:
-  - m_GUID: 29e231b62982281428e814eae06b7fa4
-    m_Address: STAGE_03_BG_01
+  - m_GUID: 0de977cb970a762cf307c7643ba32035
+    m_Address: STAGE_03_BG_FAR
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3910548f677f74949a27bd6b6f9798b8
-    m_Address: STAGE_02_BG_02
+  - m_GUID: 39ca4c140d9e5b1bd45cf79ac1071af1
+    m_Address: STAGE_02_BG_MID
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 59e77b592b9505840be1760bb1ad57f2
-    m_Address: STAGE_03_BG_03
+  - m_GUID: 3a14a53c4ae051ba1d19342fdf7d16a7
+    m_Address: STAGE_01_BG_GROUND
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 89403c9ae23efe642918563f19b572c0
-    m_Address: STAGE_02_BG_01
+  - m_GUID: 3bb2be81546750f71f44f3dbf906edb8
+    m_Address: STAGE_01_BG_FAR
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 733b6a3aa53fac38e47daca0e3961493
+    m_Address: STAGE_03_BG_GROUND
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
@@ -45,20 +51,8 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9bb9d06935f53eb4da2137e1f362341c
-    m_Address: STAGE_01_BG_02
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a7f829f98a7a70d45b0660dad61e9de4
-    m_Address: STAGE_01_BG_01
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - preload
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: aea331e7d0715234abe9aa0bf2b654fa
-    m_Address: STAGE_01_BG_03
+  - m_GUID: a0a500b394789d1d2c42b48bf7ce7b3e
+    m_Address: STAGE_02_BG_GROUND
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
@@ -69,8 +63,8 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b9a06ce3a76489749bd34d9c2d449702
-    m_Address: STAGE_03_BG_02
+  - m_GUID: c37d134841d7466d74194179ea1c4dca
+    m_Address: STAGE_01_BG_MID
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload
@@ -81,8 +75,14 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: eea7fb810ee20ac4ab07277b3efc6feb
-    m_Address: STAGE_02_BG_03
+  - m_GUID: fd4dee9ffbcc632b22cd7d266ade1c03
+    m_Address: STAGE_02_BG_FAR
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fef751b633428c1c17eaf01557f7fff7
+    m_Address: STAGE_03_BG_MID
     m_ReadOnly: 0
     m_SerializedLabels:
     - preload

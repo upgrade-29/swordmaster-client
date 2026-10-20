@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class ShopProductItem : MonoBehaviour
 {
+    private const string FreeLabel = "FREE";
+
     [ReadOnly] [SerializeField] private Image productVisual;
     [ReadOnly] [SerializeField] private TextMeshProUGUI productName;
     [ReadOnly] [SerializeField] private ShopRewardItem rewardItem;
@@ -70,7 +72,9 @@ public class ShopProductItem : MonoBehaviour
             case ShopProductPurchaseState.Ready:
                 SetLoading(false);
                 actionButton.Interactable = true;
-                actionLabel.text = product.price.ToString(GameConstants.NumberFormats.Integer);
+                actionLabel.text = product.priceType == PriceType.Free
+                    ? FreeLabel
+                    : product.price.ToString(GameConstants.NumberFormats.Integer);
                 break;
 
             case ShopProductPurchaseState.Purchasing:

@@ -134,7 +134,7 @@ public class ShopTab : LobbyTab
 
     private void ShowPurchasePopup(ShopProductData product)
     {
-        DialogPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {product.priceType.ToString()}로 구매하시겠습니까?",
+        DialogPopup.Setup("구매 확인", $"{product.name}\n{product.price.ToString()} {GetPriceName(product.priceType)}로 구매하시겠습니까?",
             new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmPurchase),
             new DialogPopup.DialogPopupButtonInfo("취소", OnCancelPurchase));
         DialogPopup.Open();
@@ -179,6 +179,14 @@ public class ShopTab : LobbyTab
         }
 
         purchasingItem = item;
+
+        // 무료 상품은 확인 없이 바로 받는다
+        if (item.Product.priceType == PriceType.Free)
+        {
+            StartPurchase();
+            return;
+        }
+
         ShowPurchasePopup(item.Product);
     }
 
@@ -186,6 +194,11 @@ public class ShopTab : LobbyTab
     {
         DialogPopup.Close();
 
+        StartPurchase();
+    }
+
+    private void StartPurchase()
+    {
         purchaseRequestId = Guid.NewGuid();
         SendPurchase();
     }
@@ -398,11 +411,32 @@ public class ShopTab : LobbyTab
             : spriteFallback;
     }
 
+    // 구매 확인 문구에 쓰는 재화 이름. 무료 상품은 확인 없이 사므로 쓰이지 않는다
+    private static string GetPriceName(PriceType priceType)
+    {
+        string name = string.Empty;
+        switch (priceType)
+        {
+            case PriceType.Gold:
+                name = "골드";
+                break;
+            case PriceType.Diamond:
+                name = "다이아";
+                break;
+        }
+
+        return name;
+    }
+
+    // 무료 상품은 가격 아이콘 없이 FREE만 보여 주므로 null을 돌려준다
     private Sprite GetCurrencyIcon(PriceType priceType)
     {
         Sprite icon = spriteFallback;
         switch (priceType)
         {
+            case PriceType.Free:
+                icon = null;
+                break;
             case PriceType.Gold:
                 icon = spriteGold;
                 break;

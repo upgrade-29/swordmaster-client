@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 패배했을 때 화면을 어둡게 덮고, 시간 초과면 TIME OVER 문구를 띄운다. 보여주기만 하고 언제 보여줄지는 모른다
+// 전투가 끝날 때(보스 처치, 패배) 화면을 어둡게 덮고, 시간 초과면 TIME OVER 문구를 띄운다. 보여주기만 하고 언제 보여줄지는 모른다
 // 입력은 막지 않는다. 결과 팝업은 이 위에 뜬다
 public class BattleDefeatView : MonoBehaviour
 {

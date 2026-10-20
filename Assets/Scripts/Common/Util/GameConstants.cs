@@ -112,8 +112,11 @@ public static class GameConstants
         public const string ShopIconArtifactPrefix = "SHOP_ICON_ARTIFACT_";
         public const string ShopIconArtifactGacha = "SHOP_ICON_ARTIFACT_GACHA";
 
-        // 전투 배경 이미지. 스테이지 이미지 code 뒤에 붙이고 01~03 번호를 단다(STAGE_01_BG_01)
+        // 전투 배경 이미지. 스테이지 이미지 code 뒤에 붙이고 층 이름을 단다(STAGE_01_BG_FAR)
         public const string StageBackgroundInfix = "_BG_";
+        public const string StageBackgroundFar = "FAR";
+        public const string StageBackgroundMid = "MID";
+        public const string StageBackgroundGround = "GROUND";
     }
 
     // Color는 const가 될 수 없어서 static readonly로 둔다

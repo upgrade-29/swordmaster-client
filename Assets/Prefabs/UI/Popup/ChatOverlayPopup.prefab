@@ -280,7 +280,7 @@ MonoBehaviour:
   _closeButton: {fileID: 3524220282338201125}
   _messageItemTemplate: {fileID: 3074083510443305983}
   _messagesScrollRect: {fileID: 2210510009712498711}
-  _publicChatColor: {r: 0.13333334, g: 0.13333334, b: 0.13333334, a: 1}
+  _publicChatColor: {r: 1, g: 1, b: 1, a: 1}
   _systemNoticeColor: {r: 0.5411765, g: 0.39607844, b: 0, a: 1}
   _swordEnhancementColor: {r: 0.7019608, g: 0.2784314, b: 0, a: 1}
   _inputField: {fileID: 7602342755421058862}
