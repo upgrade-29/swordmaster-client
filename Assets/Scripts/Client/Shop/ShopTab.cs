@@ -39,6 +39,8 @@ public class ShopTab : LobbyTab
     // 재전송할 때도 같은 값을 보낸다. 서버는 같은 requestId를 다시 처리하지 않고 처음 응답을 돌려준다
     private Guid purchaseRequestId;
     private bool isWaitingRetry;
+    // 가챠 결과 팝업에 보여 주는 중인 보상. 팝업을 닫으면 그중 재화를 보상 칸 자리에서 날린다
+    private System.Collections.Generic.IReadOnlyList<RewardResponse> gachaRewards;
 
     protected override void Awake()
     {
@@ -56,6 +58,19 @@ public class ShopTab : LobbyTab
     {
         InitHeaderImage();
         InitProductList();
+
+        GachaResultPopup.OnCloseEvent += OnCloseGachaResult;
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        // 씬을 닫을 때 Popup이 먼저 파괴됐으면 Instance로 새로 만들지 않는다. 팝업도 함께 파괴되므로 구독을 풀 필요가 없다
+        if (Popup.IsInitialize())
+        {
+            GachaResultPopup.OnCloseEvent -= OnCloseGachaResult;
+        }
     }
 
     // 미리 읽은 이미지가 없으면 회색 상자와 임시 글자를 그대로 둔다
@@ -196,16 +211,14 @@ public class ShopTab : LobbyTab
             EndPurchase();
             ApplyPurchaseResult(response);
 
-            if (purchasedItem.Product.category == ShopCategory.Gacha)
+            HoldCurrencyRewards(response.rewards);
+            if (purchasedItem.Product.category == ShopCategory.Gacha && response.rewards.Count > 0)
             {
-                if (response.rewards.Count > 0)
-                {
-                    ShowGachaResult(response.rewards);
-                }
+                ShowGachaResult(response.rewards);
             }
             else
             {
-                PlayCurrencyRewardFly(response.rewards, purchasedItem.VisualPosition);
+                PlayCurrencyRewardFly(response.rewards, _ => purchasedItem.VisualPosition);
             }
 
             return;
@@ -284,18 +297,36 @@ public class ShopTab : LobbyTab
         }
     }
 
-    // 보상 중 골드와 다이아만 fromPosition에서 탑UI 재화 아이콘으로 날린다. 재화는 ApplyPurchaseResult에서 이미 반영했다
-    private void PlayCurrencyRewardFly(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards, Vector3 fromPosition)
+    // 재화는 ApplyPurchaseResult에서 이미 반영했다. 보상 중 골드와 다이아는 날아가서 닿을 때까지 탑UI 숫자에 더하지 않는다
+    private void HoldCurrencyRewards(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards)
     {
         foreach (RewardResponse reward in rewards)
         {
             switch (reward.rewardType)
             {
                 case RewardType.Gold:
-                    lobbyController.PlayCurrencyFly(CurrencyType.Gold, reward.amount, fromPosition, spriteGold, goldPopFrames);
+                    lobbyController.HoldCurrency(CurrencyType.Gold, reward.amount);
                     break;
                 case RewardType.Diamond:
-                    lobbyController.PlayCurrencyFly(CurrencyType.Diamond, reward.amount, fromPosition, spriteDiamond, diamondPopFrames);
+                    lobbyController.HoldCurrency(CurrencyType.Diamond, reward.amount);
+                    break;
+            }
+        }
+    }
+
+    // HoldCurrencyRewards로 붙잡아 둔 골드와 다이아를 탑UI 재화 아이콘으로 날린다. 출발 위치는 보상 순서(index)로 받는다
+    private void PlayCurrencyRewardFly(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards, Func<int, Vector3> getFromPosition)
+    {
+        for (int i = 0; i < rewards.Count; i++)
+        {
+            RewardResponse reward = rewards[i];
+            switch (reward.rewardType)
+            {
+                case RewardType.Gold:
+                    lobbyController.PlayCurrencyFly(CurrencyType.Gold, reward.amount, getFromPosition(i), spriteGold, goldPopFrames);
+                    break;
+                case RewardType.Diamond:
+                    lobbyController.PlayCurrencyFly(CurrencyType.Diamond, reward.amount, getFromPosition(i), spriteDiamond, diamondPopFrames);
                     break;
             }
         }
@@ -303,8 +334,22 @@ public class ShopTab : LobbyTab
 
     private void ShowGachaResult(System.Collections.Generic.IReadOnlyList<RewardResponse> rewards)
     {
+        gachaRewards = rewards;
         GachaResultPopup.Setup(rewards, GameDB, GetGachaRewardIcon);
         GachaResultPopup.Open();
+    }
+
+    // 닫힘 연출이 시작되기 전에 불리므로 보상 칸이 아직 제자리에 있다
+    private void OnCloseGachaResult(BasePopup popup)
+    {
+        if (gachaRewards == null)
+        {
+            return;
+        }
+
+        System.Collections.Generic.IReadOnlyList<RewardResponse> rewards = gachaRewards;
+        gachaRewards = null;
+        PlayCurrencyRewardFly(rewards, GachaResultPopup.GetRewardSlotPosition);
     }
 
     // 유물은 미리 읽은 유물 이미지를, 재화는 재화 아이콘을 쓴다. 유물 이미지가 없으면 기본 이미지를 쓴다

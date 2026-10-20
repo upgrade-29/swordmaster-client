@@ -95,7 +95,20 @@ public class LobbyController : MonoBehaviour
         OnChangeTabEvent.Invoke(tab);
     }
 
-    // 이미 유저 재화에 반영된 amount를 fromPosition(캔버스 UI의 월드 좌표)에서 쏟아 탑UI 재화 아이콘으로 빨아들인다
+    // 이미 유저 재화에 반영된 amount를 날리기 전까지 탑UI 숫자에 더하지 않는다
+    // 가챠처럼 결과 팝업을 닫은 뒤에 날릴 때, 팝업이 떠 있는 동안 숫자가 먼저 오르지 않게 한다
+    public void HoldCurrency(CurrencyType type, long amount)
+    {
+        if (amount <= 0)
+        {
+            return;
+        }
+
+        AddFlying(type, amount);
+        RefreshCurrencies();
+    }
+
+    // HoldCurrency로 붙잡아 둔 amount를 fromPosition(캔버스 UI의 월드 좌표)에서 쏟아 탑UI 재화 아이콘으로 빨아들인다
     // 탑UI 숫자는 하나가 닿을 때마다 나눠서 오르고, 마지막 하나가 닿으면 유저 재화와 정확히 같아진다
     public void PlayCurrencyFly(CurrencyType type, long amount, Vector3 fromPosition, Sprite coinSprite, Sprite[] popFrames)
     {
@@ -108,9 +121,6 @@ public class LobbyController : MonoBehaviour
         long amountPerCoin = amount / coinCount;
         long remainder = amount % coinCount;
         var arrivedCount = 0;
-
-        AddFlying(type, amount);
-        RefreshCurrencies();
 
         coinFlyView.PlayFromUI(fromPosition, view.GetCurrencyIconPosition(type), coinCount, coinSprite, popFrames, () =>
         {

@@ -223,6 +223,15 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         this.getRewardIcon = getRewardIcon;
     }
 
+    // index번째 보상 칸 아이콘의 위치(캔버스 UI의 월드 좌표). 닫을 때 재화를 이 자리에서 날린다
+    // 칸이 아직 없으면 결과 패널 가운데를 쓴다
+    public Vector3 GetRewardSlotPosition(int index)
+    {
+        return index < listSlot.Count
+            ? listSlot[index].imgIcon.rectTransform.position
+            : rectResultPanel.position;
+    }
+
     protected override void OnOpen()
     {
         base.OnOpen();
