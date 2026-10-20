@@ -86,8 +86,19 @@ public class CoinFlyView : MonoBehaviour
                 start.x + side * Random.Range(ScatterMinDistance, ScatterMaxDistance),
                 start.y - Random.Range(DropMinDistance, DropMaxDistance));
 
+            // DOLocalJump는 안에서 Sequence를 하나 더 만들어 동전마다 Sequence가 2개가 된다. 동전이 많으면 DOTween 용량을 넘으므로
+            // 포물선을 직접 계산해 트윈 하나로 튄다. 진행도 0~1에서 높이는 4t(1-t)로 가운데에서 jumpPower만큼 솟는다
+            float jumpPower = Random.Range(JumpMinPower, JumpMaxPower);
+            Tween jump = DOTween.To(() => 0f, t =>
+                {
+                    Vector2 position = Vector2.LerpUnclamped(start, landing, t);
+                    position.y += jumpPower * 4f * t * (1f - t);
+                    rect.localPosition = position;
+                }, 1f, ScatterDuration)
+                .SetEase(Ease.OutQuad);
+
             Sequence sequence = DOTween.Sequence()
-                .Append(rect.DOLocalJump(landing, Random.Range(JumpMinPower, JumpMaxPower), 1, ScatterDuration))
+                .Append(jump)
                 .AppendInterval(HoldDuration + i * FlyStagger)
                 .Append(rect.DOLocalMove(end, FlyDuration).SetEase(Ease.InCubic))
                 .Join(rect.DOScale(ArriveScale, FlyDuration).SetEase(Ease.InCubic))
