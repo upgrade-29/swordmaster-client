@@ -15,6 +15,8 @@ public class RankingPopup : BasePopup
     private const string EmptyMessage = "아직 랭킹이 없습니다.";
     private const string NoRecordText = "기록 없음";
     private const string NotAggregatedText = "집계 전";
+    private const string MyRankingTitle = "내 순위";
+    private const string MyRankingEstimatedTitle = "내 순위 · 예상 (다음 집계 때 반영)";
     private const string AggregatingText = "집계 중";
     private const double RefreshDelaySeconds = 3d; // 집계 시각이 지나고 이만큼 기다렸다가 한 번만 다시 받는다. 스냅샷 작업이 끝날 시간
 
@@ -33,6 +35,7 @@ public class RankingPopup : BasePopup
     [ReadOnly] [SerializeField] private RectTransform rectItemContent;
     [ReadOnly] [SerializeField] private List<RankingItem> listRankingItem = new List<RankingItem>();
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtMessage;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtMyRankingTitle;
     [ReadOnly] [SerializeField] private RankingItem myRankingItem;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtSummary;
     [ReadOnly] [SerializeField] private TextMeshProUGUI txtCountdown;
@@ -66,6 +69,7 @@ public class RankingPopup : BasePopup
         rectItemContent = GameUtil.Bind<RectTransform>(transform, "Panel/RankingList/Viewport/Content");
         listRankingItem.Add(GameUtil.Bind<RankingItem>(rectItemContent, "Item"));
         txtMessage = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/RankingList/Message");
+        txtMyRankingTitle = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/MyRankingTitle");
         myRankingItem = GameUtil.Bind<RankingItem>(transform, "Panel/MyRanking");
         txtSummary = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/Summary");
         txtCountdown = GameUtil.Bind<TextMeshProUGUI>(transform, "Panel/Footer/Countdown");
@@ -132,7 +136,7 @@ public class RankingPopup : BasePopup
         }
 
         SetMessage(response.rankings.Count == 0 ? EmptyMessage : null);
-        SetMyRanking(type, response.me);
+        SetMyRanking(type, response.me, response.rankChanged);
         txtSummary.text = GetSummaryText(response.total, response.updatedAt);
         SetCountdown(response);
     }
@@ -216,7 +220,7 @@ public class RankingPopup : BasePopup
         // 이전 종류의 목록이 잠깐이라도 보이지 않게 비우고 맨 위로 올린다
         ShowItems(0);
         SetMessage(LoadingMessage);
-        SetMyRanking(type, null);
+        SetMyRanking(type, null, false);
         txtSummary.text = string.Empty;
         ResetCountdown();
         scrollRanking.verticalNormalizedPosition = 1f;
@@ -224,11 +228,24 @@ public class RankingPopup : BasePopup
         OnSelectTypeEvent.Invoke(type);
     }
 
-    private void SetMyRanking(RankingType type, RankingApi.RankingEntryResponse me)
+    // 내 기록은 실시간이라 집계본과 다를 수 있다. 다르면 다음 집계 때 바뀔 예상 순위라고 제목에 알린다
+    private void SetMyRanking(RankingType type, RankingApi.RankingEntryResponse me, bool rankChanged)
     {
+        // 기록이 없는 계정은 서버가 rank 0으로 보낸다
+        bool hasRecord = me != null && me.rank > 0;
+        txtMyRankingTitle.text = hasRecord && rankChanged
+            ? MyRankingEstimatedTitle
+            : MyRankingTitle;
+
         if (me == null)
         {
             myRankingItem.Set("-", NoRecordText, string.Empty);
+            return;
+        }
+
+        if (hasRecord == false)
+        {
+            myRankingItem.Set("-", me.nickname, NoRecordText);
             return;
         }
 

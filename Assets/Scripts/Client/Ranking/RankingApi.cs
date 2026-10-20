@@ -27,17 +27,19 @@ public static class RankingApi
     {
         public readonly IReadOnlyList<RankingEntryResponse> rankings; // 상위 목록. 1등부터 순서대로
         public readonly RankingEntryResponse me;                      // 내 기록
+        public readonly bool rankChanged;                             // 내 기록이 집계본과 달라 me.rank가 예상 순위이면 true. 집계에 아직 없을 때도 true
         public readonly long total;                                   // 인원 수
         public readonly DateTime? updatedAt;                          // 상위 목록 집계 시각. UTC. 집계 전이면 null
         public readonly DateTime nextUpdateAt;                        // 다음 집계 시각. UTC
         public readonly DateTime serverTime;                          // 응답을 만든 서버 시각. UTC. 기기 시계 대신 남은 시간 계산에 쓴다
 
         [JsonConstructor]
-        public RankingResponse(IReadOnlyList<RankingEntryResponse> rankings, RankingEntryResponse me,
+        public RankingResponse(IReadOnlyList<RankingEntryResponse> rankings, RankingEntryResponse me, bool rankChanged,
             long total, DateTime? updatedAt, DateTime nextUpdateAt, DateTime serverTime)
         {
             this.rankings = rankings ?? new List<RankingEntryResponse>();
             this.me = me;
+            this.rankChanged = rankChanged;
             this.total = total;
             this.updatedAt = updatedAt;
             this.nextUpdateAt = nextUpdateAt;
