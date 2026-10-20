@@ -39,6 +39,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - preload
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34d3b7aebcf569745ae09c18babe37e8
+    m_Address: ICON_ARTIFACT_LEGENDARY_10
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78f842c2723681943aea6c790392bc82
     m_Address: ICON_DIAMOND_MIDDLE
     m_ReadOnly: 0
