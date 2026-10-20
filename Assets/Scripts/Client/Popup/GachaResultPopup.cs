@@ -309,6 +309,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
     }
 
     // 연출 중에 바깥을 누르면 닫지 않고 연출을 건너뛴다. 다 끝난 직후에도 잠깐은 닫지 않는다
+    // 연출 중에 닫히지 않게 프리팹에서 closeOnOutsideTouch를 꺼 두었으므로, 닫기 버튼이 켜진 뒤에는 그 설정과 관계없이 닫는다
     protected override void OnClickDimmed()
     {
         if (phase != EffectPhase.Finished)
@@ -322,7 +323,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             return;
         }
 
-        base.OnClickDimmed();
+        Close();
     }
 
     // 결과 패널이나 빛처럼 버튼이 아닌 곳을 누르면 여기로 올라온다
