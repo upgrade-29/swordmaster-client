@@ -9,6 +9,7 @@ public class BattleHudPresenter : IDisposable
 
     private readonly BattleManager manager;
     private readonly BattleHudView hud;
+    private readonly NamePlateView namePlateView;
     private readonly BattleUnitView enemyView;
     private readonly CoinFlyView coinFlyView;
 
@@ -17,15 +18,20 @@ public class BattleHudPresenter : IDisposable
     private long displayedGold;
     private int flyingCoinCount;
 
-    public BattleHudPresenter(BattleManager manager, BattleHudView hud, BattleUnitView enemyView, CoinFlyView coinFlyView)
+    public BattleHudPresenter(BattleManager manager, BattleHudView hud, NamePlateView namePlateView, BattleUnitView enemyView,
+        CoinFlyView coinFlyView, string playerNickname)
     {
         this.manager = manager;
         this.hud = hud;
+        this.namePlateView = namePlateView;
         this.enemyView = enemyView;
         this.coinFlyView = coinFlyView;
 
+        namePlateView.SetPlayerName(playerNickname);
+
         manager.CountdownStarted += OnCountdownStarted;
         manager.CountdownTicked += OnCountdownTicked;
+        manager.BattleStarted += OnBattleStarted;
         manager.SubStageStarted += SetUp;
         manager.SubStageAdvanced += OnSubStageAdvanced;
         manager.AttackApplied += OnAttackApplied;
@@ -37,6 +43,7 @@ public class BattleHudPresenter : IDisposable
     {
         manager.CountdownStarted -= OnCountdownStarted;
         manager.CountdownTicked -= OnCountdownTicked;
+        manager.BattleStarted -= OnBattleStarted;
         manager.SubStageStarted -= SetUp;
         manager.SubStageAdvanced -= OnSubStageAdvanced;
         manager.AttackApplied -= OnAttackApplied;
@@ -52,11 +59,12 @@ public class BattleHudPresenter : IDisposable
         ShowGold(confirmedGold);
     }
 
-    // 세부스테이지 시작 상태로 스테이지 표시, HP바, 남은 시간을 세팅한다
+    // 세부스테이지 시작 상태로 스테이지 표시, 적 이름, HP바, 남은 시간을 세팅한다
     // 재도전이면 지난 전투에서 줄어든 HP가 여기서 다시 세팅된다
     private void SetUp(BattleSubStage subStage)
     {
-        hud.SetStage(manager.Session.stage, subStage.SubStageIndex + 1, subStage.IsBoss);
+        hud.SetStage(manager.Stage.name, manager.Session.stage, subStage.SubStageIndex + 1, subStage.IsBoss);
+        namePlateView.SetEnemyName(subStage.Enemy.name);
         SetHp(subStage.PlayerHp, subStage.EnemyHp, subStage);
         hud.SetRemainingTime(subStage.TimeLimit);
     }
@@ -64,6 +72,11 @@ public class BattleHudPresenter : IDisposable
     private void OnCountdownTicked(float remaining)
     {
         hud.SetStartCountdown(remaining);
+    }
+
+    private void OnBattleStarted(BattleApi.BattleSessionInfoResponse session)
+    {
+        hud.HideStartCountdown();
     }
 
     private void OnSubStageAdvanced(BattleSubStage subStage)

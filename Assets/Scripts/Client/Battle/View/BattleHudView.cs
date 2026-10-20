@@ -1,52 +1,72 @@
+using System;
 using TMPro;
 using UnityEngine;
 
-// 화면 상단의 스테이지, 남은 시간, HP바, 이번 전투에서 모은 골드 표시
+// 전투 화면의 스테이지, 남은 시간, HP바, 이번 전투에서 모은 골드, 시작 카운트다운을 표시한다
 public class BattleHudView : MonoBehaviour
 {
-    private TMP_Text stageText;
-    private TMP_Text timeText;
-    private TMP_Text goldText;
-    private RectTransform goldIcon;
-    private HpBarView playerHpBar;
-    private HpBarView enemyHpBar;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtStageName;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtSubStage;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtTime;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtCountdown;
+    [ReadOnly] [SerializeField] private TextMeshProUGUI txtGold;
+    [ReadOnly] [SerializeField] private RectTransform rectGoldIcon;
+    [ReadOnly] [SerializeField] private HpBarView objPlayerHpBar;
+    [ReadOnly] [SerializeField] private HpBarView objEnemyHpBar;
 
-    public HpBarView PlayerHpBar => playerHpBar;
-    public HpBarView EnemyHpBar => enemyHpBar;
+    public HpBarView PlayerHpBar => objPlayerHpBar;
+
+    public HpBarView EnemyHpBar => objEnemyHpBar;
 
     // 처치 골드 동전이 빨려 들어갈 자리. 골드 숫자 앞의 아이콘 가운데라 자릿수가 바뀌어도 움직이지 않는다
-    public Vector3 GoldIconPosition => goldIcon.position;
+    public Vector3 GoldIconPosition => rectGoldIcon.position;
 
     private void Awake()
     {
-        stageText = GameUtil.Bind<TMP_Text>(gameObject, "StageText");
-        timeText = GameUtil.Bind<TMP_Text>(gameObject, "TimeText");
-        goldText = GameUtil.Bind<TMP_Text>(gameObject, "GoldText");
-        goldIcon = GameUtil.Bind<RectTransform>(gameObject, "GoldIcon");
-        playerHpBar = GameUtil.Bind<HpBarView>(gameObject, "PlayerHpBar");
-        enemyHpBar = GameUtil.Bind<HpBarView>(gameObject, "EnemyHpBar");
+        txtStageName = GameUtil.Bind<TextMeshProUGUI>(transform, "TopPanel/StageNameText");
+        txtSubStage = GameUtil.Bind<TextMeshProUGUI>(transform, "TopPanel/SubStageText");
+        txtTime = GameUtil.Bind<TextMeshProUGUI>(transform, "Timer/TimeText");
+        txtCountdown = GameUtil.Bind<TextMeshProUGUI>(transform, "CountdownText");
+        txtGold = GameUtil.Bind<TextMeshProUGUI>(transform, "GoldText");
+        rectGoldIcon = GameUtil.Bind<RectTransform>(transform, "GoldIcon");
+        objPlayerHpBar = GameUtil.Bind<HpBarView>(transform, "PlayerHpBar");
+        objEnemyHpBar = GameUtil.Bind<HpBarView>(transform, "EnemyHpBar");
     }
 
-    // subStageNumber는 1부터 센다. 스테이지 1의 두 번째 적이면 "Stage 1-2"
-    public void SetStage(int stage, int subStageNumber, bool isBoss)
+    /// <summary>
+    /// 스테이지 이름과 세부 스테이지 번호를 표시한다. subStageNumber는 1부터 센다.
+    /// </summary>
+    public void SetStage(string stageName, int stage, int subStageNumber, bool isBoss)
     {
-        stageText.text = isBoss ? $"Stage {stage}-{subStageNumber} BOSS" : $"Stage {stage}-{subStageNumber}";
+        txtStageName.text = stageName;
+
+        string subStage = $"{stage.ToString()}-{subStageNumber.ToString()}";
+        txtSubStage.text = isBoss
+            ? $"{subStage} BOSS"
+            : subStage;
     }
 
-    // 전투 시작 전에 남은 시간 자리에 보여주는 안내. 소수는 올려서 "2s"부터 "1s"까지 센다
+    /// <summary>
+    /// 전투 시작 전에 화면 가운데에 남은 초를 크게 띄운다. 소수는 올려서 3, 2, 1로 센다.
+    /// </summary>
     public void SetStartCountdown(double seconds)
     {
-        timeText.text = $"{System.Math.Ceiling(seconds):0}s 뒤에 전투가 시작됩니다!";
+        txtCountdown.gameObject.SetActive(true);
+        txtCountdown.text = Math.Ceiling(seconds).ToString("0");
+    }
+
+    public void HideStartCountdown()
+    {
+        txtCountdown.gameObject.SetActive(false);
     }
 
     public void SetRemainingTime(double seconds)
     {
-        timeText.text = $"{System.Math.Max(0, seconds):0.0}s";
+        txtTime.text = $"{Math.Max(0d, seconds).ToString("0.0")}s";
     }
 
-    // 전투가 끝날 때 한 번에 반영될 골드. 서버 세션에 모인 값을 그대로 보여준다
     public void SetGold(long gold)
     {
-        goldText.text = $"획득 골드 {gold:N0}";
+        txtGold.text = gold.ToString(GameConstants.NumberFormats.Integer);
     }
 }
