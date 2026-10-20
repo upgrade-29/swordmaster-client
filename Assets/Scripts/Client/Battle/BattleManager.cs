@@ -9,7 +9,7 @@ using UnityEngine;
 // 화면은 직접 건드리지 않고 이벤트로만 알린다. HP바, 로그, 이펙트는 이 이벤트를 구독해서 만든다
 public class BattleManager : MonoBehaviour
 {
-    public const float BossWarningDuration = 1.8f;
+    public const float BossWarningDuration = 1.8f; // 1배속 기준. 배속만큼 짧아진다
     private const float StartDelay = 2f;
     private const int ReportMaxAttempts = 3; // 통신 오류로 보고 응답을 못 받으면 다시 보낸다. 서버는 같은 보고에 같은 응답을 준다
     private const float RequestRetryDelay = 1f; // 다시 보내기 전에 기다리는 시간(초)
@@ -29,6 +29,10 @@ public class BattleManager : MonoBehaviour
     public event Action<BattleApi.BattleEndResponse> BattleEnded;
     public event Action<string> RequestRejected; // 유저에게 보여 줄 거절·실패 문구. 검증에 실패하면 서버가 이미 패배로 끝낸 상태다
     public event Action<bool> BusyChanged; // 결과(BattleEnd)나 거절·실패 응답을 받으면 false가 된다. 그때부터 다시 전투에 들어갈 수 있다
+
+    // 검증을 통과한 뒤 다음 세부스테이지를 시작하기 전에 기다릴 화면 연출(적 처치, 다음 적 등장). 인자는 다음 세부스테이지
+    // 다음 적이 보스면 보스 경고도 이 연출이 보여 주고 끝날 때까지 기다리므로, 이때는 BossWarningStarted를 보내지 않는다
+    public Func<BattleSubStage, IEnumerator> NextSubStageTransition;
 
     private GameDB gameDB;
     private BattleEngine engine;
@@ -192,12 +196,12 @@ public class BattleManager : MonoBehaviour
         }
 
         BattleStarted?.Invoke(session);
-        yield return RunSubStageAndReport(subStage);
+        yield return RunSubStageAndReport(subStage, true);
     }
 
-    private IEnumerator RunSubStageAndReport(BattleSubStage subStage)
+    private IEnumerator RunSubStageAndReport(BattleSubStage subStage, bool playBossWarning)
     {
-        yield return RunSubStage(subStage);
+        yield return RunSubStage(subStage, playBossWarning);
 
         var request = BattleApi.BattleResultVerifyRequest.From(session.battleId, subStage);
         Request(BattleApi.Report(request, gameDataVersion), verified => OnSubStageVerified(subStage, verified),
@@ -219,7 +223,19 @@ public class BattleManager : MonoBehaviour
         }
 
         BattleSubStage next = CreateSubStage(verified.nextSubStageIndex, verified.nextPlayerHp);
-        battleRoutine = StartCoroutine(RunSubStageAndReport(next));
+        battleRoutine = StartCoroutine(RunNextSubStage(next));
+    }
+
+    private IEnumerator RunNextSubStage(BattleSubStage next)
+    {
+        if (NextSubStageTransition == null)
+        {
+            yield return RunSubStageAndReport(next, true);
+            yield break;
+        }
+
+        yield return NextSubStageTransition(next);
+        yield return RunSubStageAndReport(next, false);
     }
 
     private BattleSubStage CreateSubStage(int subStageIndex, double playerHp)
@@ -227,16 +243,17 @@ public class BattleManager : MonoBehaviour
         return new BattleSubStage(engine, Stage, subStageIndex, session.playerStat, playerHp, session.battleSeed);
     }
 
-    private IEnumerator RunSubStage(BattleSubStage subStage)
+    // playBossWarning이 false면 보스 경고를 이미 다음 적 등장 연출에서 보여 준 것이다
+    private IEnumerator RunSubStage(BattleSubStage subStage, bool playBossWarning)
     {
         CurrentSubStage = subStage;
         subStage.AttackApplied += battleEvent => AttackApplied?.Invoke(subStage, battleEvent);
         SubStageStarted?.Invoke(subStage);
 
-        if (subStage.IsBoss)
+        if (subStage.IsBoss && playBossWarning)
         {
             BossWarningStarted?.Invoke(subStage);
-            yield return new WaitForSeconds(BossWarningDuration);
+            yield return new WaitForSeconds(BossWarningDuration / Speed);
         }
 
         while (subStage.IsFinished == false)

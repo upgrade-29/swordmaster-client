@@ -28,8 +28,8 @@ public class BossWarningView : MonoBehaviour
         sequence?.Kill();
     }
 
-    // 나타나서 깜빡이다가 duration이 지나면 사라진다
-    public void Play(string bossName, float duration)
+    // 나타나서 깜빡이다가 duration(1배속 기준)이 지나면 사라진다. speed는 전투 배속이고, 배속만큼 빨리 끝난다
+    public void Play(string bossName, float duration, float speed)
     {
         sequence?.Kill();
 
@@ -43,5 +43,6 @@ public class BossWarningView : MonoBehaviour
         sequence.Join(warningText.DOFade(0.2f, BlinkInterval).SetLoops(Mathf.Max(2, Mathf.FloorToInt(duration / BlinkInterval)), LoopType.Yoyo));
         sequence.Insert(duration - FadeDuration, canvasGroup.DOFade(0f, FadeDuration));
         sequence.OnComplete(() => gameObject.SetActive(false));
+        sequence.timeScale = speed;
     }
 }

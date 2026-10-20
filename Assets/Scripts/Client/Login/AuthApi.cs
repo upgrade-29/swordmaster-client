@@ -79,4 +79,25 @@ public static class AuthApi
     {
         return HttpRequestFactory.Post<EmptyResponse>("api/auth/signup", new SignupRequest(email, password));
     }
+
+    public class GoogleLoginRequest
+    {
+        public readonly string idToken;
+
+        [JsonConstructor]
+        public GoogleLoginRequest(string idToken)
+        {
+            this.idToken = idToken;
+        }
+    }
+
+    public static HttpRequestInfo<TokenResponse> GoogleLogin(
+        string idToken
+    )
+    {
+        return HttpRequestFactory.Post<TokenResponse>(
+            "api/auth/login/google",
+            new GoogleLoginRequest(idToken)
+        );
+    }
 }

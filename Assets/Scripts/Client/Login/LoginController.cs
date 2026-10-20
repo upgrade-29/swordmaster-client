@@ -14,6 +14,7 @@ public class LoginController : MonoBehaviour
     [ReadOnly] [SerializeField] private SignupView signupView;
     [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
 
+    private GoogleLoginClient googleLoginClient;
     private bool isRequesting;
 
     private void Awake()
@@ -23,11 +24,23 @@ public class LoginController : MonoBehaviour
         GameUtil.Bind(gameObject, ref signupView);
         nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
 
+        // Java가 결과를 전달할 전용 GameObject.
+        // 다른 객체와 이름이 겹치지 않게 만든다.
+        var callbackObject = new GameObject(
+            "GoogleLoginCallback-" + System.Guid.NewGuid().ToString("N")
+        );
+
+        callbackObject.transform.SetParent(transform, false);
+
+        googleLoginClient =
+            callbackObject.AddComponent<GoogleLoginClient>();
+
         titleView.OnClickTouchEvent += OnClickTitle;
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
         signupView.OnClickSignupEvent += OnClickSignup;
         signupView.OnClickBackEvent += OnClickSignupBack;
+        view.OnClickGoogleEvent += OnClickGoogle;
         nicknamePopup.OnClickConfirmEvent += OnClickNicknameConfirm;
     }
 
@@ -72,6 +85,7 @@ public class LoginController : MonoBehaviour
         {
             view.OnClickLoginEvent -= OnClickLogin;
             view.OnClickSignupEvent -= OnClickOpenSignup;
+            view.OnClickGoogleEvent -= OnClickGoogle;
         }
 
         if (signupView != null)
@@ -333,5 +347,44 @@ public class LoginController : MonoBehaviour
     {
         GameSession.Instance.SetUser(player.ToUser());
         SceneManager.LoadScene(GameConstants.Scenes.Lobby);
+    }
+
+    private void OnClickGoogle()
+    {
+        if (isRequesting)
+        {
+            return;
+        }
+
+        isRequesting = true;
+        view.SetInteractable(false);
+        view.SetMessage("Google 인증 중...");
+
+        googleLoginClient.SignIn(
+            onSuccess: idToken =>
+            {
+                // 인증을 기다리는 동안 로그인 화면이 사라졌을 수 있다.
+                if (this == null)
+                {
+                    return;
+                }
+
+                view.SetMessage("게임 서버 로그인 중...");
+
+                HttpRequest.Request(
+                    AuthApi.GoogleLogin(idToken),
+                    OnLoginResponse
+                );
+            },
+            onFailure: message =>
+            {
+                if (this == null)
+                {
+                    return;
+                }
+
+                FailLogin(message);
+            }
+        );
     }
 }

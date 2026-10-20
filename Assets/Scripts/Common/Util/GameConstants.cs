@@ -34,6 +34,12 @@ public static class GameConstants
         public const float MaxBattleSpeed = 2f; // 서버 시간 검증과 같은 배속 상한
     }
 
+    // 데미지 숫자 크기와 체력바 흔들림이 함께 쓰는 전투 연출 기준
+    public static class BattleEffect
+    {
+        public const float StrongHitDamageRatio = 0.5f; // 최대 체력 대비 이 비율 이상을 잃으면 가장 세게 맞은 것으로 본다
+    }
+
     public static class NumberFormats
     {
         public const string Integer = "N0";     // 1,234
