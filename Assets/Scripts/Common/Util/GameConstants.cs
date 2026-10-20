@@ -66,6 +66,9 @@ public static class GameConstants
         public const string ShopIconGold = "SHOP_ICON_GOLD";
         public const string ShopIconDiamond = "SHOP_ICON_DIAMOND";
         public const string ShopIconArtifactPrefix = "SHOP_ICON_ARTIFACT_";
+
+        // 전투 배경 이미지. 스테이지 이미지 code 뒤에 붙이고 01~03 번호를 단다(STAGE_01_BG_01)
+        public const string StageBackgroundInfix = "_BG_";
     }
 
     // Color는 const가 될 수 없어서 static readonly로 둔다

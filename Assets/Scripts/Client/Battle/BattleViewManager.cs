@@ -109,6 +109,10 @@ public class BattleViewManager : MonoBehaviour
         SwordData sword = gameDB.swords.First(x => x.level == user.Sword.Level);
         playerView.SetSprite(sword.code);
 
+        // 배경은 이 스테이지의 이미지로 바꾼다. 재도전도 같은 스테이지라서 한 번만 바꾼다
+        StageData stage = gameDB.stages.First(x => x.stage == session.stage);
+        backgroundView.SetStage(stage.imageCode);
+
         manager.Init(gameDB);
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud, namePlateView, enemyView, coinFlyView, user.Nickname);

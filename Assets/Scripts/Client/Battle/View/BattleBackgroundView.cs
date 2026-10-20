@@ -3,45 +3,44 @@ using System.Linq;
 using DG.Tweening;
 using UnityEngine;
 
-// 전투 배경. 먼 산, 중간 수풀, 땅 세 층을 서로 다른 속도로 흘려서 앞으로 걸어가는 것처럼 보이게 한다
-// 각 층은 같은 간격으로 놓인 조각을 한 바퀴 길이 안에서 돌려 쓴다. 왼쪽 밖으로 나간 조각은 오른쪽 밖에서 다시 나온다
+// 전투 배경. 스테이지 배경 이미지 01~03을 화면 너비 간격으로 이어 놓고 땅과 같은 속도로 흘려서 앞으로 걸어가는 것처럼 보이게 한다
+// 조각은 한 바퀴 길이 안에서 돌려 쓴다. 왼쪽 밖으로 나간 조각은 오른쪽 밖에서 다시 나오므로 01 → 02 → 03 → 01 순서로 계속 이어진다
 public class BattleBackgroundView : MonoBehaviour
 {
-    private const float FarScrollRatio = 0.2f; // 땅이 1만큼 갈 때 먼 산이 가는 거리
-    private const float MidScrollRatio = 0.5f;
-    private const float FarLoopWidth = 7.5f; // 조각 수 x 조각 간격. 화면 너비보다 조각 하나 이상 넓어야 빈틈이 보이지 않는다
-    private const float MidLoopWidth = 7.12f;
-    private const float GroundLoopWidth = 6.672f;
+    private const float PanelLoopWidth = 16.875f; // 조각 수(3) x 조각 간격(화면 너비 5.625). 화면 너비보다 조각 하나 이상 넓어야 빈틈이 보이지 않는다
 
-    [ReadOnly] [SerializeField] private Transform trnsFar;
-    [ReadOnly] [SerializeField] private Transform trnsMid;
-    [ReadOnly] [SerializeField] private Transform trnsGround;
+    [ReadOnly] [SerializeField] private Transform trnsPanels;
 
-    private List<Transform> listFarTile;
-    private List<Transform> listMidTile;
-    private List<Transform> listGroundTile;
-    private List<float> listFarBaseX;
-    private List<float> listMidBaseX;
-    private List<float> listGroundBaseX;
+    private List<SpriteRenderer> listPanel;
+    private List<float> listPanelBaseX;
     private float scrollPosition;
 
     private void Awake()
     {
-        trnsFar = GameUtil.Bind<Transform>(transform, "Far");
-        trnsMid = GameUtil.Bind<Transform>(transform, "Mid");
-        trnsGround = GameUtil.Bind<Transform>(transform, "Ground/Marks");
+        trnsPanels = GameUtil.Bind<Transform>(transform, "Panels");
 
-        listFarTile = trnsFar.Cast<Transform>().ToList();
-        listMidTile = trnsMid.Cast<Transform>().ToList();
-        listGroundTile = trnsGround.Cast<Transform>().ToList();
-        listFarBaseX = listFarTile.Select(x => x.localPosition.x).ToList();
-        listMidBaseX = listMidTile.Select(x => x.localPosition.x).ToList();
-        listGroundBaseX = listGroundTile.Select(x => x.localPosition.x).ToList();
+        listPanel = trnsPanels.Cast<Transform>().Select(x => x.GetComponent<SpriteRenderer>()).ToList();
+        listPanelBaseX = listPanel.Select(x => x.transform.localPosition.x).ToList();
     }
 
     private void OnDestroy()
     {
         transform.DOKill();
+    }
+
+    /// <summary>
+    /// 스테이지 이미지 code({imageCode}_BG_01~03)로 미리 읽은 배경 이미지를 조각에 차례로 넣는다. 이미지가 없는 조각은 그대로 둔다.
+    /// </summary>
+    public void SetStage(string imageCode)
+    {
+        for (int i = 0; i < listPanel.Count; i++)
+        {
+            Sprite sprite = ResourceManager.Instance.GetSprite($"{imageCode}{GameConstants.AddressableAddresses.StageBackgroundInfix}{i + 1:D2}");
+            if (sprite != null)
+            {
+                listPanel[i].sprite = sprite;
+            }
+        }
     }
 
     /// <summary>
@@ -59,22 +58,16 @@ public class BattleBackgroundView : MonoBehaviour
         tween.timeScale = speed;
     }
 
+    // 조각은 처음에 -loopWidth / 2 ~ loopWidth / 2 사이에 놓여 있고, 흘린 만큼 왼쪽으로 옮긴 뒤 그 범위 안으로 되돌린다
     private void ApplyScroll(float position)
     {
-        ApplyLayer(listFarTile, listFarBaseX, position * FarScrollRatio, FarLoopWidth);
-        ApplyLayer(listMidTile, listMidBaseX, position * MidScrollRatio, MidLoopWidth);
-        ApplyLayer(listGroundTile, listGroundBaseX, position, GroundLoopWidth);
-    }
-
-    // 조각은 처음에 -loopWidth / 2 ~ loopWidth / 2 사이에 놓여 있고, 흘린 만큼 왼쪽으로 옮긴 뒤 그 범위 안으로 되돌린다
-    private static void ApplyLayer(List<Transform> listTile, List<float> listBaseX, float offset, float loopWidth)
-    {
-        float leftEdge = -loopWidth * 0.5f;
-        for (int i = 0; i < listTile.Count; i++)
+        float leftEdge = -PanelLoopWidth * 0.5f;
+        for (int i = 0; i < listPanel.Count; i++)
         {
-            Vector3 position = listTile[i].localPosition;
-            position.x = leftEdge + Mathf.Repeat(listBaseX[i] - offset - leftEdge, loopWidth);
-            listTile[i].localPosition = position;
+            Transform trnsPanel = listPanel[i].transform;
+            Vector3 panelPosition = trnsPanel.localPosition;
+            panelPosition.x = leftEdge + Mathf.Repeat(listPanelBaseX[i] - position - leftEdge, PanelLoopWidth);
+            trnsPanel.localPosition = panelPosition;
         }
     }
 }
