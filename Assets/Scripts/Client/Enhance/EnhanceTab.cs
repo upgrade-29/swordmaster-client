@@ -217,7 +217,7 @@ public class EnhanceTab : LobbyTab
             double? nextValue = canEnhance
                 ? StatCalculator.GetArtifactValue(stat, artifact.Level + 1)
                 : (double?)null;
-            SetStatRow(i, GetStatIcon(stat.statType), GetStatName(stat.statType), StatCalculator.GetArtifactValue(stat, artifact.Level), nextValue,
+            SetStatRow(i, GetStatIcon(stat.statType), ArtifactText.GetStatName(stat.statType), StatCalculator.GetArtifactValue(stat, artifact.Level), nextValue,
                 GetStatFormat(stat.statType));
         }
     }
@@ -284,44 +284,6 @@ public class EnhanceTab : LobbyTab
         return frame;
     }
 
-    private static string GetGradeName(ArtifactGrade grade)
-    {
-        string gradeName = string.Empty;
-        switch (grade)
-        {
-            case ArtifactGrade.Common:
-                gradeName = "일반";
-                break;
-            case ArtifactGrade.Rare:
-                gradeName = "희귀";
-                break;
-            case ArtifactGrade.Epic:
-                gradeName = "영웅";
-                break;
-            case ArtifactGrade.Legendary:
-                gradeName = "전설";
-                break;
-        }
-
-        return gradeName;
-    }
-
-    private static string GetStatName(StatType statType)
-    {
-        switch (statType)
-        {
-            case StatType.AttackSpeed:
-                return "공격 속도";
-            case StatType.MaxHp:
-                return "최대 체력";
-            case StatType.CritRate:
-                return "치명타 확률";
-            case StatType.Lifesteal:
-                return "생명력 흡수";
-        }
-        return string.Empty;
-    }
-
     private Sprite GetStatIcon(StatType statType)
     {
         Sprite icon = null;
@@ -346,16 +308,7 @@ public class EnhanceTab : LobbyTab
 
     private static Func<double, string> GetStatFormat(StatType statType)
     {
-        switch (statType)
-        {
-            case StatType.MaxHp:
-                return FormatInteger;
-            case StatType.AttackSpeed:
-            case StatType.CritRate:
-            case StatType.Lifesteal:
-                return FormatPercentage;
-        }
-        return FormatInteger;
+        return value => ArtifactText.FormatStat(statType, value);
     }
 
     private static string FormatInteger(double value)
@@ -405,13 +358,13 @@ public class EnhanceTab : LobbyTab
         string value = GetStatFormat(mainStat.statType)(StatCalculator.GetArtifactValue(mainStat, artifact.Level));
 
         return new ArtifactChangePopup.ItemInfo(
-            GetGradeName(data.grade),
+            ArtifactText.GetGradeName(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
             ResourceManager.Instance.GetSprite(artifact.ArtifactCode),
             GetGradeFrame(data.grade),
             GetStatIcon(mainStat.statType),
-            $"{GetStatName(mainStat.statType)} {value}",
+            $"{ArtifactText.GetStatName(mainStat.statType)} {value}",
             GetArtifactChangeStatus(artifact),
             artifact.IsEquipped == false);
     }
@@ -516,7 +469,7 @@ public class EnhanceTab : LobbyTab
     {
         ArtifactData data = GetArtifactData(artifact.ArtifactCode);
         var stats = GameDB.GetArtifactStats(artifact.ArtifactCode)
-            .Select(x => new EnhancePopup.StatInfo(GetStatIcon(x.statType), GetStatName(x.statType),
+            .Select(x => new EnhancePopup.StatInfo(GetStatIcon(x.statType), ArtifactText.GetStatName(x.statType),
                 GetStatFormat(x.statType)(StatCalculator.GetArtifactValue(x, levelBefore)),
                 GetStatFormat(x.statType)(StatCalculator.GetArtifactValue(x, artifact.Level))))
             .ToList();

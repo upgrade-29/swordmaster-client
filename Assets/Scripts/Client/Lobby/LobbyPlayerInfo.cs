@@ -11,8 +11,10 @@ public class LobbyPlayerInfo : MonoBehaviour
     [ReadOnly] [SerializeField] private RectTransform rectGoldIcon;
     [ReadOnly] [SerializeField] private RectTransform rectDiamondIcon;
     [ReadOnly] [SerializeField] private ButtonUI menuButton;
+    [ReadOnly] [SerializeField] private ButtonUI rankingButton;
 
     public event Action OnClickMenuEvent = delegate { };
+    public event Action OnClickRankingEvent = delegate { };
 
     private void Awake()
     {
@@ -22,8 +24,10 @@ public class LobbyPlayerInfo : MonoBehaviour
         rectGoldIcon = GameUtil.Bind<RectTransform>(transform, "Currency/Gold/Icon");
         rectDiamondIcon = GameUtil.Bind<RectTransform>(transform, "Currency/Diamond/Icon");
         menuButton = GameUtil.Bind<ButtonUI>(transform, "MenuButton");
+        rankingButton = GameUtil.Bind<ButtonUI>(transform, "RankingButton");
 
         menuButton.OnClickEvent += OnClickMenu;
+        rankingButton.OnClickEvent += OnClickRanking;
     }
 
     private void OnDestroy()
@@ -31,6 +35,11 @@ public class LobbyPlayerInfo : MonoBehaviour
         if (menuButton != null)
         {
             menuButton.OnClickEvent -= OnClickMenu;
+        }
+
+        if (rankingButton != null)
+        {
+            rankingButton.OnClickEvent -= OnClickRanking;
         }
     }
 
@@ -82,5 +91,10 @@ public class LobbyPlayerInfo : MonoBehaviour
     private void OnClickMenu()
     {
         OnClickMenuEvent.Invoke();
+    }
+
+    private void OnClickRanking()
+    {
+        OnClickRankingEvent.Invoke();
     }
 }

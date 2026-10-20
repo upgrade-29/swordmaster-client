@@ -24,11 +24,13 @@ public class LobbyView : MonoBehaviour
     public event Action OnSwipeEndEvent = delegate { };
     public event Action OnUpdateTabLayoutEvent = delegate { };
     public event Action OnClickMenuEvent = delegate { };
+    public event Action OnClickRankingEvent = delegate { };
 
     private void Awake()
     {
         playerInfo = GameUtil.Bind<LobbyPlayerInfo>(transform, "TopUI/PlayerInfo");
         playerInfo.OnClickMenuEvent += OnClickMenu;
+        playerInfo.OnClickRankingEvent += OnClickRanking;
         scrollRectTab = GameUtil.Bind<ScrollRect>(transform, "TabList");
 
         foreach (var tab in Tabs)
@@ -58,6 +60,7 @@ public class LobbyView : MonoBehaviour
         if (playerInfo != null)
         {
             playerInfo.OnClickMenuEvent -= OnClickMenu;
+            playerInfo.OnClickRankingEvent -= OnClickRanking;
         }
 
         foreach (var lobbyTab in listLobbyTab)
@@ -186,5 +189,10 @@ public class LobbyView : MonoBehaviour
     private void OnClickMenu()
     {
         OnClickMenuEvent.Invoke();
+    }
+
+    private void OnClickRanking()
+    {
+        OnClickRankingEvent.Invoke();
     }
 }

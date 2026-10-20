@@ -566,6 +566,10 @@ MonoBehaviour:
   spriteGold: {fileID: 21300000, guid: 19ba188f58088484bafd53d989af68b0, type: 3}
   spriteDiamond: {fileID: 21300000, guid: fbfea33e001af5448ab82e73280ae947, type: 3}
   spriteFallback: {fileID: 187011020156873885, guid: 584c78c9720d8364bbe736400374032a, type: 3}
+  spriteAttackSpeed: {fileID: 21300000, guid: 791dedec98536c246a45e1020ed7253e, type: 3}
+  spriteMaxHp: {fileID: 21300000, guid: 8ad0d3f405b401b4cb99709ae6f944e3, type: 3}
+  spriteCritRate: {fileID: 21300000, guid: c9e214e24eac3b940b46a58ce4bcc7cc, type: 3}
+  spriteLifesteal: {fileID: 21300000, guid: 1ccefd46ac62fa04eaf3d0521cec5bcb, type: 3}
   goldPopFrames:
   - {fileID: 779907249, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
   - {fileID: 1932879732, guid: cd344b011aa2b874ba1c658747065b87, type: 3}
