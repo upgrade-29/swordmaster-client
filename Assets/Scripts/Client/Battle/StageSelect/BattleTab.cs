@@ -186,6 +186,7 @@ public class BattleTab : LobbyTab
             return;
         }
 
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiError);
         DialogPopup.Setup("전투 시작 실패", error.Message, new DialogPopup.DialogPopupButtonInfo("확인", OnCloseAlert));
         DialogPopup.Open();
     }

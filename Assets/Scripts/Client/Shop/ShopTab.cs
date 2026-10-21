@@ -148,6 +148,7 @@ public class ShopTab : LobbyTab
 
     private void ShowRetryPopup()
     {
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiError);
         DialogPopup.Setup("구매 결과 확인 필요", "구매 결과를 확인하지 못했습니다. 다시 시도하시겠습니까?",
             new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmRetry),
             new DialogPopup.DialogPopupButtonInfo("취소", OnCancelRetry));

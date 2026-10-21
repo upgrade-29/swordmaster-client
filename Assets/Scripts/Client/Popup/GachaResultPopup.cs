@@ -602,6 +602,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         imgLeakGlow.gameObject.SetActive(true);
         imgSeamLight.gameObject.SetActive(true);
         imgLeakGlow.rectTransform.localScale = Vector3.one * leakGlowStartScale;
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.EnhanceCharge);
 
         Sequence sequence = CreateSequence();
         sequence.Join(rectChest.DOShakeAnchorPos(shakeDuration, shakeStrength, shakeVibrato, 90f, false, false));
@@ -707,6 +708,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
             Vector3 squash = new Vector3(1f + iconLandPunch, 1f - iconLandPunch, 1f);
             sequence.Insert(start + iconDuration,
                 slot.rect.DOScale(Vector3.one, iconDuration).From(squash, false).SetEase(Ease.OutBack));
+            sequence.InsertCallback(start + iconDuration, () => SoundManager.Instance.PlaySfx(GameConstants.Sounds.ArtifactEquip));
         }
         sequence.OnComplete(OnRewardsShown);
         AddTween(sequence);

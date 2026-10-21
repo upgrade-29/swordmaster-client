@@ -101,7 +101,8 @@ public static class GameConstants
         public const string Knockout = "Sound/SFX/sfx_battle_knockout";
         public const string Heal = "Sound/SFX/sfx_battle_heal";
         public const string Countdown = "Sound/SFX/sfx_battle_countdown";
-        public const string TimeWarning = "Sound/SFX/sfx_battle_countdown"; // TODO: [김우진] 남은 시간 경고 전용 효과음이 생기면 경로를 바꾼다
+        public const string TimeWarning = "Sound/SFX/sfx_battle_time_warning";
+        public const string TimeOver = "Sound/SFX/sfx_battle_time_over";
         public const string BattleStart = "Sound/SFX/sfx_battle_start";
         public const string BossWarning = "Sound/SFX/sfx_battle_boss_warning";
         public const string EnemyEntrance = "Sound/SFX/sfx_battle_enemy_entrance";
@@ -120,6 +121,7 @@ public static class GameConstants
         public const string UiClick = "Sound/SFX/sfx_ui_click";
         public const string UiPopupOpen = "Sound/SFX/sfx_ui_popup_open";
         public const string UiPopupClose = "Sound/SFX/sfx_ui_popup_close";
+        public const string UiTab = "Sound/SFX/sfx_ui_tab";
         public const string UiError = "Sound/SFX/sfx_ui_error";
         public const string TitleTouch = "Sound/SFX/sfx_title_touch";
     }

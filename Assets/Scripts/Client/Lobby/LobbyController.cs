@@ -93,6 +93,11 @@ public class LobbyController : MonoBehaviour
 
     public void ChangeTab(LobbyTabType tab)
     {
+        if (tab != currentTab)
+        {
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiTab);
+        }
+
         currentTab = tab;
         view.AnimateSelectedTab(tab);
         view.AnimateTrackPosition(GetTrackPosition(tab));

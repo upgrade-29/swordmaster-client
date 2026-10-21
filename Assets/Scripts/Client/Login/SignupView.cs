@@ -117,6 +117,11 @@ public class SignupView : MonoBehaviour
     {
         resultText.color = isSuccess ? Color.green : Color.red;
         resultText.text = message;
+
+        if (isSuccess == false)
+        {
+            SoundManager.Instance.PlaySfx(GameConstants.Sounds.UiError);
+        }
     }
 
     public void SetMessage(string message)

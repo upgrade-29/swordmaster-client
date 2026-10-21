@@ -185,6 +185,7 @@ public class BattleEffectPresenter : IDisposable
             return;
 
         defeatView.ShowTimeOver(manager.Speed);
+        SoundManager.Instance.PlaySfx(GameConstants.Sounds.TimeOver);
         WaitEndEffect(BattleDefeatView.FadeDuration + ResultPopupDelay);
     }
 

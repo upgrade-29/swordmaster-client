@@ -316,6 +316,7 @@ GameObject:
   - component: {fileID: 8946909956006266160}
   - component: {fileID: 6383466878363070065}
   - component: {fileID: 3885550931421886913}
+  - component: {fileID: 9072873005495249031}
   m_Layer: 0
   m_Name: ConfirmButton
   m_TagString: Untagged
@@ -445,6 +446,22 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &9072873005495249031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2191527866190227338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &2556801776646293259
 GameObject:
   m_ObjectHideFlags: 0
@@ -458,6 +475,7 @@ GameObject:
   - component: {fileID: 3602486879740295667}
   - component: {fileID: 495496789794627717}
   - component: {fileID: 80301276202750878}
+  - component: {fileID: 7147403555120543635}
   m_Layer: 0
   m_Name: CancelButton
   m_TagString: Untagged
@@ -587,6 +605,22 @@ MonoBehaviour:
   m_FlexibleWidth: 1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &7147403555120543635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2556801776646293259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35a97b010d7f9704e93c0f17545d7bd4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonUI
+  btnTarget: {fileID: 0}
+  pressedScale: 0.95
+  pressDuration: 0.06
+  releaseDuration: 0.1
 --- !u!1 &3239380682267612093
 GameObject:
   m_ObjectHideFlags: 0
