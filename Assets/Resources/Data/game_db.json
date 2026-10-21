@@ -1,5 +1,5 @@
 {
-  "version": "20261020105616",
+  "version": "20261021001856",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "망가진 나무 검", "code": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "나무 검", "code": "SWORD_02" },
@@ -20,7 +20,7 @@
     { "level": 16, "successRate": 0.683, "enhanceCost": 3000, "sellPrice": 43700, "attackPower": 136, "attackSpeed": 1.74, "maxHp": 4230, "name": "푸른 불꽃의 검", "code": "SWORD_15" },
     { "level": 17, "successRate": 0.682, "enhanceCost": 3100, "sellPrice": 67600, "attackPower": 151, "attackSpeed": 1.81, "maxHp": 4860, "name": "마그마 검", "code": "SWORD_16" },
     { "level": 18, "successRate": 0.68, "enhanceCost": 3300, "sellPrice": 102000, "attackPower": 165, "attackSpeed": 1.88, "maxHp": 5490, "name": "푸른 마그마 검", "code": "SWORD_17" },
-    { "level": 19, "successRate": 0.585, "enhanceCost": 8100, "sellPrice": 155000, "attackPower": 180, "attackSpeed": 1.94, "maxHp": 6110, "name": "슬픈 개구리 검", "code": "SWORD_18" },
+    { "level": 19, "successRate": 0.585, "enhanceCost": 8100, "sellPrice": 155000, "attackPower": 180, "attackSpeed": 1.94, "maxHp": 6110, "name": "냉동 참치 검", "code": "SWORD_18" },
     { "level": 20, "successRate": 0.583, "enhanceCost": 8500, "sellPrice": 276000, "attackPower": 202, "attackSpeed": 2.02, "maxHp": 7370, "name": "냉기의 검", "code": "SWORD_19" },
     { "level": 21, "successRate": 0.581, "enhanceCost": 8900, "sellPrice": 485000, "attackPower": 223, "attackSpeed": 2.11, "maxHp": 8630, "name": "절대영도의 검", "code": "SWORD_20" },
     { "level": 22, "successRate": 0.579, "enhanceCost": 9400, "sellPrice": 847000, "attackPower": 245, "attackSpeed": 2.19, "maxHp": 9890, "name": "심해의 검", "code": "SWORD_21" },
