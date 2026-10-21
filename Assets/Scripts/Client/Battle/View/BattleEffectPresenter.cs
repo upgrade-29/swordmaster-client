@@ -49,6 +49,7 @@ public class BattleEffectPresenter : IDisposable
     private readonly BossWarningView bossWarningView;
     private readonly BattleBackgroundView backgroundView;
     private readonly BattleDefeatView defeatView;
+    private readonly BattleVfxView vfxView;
     private readonly Transform trnsCamera;
     private readonly Camera battleCamera;
     private readonly Vector3 vecCameraPosition;
@@ -74,7 +75,7 @@ public class BattleEffectPresenter : IDisposable
 
     // 결과 팝업의 재도전과 나가기에서 할 일은 여는 쪽(BattleViewManager)이 정해서 넘긴다
     public BattleEffectPresenter(BattleManager manager, BattleUnitView playerView, BattleUnitView enemyView,
-        BossWarningView bossWarningView, BattleBackgroundView backgroundView, BattleDefeatView defeatView, Transform trnsCamera,
+        BossWarningView bossWarningView, BattleBackgroundView backgroundView, BattleDefeatView defeatView, BattleVfxView vfxView, Transform trnsCamera,
         GameDB gameDB, Action onRetry, Action onExit)
     {
         this.manager = manager;
@@ -83,6 +84,7 @@ public class BattleEffectPresenter : IDisposable
         this.bossWarningView = bossWarningView;
         this.backgroundView = backgroundView;
         this.defeatView = defeatView;
+        this.vfxView = vfxView;
         this.trnsCamera = trnsCamera;
         battleCamera = trnsCamera.GetComponent<Camera>();
         vecCameraPosition = trnsCamera.position;
@@ -162,6 +164,7 @@ public class BattleEffectPresenter : IDisposable
         isEndPlaying = false;
         pendingResult = null;
         defeatView.Hide();
+        vfxView.StopAll();
         trnsCamera.DOKill();
         vecCameraShakeOffset = Vector3.zero;
         SetCameraZoom(0f, Vector3.zero);
@@ -242,6 +245,7 @@ public class BattleEffectPresenter : IDisposable
             attacker.Freeze(BattleUnitView.DefeatHitstopDuration / manager.Speed);
             SoundManager.Instance.PlaySfx(GameConstants.Sounds.Knockout);
             target.PlayDefeat(Mathf.Sign(target.transform.position.x - attacker.transform.position.x), manager.Speed);
+            vfxView.PlayKnockout(target.CenterPosition, manager.Speed);
             ShakeCamera(DefeatShakeStrength, DefeatShakeDuration);
 
             // 플레이어가 쓰러지거나 보스를 처치해서 전투가 끝나면, 맞는 순간부터 느려지고 날아가기 시작할 때 화면이 어두워진다
@@ -256,6 +260,7 @@ public class BattleEffectPresenter : IDisposable
         else
         {
             target.PlayHit(battleEvent.isCrit, manager.Speed);
+            vfxView.PlayHit(target.CenterPosition, battleEvent.isCrit, manager.Speed);
             if (battleEvent.isCrit)
             {
                 SoundManager.Instance.PlaySfx(GameConstants.Sounds.HitCrit);
@@ -294,10 +299,11 @@ public class BattleEffectPresenter : IDisposable
         }
     }
 
-    // 처치 회복은 흡혈과 같은 연출로 플레이어 머리 위에 띄운다. 이때는 데미지 숫자가 없어서 비키지 않는다
+    // 처치 회복은 흡혈처럼 플레이어 머리 위에 회복량을 띄우고, 흡혈과 달리 회복 이펙트도 재생한다. 이때는 데미지 숫자가 없어서 비키지 않는다
     private void PlayKillHeal(double healOnKill)
     {
         playerView.PlayHeal(manager.Speed);
+        vfxView.PlayHeal(playerView.CenterPosition, manager.Speed);
         SoundManager.Instance.PlaySfx(GameConstants.Sounds.Heal);
         damageFloaters.Show(playerView.HeadPosition, $"+{healOnKill.ToString(GameConstants.NumberFormats.Decimal)}", GameConstants.Colors.Heal, 1f, false,
             manager.Speed);

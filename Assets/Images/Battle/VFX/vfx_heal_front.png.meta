@@ -1,0 +1,648 @@
+fileFormatVersion: 2
+guid: 1304096112dd305448ec61128939c95a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3778798473075891901
+    second: vfx_heal_front_0
+  - first:
+      213: -7288145298683884618
+    second: vfx_heal_front_1
+  - first:
+      213: -8100094018459054488
+    second: vfx_heal_front_2
+  - first:
+      213: 4852790997347347779
+    second: vfx_heal_front_3
+  - first:
+      213: -8686213274244158632
+    second: vfx_heal_front_4
+  - first:
+      213: 1375368205817797547
+    second: vfx_heal_front_5
+  - first:
+      213: 7136241017121083548
+    second: vfx_heal_front_6
+  - first:
+      213: 795283213925332687
+    second: vfx_heal_front_7
+  - first:
+      213: 1176695576216185657
+    second: vfx_heal_front_8
+  - first:
+      213: 507597996084686824
+    second: vfx_heal_front_9
+  - first:
+      213: 6810947177383714085
+    second: vfx_heal_front_10
+  - first:
+      213: -5326230797315301059
+    second: vfx_heal_front_11
+  - first:
+      213: -16142724891745687
+    second: vfx_heal_front_12
+  - first:
+      213: -7892224865652704631
+    second: vfx_heal_front_13
+  - first:
+      213: 1721683239481556387
+    second: vfx_heal_front_14
+  - first:
+      213: 5501319899719459430
+    second: vfx_heal_front_15
+  - first:
+      213: -479329031457478506
+    second: vfx_heal_front_16
+  - first:
+      213: 3079773969874760502
+    second: vfx_heal_front_17
+  - first:
+      213: 6719229583664313527
+    second: vfx_heal_front_18
+  - first:
+      213: -4072895322996392236
+    second: vfx_heal_front_19
+  - first:
+      213: 8760656206575011991
+    second: vfx_heal_front_20
+  - first:
+      213: -3662021235074724123
+    second: vfx_heal_front_21
+  - first:
+      213: -4380700001071571536
+    second: vfx_heal_front_22
+  - first:
+      213: -6555922532774668760
+    second: vfx_heal_front_23
+  - first:
+      213: -1808553410612702466
+    second: vfx_heal_front_24
+  - first:
+      213: -6371432742464772117
+    second: vfx_heal_front_25
+  - first:
+      213: -6982583121200589973
+    second: vfx_heal_front_26
+  - first:
+      213: 433341492960752477
+    second: vfx_heal_front_27
+  - first:
+      213: -7524433009077133612
+    second: vfx_heal_front_28
+  - first:
+      213: 3575798494674851146
+    second: vfx_heal_front_29
+  - first:
+      213: 832496304556565637
+    second: vfx_heal_front_30
+  - first:
+      213: -201650935882160108
+    second: vfx_heal_front_31
+  - first:
+      213: 8847375330418794099
+    second: vfx_heal_front_32
+  - first:
+      213: 8909398201297514486
+    second: vfx_heal_front_33
+  - first:
+      213: 4783617547711623782
+    second: vfx_heal_front_34
+  - first:
+      213: 563174623862407027
+    second: vfx_heal_front_35
+  - first:
+      213: 3538721338854017975
+    second: vfx_heal_front_36
+  - first:
+      213: -6901210434167826574
+    second: vfx_heal_front_37
+  - first:
+      213: 1171367870618404804
+    second: vfx_heal_front_38
+  - first:
+      213: 9197232491181754896
+    second: vfx_heal_front_39
+  - first:
+      213: 680091188585626966
+    second: vfx_heal_front_40
+  - first:
+      213: 2495907488404046647
+    second: vfx_heal_front_41
+  - first:
+      213: -2038809143445681096
+    second: vfx_heal_front_42
+  - first:
+      213: -1928592611402559923
+    second: vfx_heal_front_43
+  - first:
+      213: -1058152022169014829
+    second: vfx_heal_front_44
+  - first:
+      213: -770361537212739997
+    second: vfx_heal_front_45
+  - first:
+      213: 4235106832764872849
+    second: vfx_heal_front_46
+  - first:
+      213: 6677928301454683566
+    second: vfx_heal_front_47
+  - first:
+      213: 6779078063736511408
+    second: vfx_heal_front_48
+  - first:
+      213: -7170504579139863552
+    second: vfx_heal_front_49
+  - first:
+      213: -917834040559836413
+    second: vfx_heal_front_50
+  - first:
+      213: -8011237754880963667
+    second: vfx_heal_front_51
+  - first:
+      213: -8318902091541612478
+    second: vfx_heal_front_52
+  - first:
+      213: -3668101101633780890
+    second: vfx_heal_front_53
+  - first:
+      213: 2534990201008953659
+    second: vfx_heal_front_54
+  - first:
+      213: -6644985805904434105
+    second: vfx_heal_front_55
+  - first:
+      213: 7333382850631604012
+    second: vfx_heal_front_56
+  - first:
+      213: -5848638783619488267
+    second: vfx_heal_front_57
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 48
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: vfx_heal_front_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 560583305f5f0b142a34b12d1ba73ab1
+      internalID: 3778798473075891901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_1
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eeaa203b161c57943bec769c98e622ca
+      internalID: -7288145298683884618
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_2
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74a2ac934eeb5974e816ff1f6c6c742b
+      internalID: -8100094018459054488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_3
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cccc989b3c8f572438f4ef607b814127
+      internalID: 4852790997347347779
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_4
+      rect:
+        serializedVersion: 2
+        x: 204
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7068905903b944c4999b7d77397c627f
+      internalID: -8686213274244158632
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_5
+      rect:
+        serializedVersion: 2
+        x: 255
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 937711dd543eafc46bbb960f284eacaf
+      internalID: 1375368205817797547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_6
+      rect:
+        serializedVersion: 2
+        x: 306
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 002b2ae56b84fc14e822b87eaedcfe03
+      internalID: 7136241017121083548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_7
+      rect:
+        serializedVersion: 2
+        x: 357
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5c26f6b74b6c0e04bae4960f93547fda
+      internalID: 795283213925332687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_8
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b446ba4610e92541ae73b049db33cbc
+      internalID: 1176695576216185657
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_9
+      rect:
+        serializedVersion: 2
+        x: 459
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad18d94459e790b40b42e6213678454f
+      internalID: 507597996084686824
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_10
+      rect:
+        serializedVersion: 2
+        x: 510
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ebabb37b0f0af44683dcac18d11ed3a
+      internalID: 6810947177383714085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_11
+      rect:
+        serializedVersion: 2
+        x: 561
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f5277ca917c9104fbc594421c0ac83a
+      internalID: -5326230797315301059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_heal_front_12
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 0
+        width: 51
+        height: 77
+      alignment: 9
+      pivot: {x: 0.4902, y: 0.1558}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: edb7e6aec994a7146af69ea3ec87adec
+      internalID: -16142724891745687
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: e8e656a534a80024883232626bd10d7a
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      vfx_heal_front_0: 3778798473075891901
+      vfx_heal_front_1: -7288145298683884618
+      vfx_heal_front_10: 6810947177383714085
+      vfx_heal_front_11: -5326230797315301059
+      vfx_heal_front_12: -16142724891745687
+      vfx_heal_front_13: -7892224865652704631
+      vfx_heal_front_14: 1721683239481556387
+      vfx_heal_front_15: 5501319899719459430
+      vfx_heal_front_16: -479329031457478506
+      vfx_heal_front_17: 3079773969874760502
+      vfx_heal_front_18: 6719229583664313527
+      vfx_heal_front_19: -4072895322996392236
+      vfx_heal_front_2: -8100094018459054488
+      vfx_heal_front_20: 8760656206575011991
+      vfx_heal_front_21: -3662021235074724123
+      vfx_heal_front_22: -4380700001071571536
+      vfx_heal_front_23: -6555922532774668760
+      vfx_heal_front_24: -1808553410612702466
+      vfx_heal_front_25: -6371432742464772117
+      vfx_heal_front_26: -6982583121200589973
+      vfx_heal_front_27: 433341492960752477
+      vfx_heal_front_28: -7524433009077133612
+      vfx_heal_front_29: 3575798494674851146
+      vfx_heal_front_3: 4852790997347347779
+      vfx_heal_front_30: 832496304556565637
+      vfx_heal_front_31: -201650935882160108
+      vfx_heal_front_32: 8847375330418794099
+      vfx_heal_front_33: 8909398201297514486
+      vfx_heal_front_34: 4783617547711623782
+      vfx_heal_front_35: 563174623862407027
+      vfx_heal_front_36: 3538721338854017975
+      vfx_heal_front_37: -6901210434167826574
+      vfx_heal_front_38: 1171367870618404804
+      vfx_heal_front_39: 9197232491181754896
+      vfx_heal_front_4: -8686213274244158632
+      vfx_heal_front_40: 680091188585626966
+      vfx_heal_front_41: 2495907488404046647
+      vfx_heal_front_42: -2038809143445681096
+      vfx_heal_front_43: -1928592611402559923
+      vfx_heal_front_44: -1058152022169014829
+      vfx_heal_front_45: -770361537212739997
+      vfx_heal_front_46: 4235106832764872849
+      vfx_heal_front_47: 6677928301454683566
+      vfx_heal_front_48: 6779078063736511408
+      vfx_heal_front_49: -7170504579139863552
+      vfx_heal_front_5: 1375368205817797547
+      vfx_heal_front_50: -917834040559836413
+      vfx_heal_front_51: -8011237754880963667
+      vfx_heal_front_52: -8318902091541612478
+      vfx_heal_front_53: -3668101101633780890
+      vfx_heal_front_54: 2534990201008953659
+      vfx_heal_front_55: -6644985805904434105
+      vfx_heal_front_56: 7333382850631604012
+      vfx_heal_front_57: -5848638783619488267
+      vfx_heal_front_6: 7136241017121083548
+      vfx_heal_front_7: 795283213925332687
+      vfx_heal_front_8: 1176695576216185657
+      vfx_heal_front_9: 507597996084686824
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -26,6 +26,7 @@ public class BattleViewManager : MonoBehaviour
     private BossWarningView bossWarningView;
     private BattleBackgroundView backgroundView;
     private BattleDefeatView defeatView;
+    private BattleVfxView vfxView;
     private CoinFlyView coinFlyView;
     private Button optionButton;
     private BattleHudPresenter hudPresenter;
@@ -47,6 +48,7 @@ public class BattleViewManager : MonoBehaviour
         enemyView = GameUtil.TryGetComponent<BattleUnitView>(GameObject.Find("Enemy"));
         namePlateView = GameUtil.TryGetComponent<NamePlateView>(GameObject.Find("NamePlateCanvas"));
         backgroundView = GameUtil.TryGetComponent<BattleBackgroundView>(GameObject.Find("Background"));
+        vfxView = GameUtil.TryGetComponent<BattleVfxView>(GameObject.Find("Vfx"));
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
         coinFlyView = GameUtil.Bind<CoinFlyView>(GameObject.Find("BattleCanvas"), "CoinLayer");
         defeatView = GameUtil.Bind<BattleDefeatView>(GameObject.Find("BattleCanvas"), "DefeatOverlay");
@@ -113,7 +115,7 @@ public class BattleViewManager : MonoBehaviour
         manager.SetSpeed(speed);
         hudPresenter = new BattleHudPresenter(manager, hud, namePlateView, enemyView, coinFlyView, user.Nickname);
         battleLogger = new BattleLogger(manager, logView, user.Nickname, logToConsole);
-        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, backgroundView, defeatView,
+        effectPresenter = new BattleEffectPresenter(manager, playerView, enemyView, bossWarningView, backgroundView, defeatView, vfxView,
             Camera.main.transform, gameDB, manager.Retry, OnExitClicked);
 
         manager.BusyChanged += OnBusyChanged;
