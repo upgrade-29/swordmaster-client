@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class LobbyController : MonoBehaviour
 {
@@ -36,7 +35,7 @@ public class LobbyController : MonoBehaviour
         {
             Debug.LogWarning("[Lobby] Not logged in. Back to login");
             gameObject.SetActive(false);
-            SceneManager.LoadScene(GameConstants.Scenes.Title);
+            SceneLoader.Instance.Load(GameConstants.Scenes.Title);
             return;
         }
 
@@ -240,6 +239,6 @@ public class LobbyController : MonoBehaviour
         DialogPopup.Close();
         HttpRequest.Request(AuthApi.Logout(), null, false);
         GameSession.Instance.Logout();
-        SceneManager.LoadScene(GameConstants.Scenes.Title);
+        SceneLoader.Instance.Load(GameConstants.Scenes.Title);
     }
 }

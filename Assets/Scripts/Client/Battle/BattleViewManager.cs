@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // 전투 씬의 진입점. 로비에서 BattleEntry로 받은 배틀 세션과 GameSession의 GameDB로 BattleManager를 초기화하고, 전투 씬의 뷰들을 연결한다
@@ -11,7 +10,6 @@ using UnityEngine.UI;
 // 옵션 팝업이나 포기 확인 팝업이 떠 있는 동안은 전투를 멈춘다
 public class BattleViewManager : MonoBehaviour
 {
-    private const float ExitFadeDuration = 0.5f;
     private const float NextEnemyResumeDelay = 0.3f; // 다음 적이 도착하고 전투를 다시 시작하기까지(1배속 기준)
     private const string AbandonTitle = "전투 포기";
     private const string AbandonMessage = "전투를 포기하시겠습니까?\n지금까지 모은 골드만 받고 패배 처리됩니다.";
@@ -29,7 +27,6 @@ public class BattleViewManager : MonoBehaviour
     private BattleBackgroundView backgroundView;
     private BattleDefeatView defeatView;
     private CoinFlyView coinFlyView;
-    private ScreenFader screenFader;
     private Button optionButton;
     private BattleHudPresenter hudPresenter;
     private BattleLogger battleLogger;
@@ -53,7 +50,6 @@ public class BattleViewManager : MonoBehaviour
         bossWarningView = GameUtil.Bind<BossWarningView>(GameObject.Find("BattleCanvas"), "BossWarningPanel");
         coinFlyView = GameUtil.Bind<CoinFlyView>(GameObject.Find("BattleCanvas"), "CoinLayer");
         defeatView = GameUtil.Bind<BattleDefeatView>(GameObject.Find("BattleCanvas"), "DefeatOverlay");
-        screenFader = GameUtil.Bind<ScreenFader>(GameObject.Find("BattleCanvas"), "FadePanel");
         optionButton = GameUtil.Bind<Button>(GameObject.Find("BattleCanvas"), "Hud/OptionButton");
     }
 
@@ -87,7 +83,7 @@ public class BattleViewManager : MonoBehaviour
             GameSession.Instance.User == null)
         {
             Debug.LogWarning("[Battle] No entry data. Back to lobby");
-            SceneManager.LoadScene(GameConstants.Scenes.Lobby);
+            SceneLoader.Instance.Load(GameConstants.Scenes.Lobby);
             return;
         }
 
@@ -98,7 +94,7 @@ public class BattleViewManager : MonoBehaviour
         if (GameSession.Instance.IsLoggedIn == false)
         {
             Debug.LogWarning("[Battle] Not logged in. Back to login");
-            SceneManager.LoadScene(GameConstants.Scenes.Title);
+            SceneLoader.Instance.Load(GameConstants.Scenes.Title);
             return;
         }
 
@@ -199,12 +195,9 @@ public class BattleViewManager : MonoBehaviour
         Time.timeScale = isPaused ? 0f : 1f;
     }
 
-    // 어두워진 뒤 로비 씬으로 돌아간다. 로비는 전투 탭에서 시작한다
+    // 로딩 씬을 거쳐 로비 씬으로 돌아간다. 로비는 전투 탭에서 시작한다
     private void OnExitClicked()
     {
-        screenFader.FadeOut(ExitFadeDuration, () =>
-        {
-            SceneManager.LoadScene(GameConstants.Scenes.Lobby);
-        });
+        SceneLoader.Instance.Load(GameConstants.Scenes.Lobby);
     }
 }

@@ -1,4 +1,3 @@
-using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 모든 요청의 에러를 콜백보다 먼저 받아서 공통으로 처리합니다. 등록 없이 첫 요청부터 항상 호출됩니다.
@@ -37,7 +36,7 @@ public static class HttpErrorHandler
         }
 
         session.Expire();
-        SceneManager.LoadScene(GameConstants.Scenes.Title);
+        SceneLoader.Instance.Load(GameConstants.Scenes.Title);
         return true;
     }
 }
