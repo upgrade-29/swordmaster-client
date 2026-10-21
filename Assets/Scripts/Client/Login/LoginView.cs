@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-// 아이디/비밀번호 입력, 로그인/회원가입 버튼 입력 전달, 결과 문구 표시만 담당한다. 인증 로직은 갖지 않는다.
+// 아이디/비밀번호 입력, 로그인/회원가입/뒤로 버튼 입력 전달, 결과 문구 표시만 담당한다. 인증 로직은 갖지 않는다.
 // Tab으로 입력칸을 오가고, 아이디에서 Enter(모바일 키보드 완료)를 누르면 비밀번호로, 비밀번호에서 누르면 로그인한다
 public class LoginView : MonoBehaviour
 {
@@ -14,16 +14,14 @@ public class LoginView : MonoBehaviour
     [ReadOnly] [SerializeField] private Button loginButton;
     [ReadOnly] [SerializeField] private Button signupButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI resultText;
-    [ReadOnly][SerializeField] private Button googleButton;
-
-    private string googleToken = "108416504166-s6e69s8oo6fh27s58dko1t2aajj5fevt.apps.googleusercontent.com";
+    [ReadOnly] [SerializeField] private Button backButton;
 
     // onSubmit 직후 입력칸이 스스로 비활성화되므로, 다음 칸 포커스는 다음 프레임에 준다
     private TMP_InputField pendingFocusInput;
 
     public event Action<string, string> OnClickLoginEvent = delegate { };
     public event Action OnClickSignupEvent = delegate { };
-    public event Action OnClickGoogleEvent = delegate { };
+    public event Action OnClickBackEvent = delegate { };
 
     private void Awake()
     {
@@ -32,12 +30,12 @@ public class LoginView : MonoBehaviour
         passwordInput = GameUtil.Bind<TMP_InputField>(transform, "LoginPanel/PasswordInput");
         loginButton = GameUtil.Bind<Button>(transform, "LoginPanel/LoginButton");
         signupButton = GameUtil.Bind<Button>(transform, "LoginPanel/SignupButton");
-        googleButton = GameUtil.Bind<Button>(transform, "LoginPanel/GoogleButton");
+        backButton = GameUtil.Bind<Button>(transform, "LoginPanel/BackButton");
         resultText = GameUtil.Bind<TextMeshProUGUI>(transform, "LoginPanel/ResultText");
 
         loginButton.onClick.AddListener(OnClickLogin);
         signupButton.onClick.AddListener(OnClickSignup);
-        googleButton.onClick.AddListener(OnClickGoogle);
+        backButton.onClick.AddListener(OnClickBack);
         idInput.onSubmit.AddListener(OnSubmitId);
         passwordInput.onSubmit.AddListener(OnSubmitPassword);
         resultText.text = string.Empty;
@@ -70,9 +68,9 @@ public class LoginView : MonoBehaviour
             loginButton.onClick.RemoveListener(OnClickLogin);
         }
 
-        if (googleButton != null)
+        if (backButton != null)
         {
-            googleButton.onClick.RemoveListener(OnClickGoogle);
+            backButton.onClick.RemoveListener(OnClickBack);
         }
 
         if (idInput != null)
@@ -131,7 +129,7 @@ public class LoginView : MonoBehaviour
         passwordInput.interactable = interactable;
         loginButton.interactable = interactable;
         signupButton.interactable = interactable;
-        googleButton.interactable = interactable;
+        backButton.interactable = interactable;
     }
 
     private void OnClickLogin()
@@ -168,8 +166,8 @@ public class LoginView : MonoBehaviour
         OnClickSignupEvent.Invoke();
     }
 
-    private void OnClickGoogle()
+    private void OnClickBack()
     {
-        OnClickGoogleEvent.Invoke();
+        OnClickBackEvent.Invoke();
     }
 }

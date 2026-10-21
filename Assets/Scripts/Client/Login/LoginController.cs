@@ -1,24 +1,37 @@
 using System.Collections;
 using UnityEngine;
 
-// 로그인 요청과 로그인/회원가입 화면 전환을 처리한다. 서버 요청은 AuthApi, PlayerApi로 만들어 HttpRequest로 보낸다.
+// 로그인 요청과 로그인 방법 선택/이메일 로그인/회원가입 화면 전환을 처리한다. 서버 요청은 AuthApi, PlayerApi로 만들어 HttpRequest로 보낸다.
+// 타이틀을 터치하면 로그인 방법 선택 팝업이 뜨고, Google은 그 자리에서 로그인하며 이메일은 이메일 로그인 화면을 연다.
 // 로그인에 성공하면 서버의 플레이어 정보를 받아 GameSession에 넣고 로비 씬으로 넘어간다.
 // 플레이어가 없으면 닉네임 팝업을 띄워 닉네임을 받아 만든다
 public class LoginController : MonoBehaviour
 {
     private const string SessionExpiredMessage = "로그인이 만료되었습니다. 다시 로그인해 주세요.";
 
+    // 진행 중인 로그인 방법. 실패 문구를 이메일 로그인 화면에 띄울지 선택 팝업에 띄울지 정한다
+    private enum LoginMethodType
+    {
+        None,
+        Refresh,
+        Email,
+        Google,
+    }
+
     [ReadOnly] [SerializeField] private TitleView titleView;
+    [ReadOnly] [SerializeField] private LoginSelectView selectView;
     [ReadOnly] [SerializeField] private LoginView view;
     [ReadOnly] [SerializeField] private SignupView signupView;
     [ReadOnly] [SerializeField] private NicknamePopup nicknamePopup;
 
     private GoogleLoginClient googleLoginClient;
     private bool isRequesting;
+    private LoginMethodType currentLoginMethod;
 
     private void Awake()
     {
         GameUtil.Bind(gameObject, ref titleView);
+        GameUtil.Bind(gameObject, ref selectView);
         GameUtil.Bind(gameObject, ref view);
         GameUtil.Bind(gameObject, ref signupView);
         nicknamePopup = GameUtil.Bind<NicknamePopup>(transform, "NicknamePopup");
@@ -35,29 +48,32 @@ public class LoginController : MonoBehaviour
             callbackObject.AddComponent<GoogleLoginClient>();
 
         titleView.OnClickTouchEvent += OnClickTitle;
+        selectView.OnClickGoogleEvent += OnClickGoogle;
+        selectView.OnClickEmailEvent += OnClickEmail;
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
+        view.OnClickBackEvent += OnClickLoginBack;
         signupView.OnClickSignupEvent += OnClickSignup;
         signupView.OnClickBackEvent += OnClickSignupBack;
-        view.OnClickGoogleEvent += OnClickGoogle;
         nicknamePopup.OnClickConfirmEvent += OnClickNicknameConfirm;
     }
 
     private void Start()
     {
         SoundManager.Instance.StopBgm();
+        selectView.Hide();
+        view.Hide();
         signupView.Hide();
 
-        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 터치 없이 바로 로그인 화면을 띄운다
+        // 로그인한 상태에서 서버가 토큰을 거절해 이 씬으로 돌아온 경우. 타이틀 터치 없이 바로 로그인 방법 선택 팝업을 띄운다
         if (GameSession.Instance.IsExpired)
         {
             GameSession.Instance.ClearExpired();
-            ShowLoginPanel();
-            view.SetResult(false, SessionExpiredMessage);
+            ShowLoginSelect();
+            selectView.SetResult(false, SessionExpiredMessage);
             return;
         }
 
-        view.Hide();
         if (ResourceManager.Instance.IsPreloaded)
         {
             titleView.Show();
@@ -81,11 +97,17 @@ public class LoginController : MonoBehaviour
             titleView.OnClickTouchEvent -= OnClickTitle;
         }
 
+        if (selectView != null)
+        {
+            selectView.OnClickGoogleEvent -= OnClickGoogle;
+            selectView.OnClickEmailEvent -= OnClickEmail;
+        }
+
         if (view != null)
         {
             view.OnClickLoginEvent -= OnClickLogin;
             view.OnClickSignupEvent -= OnClickOpenSignup;
-            view.OnClickGoogleEvent -= OnClickGoogle;
+            view.OnClickBackEvent -= OnClickLoginBack;
         }
 
         if (signupView != null)
@@ -100,7 +122,7 @@ public class LoginController : MonoBehaviour
         }
     }
 
-    // 저장된 리프레시 토큰이 있으면 자동 로그인을 시도하고, 없으면 로그인 화면을 띄운다
+    // 저장된 리프레시 토큰이 있으면 자동 로그인을 시도하고, 없으면 로그인 방법 선택 팝업을 띄운다
     private void OnClickTitle()
     {
         if (isRequesting)
@@ -110,11 +132,12 @@ public class LoginController : MonoBehaviour
 
         if (GameSession.Instance.TokenStorage.TryLoad(out string refreshToken) == false)
         {
-            ShowLoginPanel();
+            ShowLoginSelect();
             return;
         }
 
         isRequesting = true;
+        currentLoginMethod = LoginMethodType.Refresh;
         titleView.SetInteractable(false);
 
         HttpRequest.Request(AuthApi.Refresh(refreshToken), OnRefreshResponse);
@@ -136,20 +159,20 @@ public class LoginController : MonoBehaviour
             if (error.StatusCode == AuthApi.UnauthorizedStatusCode)
             {
                 GameSession.Instance.TokenStorage.Clear();
-                ShowLoginPanel();
+                ShowLoginSelect();
                 return;
             }
 
-            ShowLoginPanel();
-            view.SetResult(false, $"자동 로그인 실패: {error.Message}");
+            ShowLoginSelect();
+            selectView.SetResult(false, $"자동 로그인 실패: {error.Message}");
             return;
         }
 
         if (string.IsNullOrEmpty(response?.accessToken) || string.IsNullOrEmpty(response.refreshToken))
         {
             isRequesting = false;
-            ShowLoginPanel();
-            view.SetResult(false, "자동 로그인 실패: 서버 응답을 읽을 수 없습니다.");
+            ShowLoginSelect();
+            selectView.SetResult(false, "자동 로그인 실패: 서버 응답을 읽을 수 없습니다.");
             return;
         }
 
@@ -158,10 +181,28 @@ public class LoginController : MonoBehaviour
         HttpRequest.Request(PlayerApi.GetMe(), OnLoadPlayerResponse);
     }
 
-    private void ShowLoginPanel()
+    private void ShowLoginSelect()
     {
         titleView.ShowDimmed();
+        selectView.Show();
+    }
+
+    private void OnClickEmail()
+    {
+        if (isRequesting)
+        {
+            return;
+        }
+
+        selectView.SetMessage(string.Empty);
+        selectView.Hide();
         view.Show();
+    }
+
+    private void OnClickLoginBack()
+    {
+        view.Hide();
+        selectView.Show();
     }
 
     private void OnClickOpenSignup()
@@ -241,6 +282,7 @@ public class LoginController : MonoBehaviour
         }
 
         isRequesting = true;
+        currentLoginMethod = LoginMethodType.Email;
         view.SetInteractable(false);
         view.SetMessage("로그인 중...");
 
@@ -291,6 +333,7 @@ public class LoginController : MonoBehaviour
         if (player == null)
         {
             view.SetMessage(string.Empty);
+            selectView.SetMessage(string.Empty);
             nicknamePopup.Open();
             nicknamePopup.Focus();
             return;
@@ -299,13 +342,22 @@ public class LoginController : MonoBehaviour
         EnterLobby(player);
     }
 
-    // 자동 로그인 중에 실패하면 로그인 화면이 아직 없으므로 함께 띄운다
+    // 이메일 로그인은 이메일 로그인 화면에, 자동 로그인과 Google 로그인은 선택 팝업에 실패 문구를 띄운다
+    // 자동 로그인 중에 실패하면 선택 팝업이 아직 없으므로 함께 띄운다
     private void FailLogin(string message)
     {
         isRequesting = false;
-        ShowLoginPanel();
-        view.SetInteractable(true);
-        view.SetResult(false, $"로그인 실패: {message}");
+
+        if (currentLoginMethod == LoginMethodType.Email)
+        {
+            view.SetInteractable(true);
+            view.SetResult(false, $"로그인 실패: {message}");
+            return;
+        }
+
+        ShowLoginSelect();
+        selectView.SetInteractable(true);
+        selectView.SetResult(false, $"로그인 실패: {message}");
     }
 
     private void OnClickNicknameConfirm(string nickname)
@@ -357,8 +409,9 @@ public class LoginController : MonoBehaviour
         }
 
         isRequesting = true;
-        view.SetInteractable(false);
-        view.SetMessage("Google 인증 중...");
+        currentLoginMethod = LoginMethodType.Google;
+        selectView.SetInteractable(false);
+        selectView.SetMessage("Google 인증 중...");
 
         googleLoginClient.SignIn(
             onSuccess: idToken =>
@@ -369,7 +422,7 @@ public class LoginController : MonoBehaviour
                     return;
                 }
 
-                view.SetMessage("게임 서버 로그인 중...");
+                selectView.SetMessage("게임 서버 로그인 중...");
 
                 HttpRequest.Request(
                     AuthApi.GoogleLogin(idToken),
