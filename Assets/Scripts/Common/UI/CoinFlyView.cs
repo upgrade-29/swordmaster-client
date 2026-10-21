@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 // 출발점 주변에 재화를 흩뿌리고, 잠깐 뒤 재화 HUD로 빨아들인다. 재화가 HUD에 닿으면 그 자리에서 반짝임이 터진다
 // 배틀에서는 처치한 적 자리에서 골드가, 로비 상점에서는 구매한 상품 카드에서 골드나 다이아가 나온다
-// 화면 전체를 덮는 Screen Space Overlay 캔버스의 CoinLayer에 붙인다. 자식 CoinTemplate과 PopTemplate을 복제해서 쓰고, 다 쓴 것은 다시 쓴다
+// 게임 표시 영역의 Screen Space Overlay 캔버스의 CoinLayer에 붙인다. 자식 CoinTemplate과 PopTemplate을 복제해서 쓰고, 다 쓴 것은 다시 쓴다
 // 배틀은 동전이 HUD를 가리지 않게 CoinLayer를 Hud 뒤에 두고, 반짝임은 골드 아이콘 위에 보이게 Hud 앞의 CoinPopLayer/PopTemplate을 쓴다
 public class CoinFlyView : MonoBehaviour
 {

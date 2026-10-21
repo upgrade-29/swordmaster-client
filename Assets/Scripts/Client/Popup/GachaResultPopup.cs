@@ -683,7 +683,8 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
     // 화면 위 끝이 광선 시작점(Rays)에서 얼마나 위에 있는지(Rays 기준 유닛)
     private float GetScreenTopY()
     {
-        var canvasRect = (RectTransform)GetComponentInParent<Canvas>().rootCanvas.transform;
+        // 바깥 루트 캔버스는 여백도 포함하므로 실제 게임 영역인 가까운 캔버스의 위쪽을 사용한다.
+        var canvasRect = (RectTransform)GetComponentInParent<Canvas>().transform;
         var corners = new Vector3[4];
         canvasRect.GetWorldCorners(corners);
         return rectRays.InverseTransformPoint(corners[1]).y; // 1번이 왼쪽 위
