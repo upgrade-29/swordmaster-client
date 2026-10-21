@@ -40,10 +40,11 @@ public class ArtifactChangeItem : MonoBehaviour
     }
 
     // 이미지를 미리 읽지 못했거나 등급 테두리가 없으면 그 칸을 숨긴다
-    public void Set(string grade, string level, string name, Sprite image, Sprite gradeFrame, Sprite statIcon, string stat, string status,
-        bool interactable)
+    public void Set(string grade, Color gradeColor, string level, string name, Sprite image, Sprite gradeFrame, Sprite statIcon, string stat,
+        string status, bool interactable)
     {
         txtGrade.text = grade;
+        txtGrade.color = gradeColor;
         txtLevel.text = level;
         txtName.text = name;
         imgArtifact.sprite = image;

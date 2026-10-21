@@ -8,6 +8,7 @@ public class ArtifactChangePopup : BasePopup
     public readonly struct ItemInfo
     {
         public readonly string grade;
+        public readonly Color gradeColor;
         public readonly string level;
         public readonly string name;
         public readonly Sprite image;
@@ -17,10 +18,11 @@ public class ArtifactChangePopup : BasePopup
         public readonly string status;
         public readonly bool interactable;
 
-        public ItemInfo(string grade, string level, string name, Sprite image, Sprite gradeFrame, Sprite statIcon, string stat, string status,
-            bool interactable)
+        public ItemInfo(string grade, Color gradeColor, string level, string name, Sprite image, Sprite gradeFrame, Sprite statIcon, string stat,
+            string status, bool interactable)
         {
             this.grade = grade;
+            this.gradeColor = gradeColor;
             this.level = level;
             this.name = name;
             this.image = image;
@@ -84,7 +86,7 @@ public class ArtifactChangePopup : BasePopup
         for (int i = 0; i < items.Count; i++)
         {
             ItemInfo item = items[i];
-            listArtifactChangeItem[i].Set(item.grade, item.level, item.name, item.image, item.gradeFrame, item.statIcon, item.stat, item.status,
+            listArtifactChangeItem[i].Set(item.grade, item.gradeColor, item.level, item.name, item.image, item.gradeFrame, item.statIcon, item.stat, item.status,
                 item.interactable);
         }
 

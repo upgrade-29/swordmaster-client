@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using UnityEngine;
 
 // 아티팩트 등급과 능력치를 화면에 쓸 글자로 바꾼다. 강화 탭과 가챠 결과 팝업이 같은 표기를 쓴다
 public static class ArtifactText
@@ -24,6 +25,26 @@ public static class ArtifactText
         }
 
         return gradeName;
+    }
+
+    // 가챠 결과 연출의 등급 색과 같은 값을 쓴다
+    public static Color GetGradeColor(ArtifactGrade grade)
+    {
+        Color color = new Color32(0xC8, 0xC8, 0xC8, 0xFF);
+        switch (grade)
+        {
+            case ArtifactGrade.Rare:
+                color = new Color32(0x4D, 0xB8, 0xFF, 0xFF);
+                break;
+            case ArtifactGrade.Epic:
+                color = new Color32(0xB4, 0x5C, 0xFF, 0xFF);
+                break;
+            case ArtifactGrade.Legendary:
+                color = new Color32(0xFD, 0xCF, 0x17, 0xFF);
+                break;
+        }
+
+        return color;
     }
 
     public static string GetStatName(StatType statType)

@@ -359,6 +359,7 @@ public class EnhanceTab : LobbyTab
 
         return new ArtifactChangePopup.ItemInfo(
             ArtifactText.GetGradeName(data.grade),
+            ArtifactText.GetGradeColor(data.grade),
             $"Lv. {artifact.Level.ToString()}",
             data.name,
             ResourceManager.Instance.GetSprite(artifact.ArtifactCode),
