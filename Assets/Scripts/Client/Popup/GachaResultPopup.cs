@@ -39,12 +39,14 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
     {
         public readonly string name;
         public readonly string grade; // "전설 · Lv. 3"처럼 등급 줄에 쓰는 글자
+        public readonly Color gradeColor;
         public readonly IReadOnlyList<StatInfo> stats;
 
-        public ArtifactInfo(string name, string grade, IReadOnlyList<StatInfo> stats)
+        public ArtifactInfo(string name, string grade, Color gradeColor, IReadOnlyList<StatInfo> stats)
         {
             this.name = name;
             this.grade = grade;
+            this.gradeColor = gradeColor;
             this.stats = stats;
         }
     }
@@ -774,6 +776,7 @@ public class GachaResultPopup : BasePopup, IPointerClickHandler
         imgArtifactInfoGradeFrame.enabled = slot.imgGradeFrame.enabled;
         txtArtifactInfoName.text = info.name;
         txtArtifactInfoGrade.text = info.grade;
+        txtArtifactInfoGrade.color = info.gradeColor;
         ShowArtifactInfoStats(info.stats);
 
         rectArtifactInfo.gameObject.SetActive(true);

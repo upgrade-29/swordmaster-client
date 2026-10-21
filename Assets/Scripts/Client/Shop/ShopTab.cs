@@ -399,7 +399,8 @@ public class ShopTab : LobbyTab
                 ArtifactText.FormatStat(x.statType, StatCalculator.GetArtifactValue(x, level))))
             .ToList();
 
-        return new GachaResultPopup.ArtifactInfo(data.name, $"{ArtifactText.GetGradeName(data.grade)} · Lv. {level.ToString()}", stats);
+        return new GachaResultPopup.ArtifactInfo(data.name, $"{ArtifactText.GetGradeName(data.grade)} · Lv. {level.ToString()}",
+            ArtifactText.GetGradeColor(data.grade), stats);
     }
 
     private Sprite GetStatIcon(StatType statType)
