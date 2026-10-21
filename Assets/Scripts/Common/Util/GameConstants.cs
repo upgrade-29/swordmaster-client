@@ -79,51 +79,51 @@ public static class GameConstants
         public const string DamageFont = "TMP/Galmuri11-Bold_Outline SDF";
     }
 
-    // Resources/Sound 아래 클립 경로
+    // 오디오 Addressables 주소. 파일 이름과 같다
     public static class Sounds
     {
-        public const string BgmLobby = "Sound/BGM/lobby";
-        public const string BgmBattle = "Sound/BGM/battle";
+        public const string BgmLobby = "bgm_lobby";
+        public const string BgmBattle = "bgm_battle";
 
         public static readonly string[] Swings =
         {
-            "Sound/SFX/sfx_battle_swing_01",
-            "Sound/SFX/sfx_battle_swing_02",
-            "Sound/SFX/sfx_battle_swing_03",
+            "sfx_battle_swing_01",
+            "sfx_battle_swing_02",
+            "sfx_battle_swing_03",
         };
         public static readonly string[] Hits =
         {
-            "Sound/SFX/sfx_battle_hit_01",
-            "Sound/SFX/sfx_battle_hit_02",
-            "Sound/SFX/sfx_battle_hit_03",
+            "sfx_battle_hit_01",
+            "sfx_battle_hit_02",
+            "sfx_battle_hit_03",
         };
-        public const string HitCrit = "Sound/SFX/sfx_battle_hit_crit";
-        public const string Knockout = "Sound/SFX/sfx_battle_knockout";
-        public const string Heal = "Sound/SFX/sfx_battle_heal";
-        public const string Countdown = "Sound/SFX/sfx_battle_countdown";
-        public const string TimeWarning = "Sound/SFX/sfx_battle_time_warning";
-        public const string TimeOver = "Sound/SFX/sfx_battle_time_over";
-        public const string BattleStart = "Sound/SFX/sfx_battle_start";
-        public const string BossWarning = "Sound/SFX/sfx_battle_boss_warning";
-        public const string EnemyEntrance = "Sound/SFX/sfx_battle_enemy_entrance";
-        public const string Coin = "Sound/SFX/sfx_battle_coin";
+        public const string HitCrit = "sfx_battle_hit_crit";
+        public const string Knockout = "sfx_battle_knockout";
+        public const string Heal = "sfx_battle_heal";
+        public const string Countdown = "sfx_battle_countdown";
+        public const string TimeWarning = "sfx_battle_time_warning";
+        public const string TimeOver = "sfx_battle_time_over";
+        public const string BattleStart = "sfx_battle_start";
+        public const string BossWarning = "sfx_battle_boss_warning";
+        public const string EnemyEntrance = "sfx_battle_enemy_entrance";
+        public const string Coin = "sfx_battle_coin";
 
-        public const string EnhanceCharge = "Sound/SFX/sfx_enhance_charge";
-        public const string EnhanceSuccess = "Sound/SFX/sfx_enhance_success";
-        public const string EnhanceFail = "Sound/SFX/sfx_enhance_fail";
-        public const string EnhanceSell = "Sound/SFX/sfx_enhance_sell";
-        public const string ArtifactEquip = "Sound/SFX/sfx_artifact_equip";
+        public const string EnhanceCharge = "sfx_enhance_charge";
+        public const string EnhanceSuccess = "sfx_enhance_success";
+        public const string EnhanceFail = "sfx_enhance_fail";
+        public const string EnhanceSell = "sfx_enhance_sell";
+        public const string ArtifactEquip = "sfx_artifact_equip";
 
-        public const string ShopPurchase = "Sound/SFX/sfx_shop_purchase";
-        public const string GachaReveal = "Sound/SFX/sfx_shop_gacha_reveal";
-        public const string GachaRevealRare = "Sound/SFX/sfx_shop_gacha_reveal_rare";
+        public const string ShopPurchase = "sfx_shop_purchase";
+        public const string GachaReveal = "sfx_shop_gacha_reveal";
+        public const string GachaRevealRare = "sfx_shop_gacha_reveal_rare";
 
-        public const string UiClick = "Sound/SFX/sfx_ui_click";
-        public const string UiPopupOpen = "Sound/SFX/sfx_ui_popup_open";
-        public const string UiPopupClose = "Sound/SFX/sfx_ui_popup_close";
-        public const string UiTab = "Sound/SFX/sfx_ui_tab";
-        public const string UiError = "Sound/SFX/sfx_ui_error";
-        public const string TitleTouch = "Sound/SFX/sfx_title_touch";
+        public const string UiClick = "sfx_ui_click";
+        public const string UiPopupOpen = "sfx_ui_popup_open";
+        public const string UiPopupClose = "sfx_ui_popup_close";
+        public const string UiTab = "sfx_ui_tab";
+        public const string UiError = "sfx_ui_error";
+        public const string TitleTouch = "sfx_title_touch";
     }
 
     public static class AddressableLabels

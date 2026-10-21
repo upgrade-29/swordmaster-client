@@ -7,12 +7,13 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceLocations;
 
-// 씬이 바뀌어도 남도록 DontDestroyOnLoad로 두고, 읽은 이미지는 게임이 끝날 때까지 해제하지 않는다
+// 씬이 바뀌어도 남도록 DontDestroyOnLoad로 두고, 읽은 이미지와 오디오는 게임이 끝날 때까지 해제하지 않는다
 public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
 {
     private readonly Dictionary<string, Sprite> dicSprite = new Dictionary<string, Sprite>();
+    private readonly Dictionary<string, AudioClip> dicAudioClip = new Dictionary<string, AudioClip>();
     private readonly HashSet<string> setWarnedAddress = new HashSet<string>();
-    private readonly List<AsyncOperationHandle<Sprite>> listPreloadHandle = new List<AsyncOperationHandle<Sprite>>();
+    private readonly List<AsyncOperationHandle> listPreloadHandle = new List<AsyncOperationHandle>();
 
     private bool isPreloaded;
     public bool IsPreloaded => isPreloaded;
@@ -31,10 +32,11 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
 
         listPreloadHandle.Clear();
         dicSprite.Clear();
+        dicAudioClip.Clear();
     }
 
     /// <summary>
-    /// preload 라벨 이미지를 모두 읽어 주소 이름으로 캐시에 넣는다. 이미 읽었으면 바로 끝낸다.
+    /// preload 라벨 이미지와 오디오를 모두 읽어 주소 이름으로 캐시에 넣는다. 이미 읽었으면 바로 끝낸다.
     /// onProgress에는 읽기를 마친 비율(0~1)을 넘긴다.
     /// </summary>
     public IEnumerator PreloadRoutine(Action<float> onProgress)
@@ -47,22 +49,30 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
 
         yield return Addressables.InitializeAsync();
 
-        AsyncOperationHandle<IList<IResourceLocation>> locationsHandle =
+        AsyncOperationHandle<IList<IResourceLocation>> spriteLocationsHandle =
             Addressables.LoadResourceLocationsAsync(GameConstants.AddressableLabels.Preload, typeof(Sprite));
-        yield return locationsHandle;
+        AsyncOperationHandle<IList<IResourceLocation>> audioLocationsHandle =
+            Addressables.LoadResourceLocationsAsync(GameConstants.AddressableLabels.Preload, typeof(AudioClip));
+        yield return spriteLocationsHandle;
+        yield return audioLocationsHandle;
 
-        IList<IResourceLocation> locations = locationsHandle.Result;
-        var listHandle = locations
+        IList<IResourceLocation> spriteLocations = spriteLocationsHandle.Result;
+        IList<IResourceLocation> audioLocations = audioLocationsHandle.Result;
+        var listSpriteHandle = spriteLocations
             .Select(x => Addressables.LoadAssetAsync<Sprite>(x))
             .ToList();
+        var listAudioHandle = audioLocations
+            .Select(x => Addressables.LoadAssetAsync<AudioClip>(x))
+            .ToList();
+        int totalCount = listSpriteHandle.Count + listAudioHandle.Count;
         while (true)
         {
-            int doneCount = listHandle.Count(x => x.IsDone);
-            float progress = locations.Count == 0
+            int doneCount = listSpriteHandle.Count(x => x.IsDone) + listAudioHandle.Count(x => x.IsDone);
+            float progress = totalCount == 0
                 ? 1f
-                : doneCount / (float)locations.Count;
+                : doneCount / (float)totalCount;
             onProgress?.Invoke(progress);
-            if (doneCount == listHandle.Count)
+            if (doneCount == totalCount)
             {
                 break;
             }
@@ -70,12 +80,18 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
             yield return null;
         }
 
-        for (int i = 0; i < locations.Count; i++)
+        for (int i = 0; i < spriteLocations.Count; i++)
         {
-            AddPreloaded(locations[i].PrimaryKey, listHandle[i]);
+            AddPreloaded(spriteLocations[i].PrimaryKey, listSpriteHandle[i], dicSprite);
         }
 
-        Addressables.Release(locationsHandle);
+        for (int i = 0; i < audioLocations.Count; i++)
+        {
+            AddPreloaded(audioLocations[i].PrimaryKey, listAudioHandle[i], dicAudioClip);
+        }
+
+        Addressables.Release(spriteLocationsHandle);
+        Addressables.Release(audioLocationsHandle);
         isPreloaded = true;
     }
 
@@ -112,16 +128,34 @@ public class ResourceManager : SingletonMonoBehaviour<ResourceManager>
         return string.IsNullOrEmpty(address) == false && dicSprite.TryGetValue(address, out sprite);
     }
 
-    private void AddPreloaded(string address, AsyncOperationHandle<Sprite> handle)
+    /// <summary>
+    /// 미리 읽은 오디오를 주소로 꺼낸다. 미리 읽지 못한 주소면 경고를 한 번 남기고 null을 돌려준다.
+    /// </summary>
+    public AudioClip GetAudioClip(string address)
+    {
+        if (dicAudioClip.TryGetValue(address, out AudioClip clip))
+        {
+            return clip;
+        }
+
+        if (setWarnedAddress.Add(address))
+        {
+            Debug.LogWarning($"[ResourceManager] 미리 읽은 오디오가 없습니다: {address}");
+        }
+
+        return null;
+    }
+
+    private void AddPreloaded<T>(string address, AsyncOperationHandle<T> handle, Dictionary<string, T> dicAsset)
     {
         if (handle.Status != AsyncOperationStatus.Succeeded)
         {
-            Debug.LogWarning($"[ResourceManager] 이미지를 읽지 못했습니다: {address}");
+            Debug.LogWarning($"[ResourceManager] 리소스를 읽지 못했습니다: {address}");
             Addressables.Release(handle);
             return;
         }
 
-        dicSprite[address] = handle.Result;
+        dicAsset[address] = handle.Result;
         listPreloadHandle.Add(handle);
     }
 }
