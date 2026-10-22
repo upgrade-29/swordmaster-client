@@ -1,5 +1,5 @@
 {
-  "version": "20261021001856",
+  "version": "20261022055937",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "망가진 나무 검", "code": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "나무 검", "code": "SWORD_02" },
@@ -189,7 +189,7 @@
     { "productCode": "ARTIFACT_LEGENDARY_10", "rewardType": "GACHA_BOX", "rewardCode": "LEGENDARY_ARTIFACT_BOX", "amount": 10 }
   ],
   "config": [
-    { "key": "CRIT_MULTIPLIER", "value": "1.5", "description": "치명타 배율" },
+    { "key": "CRIT_MULTIPLIER", "value": "1.75", "description": "치명타 배율" },
     { "key": "BASE_BATTLE_TIME", "value": "10", "description": "전투력 계산식의 기준 전투 시간(초), 테스트용 임시 값" },
     { "key": "NORMAL_BATTLE_TIME_LIMIT", "value": "30", "description": "일반 적 세부 스테이지의 전투 시간 제한(초)" },
     { "key": "BOSS_BATTLE_TIME_LIMIT", "value": "60", "description": "보스 세부 스테이지의 전투 시간 제한(초)" },
