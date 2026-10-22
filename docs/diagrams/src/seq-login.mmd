@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    actor U as 유저
+    participant LC as LoginController
+    participant TS as ITokenStorage (Keystore)
+    participant HR as HttpRequest
+    participant API as Server
+    participant GS as GameSession
+    participant SL as SceneLoader
+
+    U->>LC: 타이틀 터치
+    LC->>TS: TryLoad(out refreshToken)
+    alt 저장된 리프레시 토큰 있음 (자동 로그인)
+        LC->>HR: AuthApi.Refresh(refreshToken)
+        HR->>API: POST api/auth/refresh
+        API-->>LC: accessToken, refreshToken (재발급)
+    else 토큰 없음 또는 401
+        LC->>TS: Clear()
+        U->>LC: 이메일 로그인 / Google 로그인
+        LC->>HR: AuthApi.Login / GoogleLogin(idToken)
+        HR->>API: POST api/auth/login
+        API-->>LC: accessToken, refreshToken
+    end
+    LC->>GS: SetLogin(accessToken, refreshToken)
+    GS->>TS: Save(refreshToken)
+    LC->>HR: PlayerApi.GetMe()
+    HR->>API: GET api/players/me
+    opt 플레이어 없음 (404, 첫 로그인)
+        U->>LC: 닉네임 입력
+        LC->>HR: PlayerApi.Create(nickname)
+        HR->>API: POST api/players
+    end
+    API-->>LC: PlayerResponse
+    LC->>GS: SetUser(player.ToUser())
+    LC->>SL: Load(LobbyScene)

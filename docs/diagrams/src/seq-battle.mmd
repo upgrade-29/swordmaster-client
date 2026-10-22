@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    participant V as BattleViewManager
+    participant M as BattleManager
+    participant SS as BattleSubStage
+    participant HR as HttpRequest
+    participant API as Server
+    participant R as Redis
+
+    M->>HR: BattleApi.Start(stage)
+    HR->>API: POST api/battles
+    API->>R: 전투 세션 생성 · 유저 락
+    API-->>M: battleId, battleSeed, playerStat
+    M->>M: EnterBattle(session) · 3초 카운트다운
+    loop 세부 스테이지마다
+        M->>SS: new BattleSubStage(..., battleSeed)
+        Note right of SS: SplitMix64(Mix(battleSeed + subStageIndex))
+        M-->>V: SubStageStarted / BossWarningStarted
+        loop 매 프레임
+            M->>SS: Advance(deltaTime × Speed)
+            SS-->>M: AttackApplied(BattleEvent)
+            M-->>V: AttackApplied → HP바 · 이펙트 · 로그
+        end
+        M->>HR: BattleApi.Report(result) (최대 3회)
+        HR->>API: POST api/battle/report
+        API->>API: 같은 시드로 RunToEnd() 재계산 · 비교
+        API->>R: 직전 보고 · 응답 저장 (멱등)
+        alt 검증 통과
+            API-->>M: nextSubStageIndex, nextPlayerHp
+            M->>V: NextSubStageTransition(next)
+            V-->>M: 처치 · 다음 적 등장 연출 완료
+        else 결과 불명 / REQUEST_IN_PROGRESS
+            HR-->>M: 1초 뒤 같은 요청 재전송
+        else VERIFY_FAILED 등 거절
+            API-->>M: 오류 코드 · 문구
+            M-->>V: RequestRejected → 팝업
+        end
+    end
+    API-->>M: BattleEndResponse (승패 · 보상)
+    M-->>V: BattleEnded → 결과 팝업
