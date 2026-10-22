@@ -16,6 +16,7 @@ public class LoginController : MonoBehaviour
         Refresh,
         Email,
         Google,
+        Guest,
     }
 
     [ReadOnly] [SerializeField] private TitleView titleView;
@@ -50,6 +51,7 @@ public class LoginController : MonoBehaviour
         titleView.OnClickTouchEvent += OnClickTitle;
         selectView.OnClickGoogleEvent += OnClickGoogle;
         selectView.OnClickEmailEvent += OnClickEmail;
+        selectView.OnClickGuestEvent += OnClickGuest;
         view.OnClickLoginEvent += OnClickLogin;
         view.OnClickSignupEvent += OnClickOpenSignup;
         view.OnClickBackEvent += OnClickLoginBack;
@@ -101,6 +103,7 @@ public class LoginController : MonoBehaviour
         {
             selectView.OnClickGoogleEvent -= OnClickGoogle;
             selectView.OnClickEmailEvent -= OnClickEmail;
+            selectView.OnClickGuestEvent -= OnClickGuest;
         }
 
         if (view != null)
@@ -438,6 +441,26 @@ public class LoginController : MonoBehaviour
 
                 FailLogin(message);
             }
+        );
+    }
+
+    private void OnClickGuest()
+    {
+        // 다른 로그인 요청이나 중복 클릭 방지
+        if (isRequesting)
+        {
+            return;
+        }
+
+        isRequesting = true;
+        currentLoginMethod = LoginMethodType.Guest;
+
+        selectView.SetInteractable(false);
+        selectView.SetMessage("게스트 로그인 중...");
+
+        HttpRequest.Request(
+            AuthApi.GuestLogin(),
+            OnLoginResponse
         );
     }
 }

@@ -21,6 +21,9 @@ public class LobbyController : MonoBehaviour
     private DialogPopup DialogPopup => Popup.Instance.Get<DialogPopup>();
     private RankingPopup RankingPopup => Popup.Instance.Get<RankingPopup>();
 
+    private GoogleLoginClient googleLinkClient;
+    private bool isGoogleLinking;
+
     private LobbyTabType currentTab;
     // 날아가는 중이라 아직 탑UI 숫자에 더하지 않은 재화. 유저 재화는 이미 서버 값이고, 표시만 이만큼 빼서 보여준다
     private long flyingGold;
@@ -61,6 +64,7 @@ public class LobbyController : MonoBehaviour
         RefreshCurrencies();
 
         OptionPopup.LogoutClicked += OnLogoutClicked;
+        OptionPopup.GuestToGoogleClicked += OnGuestToGoogleClicked;
         RankingPopup.OnSelectTypeEvent += OnSelectRankingType;
     }
 
@@ -76,6 +80,7 @@ public class LobbyController : MonoBehaviour
         if (Popup.IsInitialize())
         {
             OptionPopup.LogoutClicked -= OnLogoutClicked;
+            OptionPopup.GuestToGoogleClicked -= OnGuestToGoogleClicked;
             RankingPopup.OnSelectTypeEvent -= OnSelectRankingType;
         }
 
@@ -230,6 +235,11 @@ public class LobbyController : MonoBehaviour
 
     private void OnLogoutClicked()
     {
+        if (isGoogleLinking)
+        {
+            return;
+        }
+
         OptionPopup.Close();
         DialogPopup.Setup(LogoutTitle, LogoutMessage,
             new DialogPopup.DialogPopupButtonInfo("확인", OnConfirmLogout),
@@ -241,9 +251,129 @@ public class LobbyController : MonoBehaviour
     // 늦게 온 401은 이미 로그아웃한 상태라 HttpErrorHandler가 처리하지 않고, 서버 요청이 실패해도 다음 실행에서 자동 로그인하지 않는다
     private void OnConfirmLogout()
     {
+        if (isGoogleLinking)
+        {
+            return;
+        }
+
         DialogPopup.Close();
         HttpRequest.Request(AuthApi.Logout(), null, false);
         GameSession.Instance.Logout();
         SceneLoader.Instance.Load(GameConstants.Scenes.Title);
     }
+
+    private void OnGuestToGoogleClicked()
+    {
+        if (isGoogleLinking)
+        {
+            return;
+        }
+
+        if (!GameSession.Instance.IsLoggedIn || User == null)
+        {
+            ShowGoogleLinkResult("Google 연결 실패", "먼저 게스트 계정으로 로그인해 주세요.");
+            return;
+        }
+
+        // 로그인 씬의 콜백 객체는 씬 전환으로 사라지므로 로비에도 생성한다.
+        if (googleLinkClient == null)
+        {
+            var callbackObject = new GameObject(
+                "GoogleLinkCallback-" + Guid.NewGuid().ToString("N")
+            );
+            callbackObject.transform.SetParent(transform, false);
+            googleLinkClient = callbackObject.AddComponent<GoogleLoginClient>();
+        }
+
+        var accountAtStart = User;
+        isGoogleLinking = true;
+        OptionPopup.SetLinkInProgress(true);
+
+        googleLinkClient.SignIn(
+            onSuccess: idToken =>
+            {
+                if (this == null)
+                {
+                    return;
+                }
+
+                if (!GameSession.IsInitialize()
+                    || !GameSession.Instance.IsLoggedIn
+                    || !ReferenceEquals(GameSession.Instance.User, accountAtStart))
+                {
+                    FinishGoogleLink(false, "로그인 상태가 변경되었습니다. 다시 시도해 주세요.");
+                    return;
+                }
+
+                HttpRequest.Request(AuthApi.LinkGoogle(idToken), OnGoogleLinkResponse);
+            },
+            onFailure: message =>
+            {
+                if (this == null)
+                {
+                    return;
+                }
+
+                FinishGoogleLink(false, message);
+            }
+        );
+    }
+
+    private void OnGoogleLinkResponse(HttpError error, AuthApi.IdentityLinkResponse response)
+    {
+        if (this == null)
+        {
+            return;
+        }
+
+        // 공통 처리기가 로그인 화면 이동 등을 처리했다면 팝업을 중복으로 띄우지 않는다.
+        if (error != null && error.IsHandled)
+        {
+            isGoogleLinking = false;
+            if (Popup.IsInitialize())
+            {
+                OptionPopup.SetLinkInProgress(false);
+            }
+
+            return;
+        }
+
+        if (error != null)
+        {
+            FinishGoogleLink(false, error.Message);
+            return;
+        }
+
+        if (response == null || !response.linked)
+        {
+            FinishGoogleLink(false, "연결 결과를 확인하지 못했습니다. 다시 시도해 주세요.");
+            return;
+        }
+
+        FinishGoogleLink(
+            true,
+            "Google 계정 연결이 완료되었습니다.\n"
+            + "현재 캐릭터와 진행도는 그대로 유지됩니다.\n"
+            + "이후 Google 로그인으로 이 계정에 접속할 수 있습니다."
+        );
+    }
+
+    private void FinishGoogleLink(bool success, string message)
+    {
+        isGoogleLinking = false;
+        OptionPopup.SetLinkInProgress(false);
+        ShowGoogleLinkResult(success ? "Google 연결 완료" : "Google 연결 실패", message);
+    }
+
+    private void ShowGoogleLinkResult(string title, string message)
+    {
+        OptionPopup.Close();
+        DialogPopup.Setup(
+            title,
+            message,
+            new DialogPopup.DialogPopupButtonInfo("확인", DialogPopup.Close)
+        );
+        DialogPopup.Open();
+    }
+
 }

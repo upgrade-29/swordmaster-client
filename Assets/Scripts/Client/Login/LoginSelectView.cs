@@ -10,20 +10,24 @@ public class LoginSelectView : MonoBehaviour
     [ReadOnly] [SerializeField] private GameObject objRoot;
     [ReadOnly] [SerializeField] private Button googleButton;
     [ReadOnly] [SerializeField] private Button emailButton;
+    [ReadOnly][SerializeField] private Button guestButton;
     [ReadOnly] [SerializeField] private TextMeshProUGUI resultText;
 
     public event Action OnClickGoogleEvent = delegate { };
     public event Action OnClickEmailEvent = delegate { };
+    public event Action OnClickGuestEvent = delegate { };
 
     private void Awake()
     {
         objRoot = GameUtil.Bind<RectTransform>(transform, "LoginSelectPanel").gameObject;
         googleButton = GameUtil.Bind<Button>(transform, "LoginSelectPanel/GoogleButton");
         emailButton = GameUtil.Bind<Button>(transform, "LoginSelectPanel/EmailButton");
+        guestButton = GameUtil.Bind<Button>(transform, "LoginSelectPanel/GuestButton");
         resultText = GameUtil.Bind<TextMeshProUGUI>(transform, "LoginSelectPanel/ResultText");
 
         googleButton.onClick.AddListener(OnClickGoogle);
         emailButton.onClick.AddListener(OnClickEmail);
+        guestButton.onClick.AddListener(OnClickGuest);
         resultText.text = string.Empty;
     }
 
@@ -37,6 +41,10 @@ public class LoginSelectView : MonoBehaviour
         if (emailButton != null)
         {
             emailButton.onClick.RemoveListener(OnClickEmail);
+        }
+        if (guestButton != null)
+        {
+            guestButton.onClick.RemoveListener(OnClickGuest);
         }
     }
 
@@ -71,6 +79,7 @@ public class LoginSelectView : MonoBehaviour
     {
         googleButton.interactable = interactable;
         emailButton.interactable = interactable;
+        guestButton.interactable = interactable;
     }
 
     private void OnClickGoogle()
@@ -81,5 +90,10 @@ public class LoginSelectView : MonoBehaviour
     private void OnClickEmail()
     {
         OnClickEmailEvent.Invoke();
+    }
+
+    private void OnClickGuest()
+    {
+        OnClickGuestEvent.Invoke();
     }
 }

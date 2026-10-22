@@ -60,6 +60,10 @@ public static class AuthApi
     {
         return HttpRequestFactory.Post<TokenResponse>("api/auth/login", new LoginRequest(email, password));
     }
+    public static HttpRequestInfo<TokenResponse> GuestLogin()
+    {
+        return HttpRequestFactory.Post<TokenResponse>("api/auth/login/guest");
+    }
 
     // 저장해 둔 리프레시 토큰으로 새 토큰 쌍을 받는다. 보낸 리프레시 토큰은 무효가 되고, 만료됐거나 무효면 401을 받는다
     public static HttpRequestInfo<TokenResponse> Refresh(string refreshToken)
@@ -100,4 +104,26 @@ public static class AuthApi
             new GoogleLoginRequest(idToken)
         );
     }
+
+    public class IdentityLinkResponse
+    {
+        public readonly string provider;
+        public readonly bool linked;
+
+        [JsonConstructor]
+        public IdentityLinkResponse(string provider, bool linked)
+        {
+            this.provider = provider;
+            this.linked = linked;
+        }
+    }
+
+    public static HttpRequestInfo<IdentityLinkResponse> LinkGoogle(string idToken)
+    {
+        return HttpRequestFactory.Post<IdentityLinkResponse>(
+            "api/user/identities/google",
+            new GoogleLoginRequest(idToken)
+        );
+    }
+
 }
