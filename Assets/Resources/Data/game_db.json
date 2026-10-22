@@ -1,5 +1,5 @@
 {
-  "version": "20261021001856",
+  "version": "20261022055949",
   "swords": [
     { "level": 0, "successRate": 0.995, "enhanceCost": 100, "sellPrice": 0, "attackPower": 10, "attackSpeed": 1, "maxHp": 300, "name": "망가진 나무 검", "code": "SWORD_01" },
     { "level": 1, "successRate": 0.993, "enhanceCost": 100, "sellPrice": 80, "attackPower": 14, "attackSpeed": 1.03, "maxHp": 380, "name": "나무 검", "code": "SWORD_02" },
