@@ -1,0 +1,91 @@
+classDiagram
+    direction LR
+    class BattleViewManager {
+        <<MonoBehaviour>>
+        -BattleManager manager
+        -BattleHudPresenter hudPresenter
+        -BattleEffectPresenter effectPresenter
+        -BattleLogger battleLogger
+        -BattleUnitView playerView
+        -BattleUnitView enemyView
+        -BossWarningView bossWarningView
+    }
+    class BattleManager {
+        <<MonoBehaviour>>
+        +double TimeEpsilon = 1e-9$
+        -BattleEngine engine
+        -BattleSessionInfoResponse session
+        +float Speed
+        +BattleSubStage CurrentSubStage
+        +Func NextSubStageTransition
+        +Init(GameDB gameDB)
+        +EnterBattle(BattleSessionInfoResponse info)
+        +Retry()
+        +Abandon()
+        +SetSpeed(float speed)
+        -Request(info, onSuccess, maxAttempts)
+        -RunSubStageAndReport(subStage)
+        -OnSubStageVerified(subStage, verified)
+        +event SubStageStarted
+        +event AttackApplied
+        +event SubStageVerified
+        +event BattleEnded
+        +event RequestRejected
+    }
+    class BattleSubStage {
+        -SplitMix64 random
+        +int SubStageIndex
+        +EnemyData Enemy
+        +double Elapsed
+        +double PlayerHp
+        +double EnemyHp
+        +BattleSubStageResultEnum ResultEnum
+        +bool IsFinished
+        +bool IsBoss
+        +Advance(double deltaTime)
+        +RunToEnd()
+        +event AttackApplied
+    }
+    class BattleEngine {
+        -GameDB gameDB
+        +GetSubStageSeed(battleSeed, index)$ ulong
+        +GetAttackTime(attacker, n)$ double
+        +GetEnemy(stage, index) EnemyData
+        +GetTimeLimit(enemy) double
+        +Attack(attacker, hp, target, rng)
+        +GetHealOnKill(player, hp) double
+    }
+    class SplitMix64 {
+        -ulong state
+        +NextULong() ulong
+        +Mix(ulong z)$ ulong
+        +NextDouble() double
+        +NextInt(int maxExclusive) int
+    }
+    class BattleEvent {
+        +double time
+        +BattleSide attacker
+        +double damage
+        +bool isCrit
+        +double lifesteal
+    }
+    class BattleApi {
+        <<static>>
+        +GetActiveSession(version)$
+        +Start(stage, version)$
+        +Report(request, version)$
+        +Abandon(battleId)$
+    }
+    class HttpRequest {
+        <<Singleton>>
+        +Request(info, callback, showLoading)$
+    }
+
+    BattleViewManager --> BattleManager : 이벤트 구독 · 연출 주입
+    BattleManager *-- BattleEngine
+    BattleManager o-- BattleSubStage : 현재 세부 스테이지
+    BattleSubStage --> BattleEngine : 전투 규칙 계산
+    BattleSubStage *-- SplitMix64 : 세부 스테이지 전용 RNG
+    BattleSubStage ..> BattleEvent : 공격마다 생성
+    BattleManager ..> BattleApi : 요청 생성
+    BattleManager ..> HttpRequest : 전송 · 재시도

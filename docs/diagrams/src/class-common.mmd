@@ -1,0 +1,114 @@
+classDiagram
+    direction TB
+    class GameSession {
+        <<Singleton>>
+        -string accessToken
+        -bool isExpired
+        -ITokenStorage tokenStorage
+        +GameDB GameDB
+        +User User
+        +bool IsLoggedIn
+        +SetLogin(accessToken, refreshToken)
+        +SetUser(User user)
+        +Expire()
+        +Logout()
+        +event OnChangeCurrenciesEvent
+    }
+    class ITokenStorage {
+        <<interface>>
+        +Save(refreshToken)
+        +TryLoad(out refreshToken) bool
+        +Clear()
+    }
+    class AndroidKeystoreTokenStorage
+    class PlayerPrefsTokenStorage
+    class TokenStorageFactory {
+        <<static>>
+        +Create()$ ITokenStorage
+    }
+    class HttpRequestFactory {
+        <<static>>
+        +Get(path, query)$ HttpRequestInfo
+        +Post(path, body)$ HttpRequestInfo
+        +Put(path, body)$ HttpRequestInfo
+        +Delete(path)$ HttpRequestInfo
+    }
+    class HttpRequestInfo {
+        +string Method
+        +string Path
+        +CreateUnityWebRequest() UnityWebRequest
+        +IsSilentError(HttpError error) bool
+    }
+    class HttpRequest {
+        <<Singleton>>
+        +Request(info, callback, showLoading)$
+        -ParseResponse(request)
+    }
+    class HttpErrorHandler {
+        <<static>>
+        +OnError(HttpError error)$ bool
+    }
+    class SceneLoader {
+        <<Singleton>>
+        +Load(string sceneName)
+    }
+    class ChatClient {
+        <<Singleton>>
+        +Connect(url, host, accessToken)
+        +SendPublicChatAsync(content)
+        +HoldTopNotices()
+        +ReleaseTopNotices()
+    }
+    class StompClient {
+        <<Singleton>>
+        +StompConnectionState State
+        +Subscribe(destination, onMessage)
+        +Connect(url, host, accessToken)
+        +SendAsync(destination, body)
+        +Disconnect()
+    }
+    class StompConnection {
+        +ConnectAsync(url, host, token, destinations)
+        +SendAsync(destination, body)
+        +DisconnectAsync()
+    }
+    class IStompSocket {
+        <<interface>>
+        +ConnectAsync(url, connectionId)
+        +SendTextAsync(message)
+        +CloseAsync()
+    }
+    class NativeWebSocketStompSocket
+    class StompFrameCodec {
+        +CreateConnect(host, token) string
+        +CreateSubscribe(destination, id) string
+        +CreateSend(destination, body) string
+        +AppendReceivedText(text) StompFrame[]
+    }
+    class StompConnectionState {
+        <<enumeration>>
+        Disconnected
+        WebSocketConnecting
+        StompConnecting
+        Subscribing
+        Connected
+        Disconnecting
+    }
+
+    GameSession o-- ITokenStorage
+    TokenStorageFactory ..> ITokenStorage : 플랫폼별 생성
+    ITokenStorage <|.. AndroidKeystoreTokenStorage
+    ITokenStorage <|.. PlayerPrefsTokenStorage
+
+    HttpRequestFactory ..> HttpRequestInfo : 생성
+    HttpRequest ..> HttpRequestInfo : 전송
+    HttpRequest ..> HttpErrorHandler : 콜백 전 공통 처리
+    HttpErrorHandler ..> GameSession : 401이면 Expire
+    HttpErrorHandler ..> SceneLoader : Title 씬으로
+
+    ChatClient --> StompClient
+    StompClient *-- StompConnection
+    StompClient ..> StompConnectionState : 자동 재연결
+    StompConnection o-- IStompSocket
+    StompConnection *-- StompFrameCodec
+    IStompSocket <|.. NativeWebSocketStompSocket
