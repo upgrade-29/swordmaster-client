@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"UserPromptSubmit\", \"additionalContext\": \"[\\ud544\\uc218] \\uc774\\ubc88 \\ud134\\uc758 \\ubaa8\\ub4e0 \\uc0ac\\uc6a9\\uc790 \\ub178\\ucd9c \\ud14d\\uc2a4\\ud2b8(\\ucd5c\\uc885 \\ub2f5\\ubcc0, \\ub3c4\\uad6c \\ud638\\ucd9c \\uc0ac\\uc774 \\uc9c4\\ud589 \\uc548\\ub0b4, \\uc9c8\\ubb38, \\uacc4\\ud68d, \\ud45c)\\ub97c \\ud55c\\uad6d\\uc5b4\\ub85c \\uc791\\uc131\\ud55c\\ub2e4. \\ucf54\\ub4dc \\uc2dd\\ubcc4\\uc790, \\uacbd\\ub85c, \\uba85\\ub839\\uc5b4\\ub9cc \\uc6d0\\ubb38 \\uadf8\\ub300\\ub85c \\ub454\\ub2e4. \\ubcf4\\ub0b4\\uae30 \\uc804\\uc5d0 \\uc601\\uc5b4 \\ubb38\\uc7a5\\uc774 \\uc11e\\uc774\\uc9c0 \\uc54a\\uc558\\ub294\\uc9c0 \\ub2e4\\uc2dc \\ud655\\uc778\\ud55c\\ub2e4.\"}}'",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"C:/Users/USER-PC/AppData/Local/Programs/Python/Python314/python.exe\" \"C:/Users/USER-PC/.claude/hooks/korean_reply_check.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

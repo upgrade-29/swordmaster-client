@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: UI
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: UI
+  m_GUID: fea5b3365a636a24eb2118fc981e206f
+  m_SerializeEntries:
+  - m_GUID: 00927ce74d6e7c943bebab6c6627a2c7
+    m_Address: SHOP_ICON_ARTIFACT_GACHA
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 00ece4a7770957a4d90abfb1a50c85f6
+    m_Address: ICON_GOLD_LARGE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 140779ef0318b954facacc4f6b2d6eb4
+    m_Address: ICON_DIAMOND_SMALL
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21c422a3258bd9a48b776fe198ec25cf
+    m_Address: SHOP_HEADER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34d3b7aebcf569745ae09c18babe37e8
+    m_Address: ICON_ARTIFACT_LEGENDARY_10
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 78f842c2723681943aea6c790392bc82
+    m_Address: ICON_DIAMOND_MIDDLE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7aabdf7410e00e94fb6e6b40d945157d
+    m_Address: ICON_GOLD_MIDDLE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9188ceb6cd06e9540bdf6fe1c3ba9999
+    m_Address: SHOP_ICON_ARTIFACT_FEATHER
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af63739cdd178544ebbb6b5348947582
+    m_Address: SHOP_ICON_ARTIFACT_ORB
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b10f6c5436588da4787fd51f25d6c103
+    m_Address: SHOP_ICON_ARTIFACT_WHETSTONE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b24d803fe420c1d44b23600c98b21d32
+    m_Address: SHOP_ICON_ARTIFACT_SHEATH
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b6e33dc5596202745bfd8f0be9dcf5dc
+    m_Address: SHOP_ICON_GOLD
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bac0ba609e2e5564eb71bf7f6527f677
+    m_Address: ICON_GOLD_SMALL
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d3932af332fc91f409570475ccd74850
+    m_Address: SHOP_ICON_DIAMOND
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d441d7699fb1e7f44823e4192674805a
+    m_Address: ICON_DIAMOND_LARGE
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - preload
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: c82b8690fb1d9f54daec3fd62bc4501a, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: dbc07a7f41c54af44a979696de8ff422, type: 2}
+    - {fileID: 11400000, guid: 956bcd2e47cbe6c40a3527102e9d3ce6, type: 2}

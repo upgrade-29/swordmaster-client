@@ -6,12 +6,12 @@ public class ShopProductData
     public readonly string name;
     public readonly ShopCategory category;
     public readonly string iconCode;
-    public readonly CurrencyType priceType;
+    public readonly PriceType priceType;
     public readonly long price;
 
     [JsonConstructor]
     public ShopProductData(string productCode, string name, ShopCategory category, string iconCode,
-        CurrencyType priceType, long price)
+        PriceType priceType, long price)
     {
         this.productCode = productCode;
         this.name = name;

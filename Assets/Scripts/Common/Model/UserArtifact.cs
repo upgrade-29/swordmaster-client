@@ -28,10 +28,12 @@ public class UserArtifact
         materialCount += count;
     }
 
-    public void LevelUp(int usedMaterialCount)
+    // 서버가 확정한 최종 값(강화 응답 등)으로 그대로 덮어쓴다
+    public void SyncFrom(UserArtifact latest)
     {
-        materialCount -= usedMaterialCount;
-        level++;
+        level = latest.level;
+        materialCount = latest.materialCount;
+        equippedSlot = latest.equippedSlot;
     }
 
     public void SetEquippedSlot(int? slot)

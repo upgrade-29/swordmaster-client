@@ -1,0 +1,482 @@
+fileFormatVersion: 2
+guid: 5802ea22c059d5b4aa03fc922cb86cc6
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -155463858847048393
+    second: vfx_knockout_0
+  - first:
+      213: 591604191223272524
+    second: vfx_knockout_1
+  - first:
+      213: -8944286684017242353
+    second: vfx_knockout_2
+  - first:
+      213: 1908701875998228263
+    second: vfx_knockout_3
+  - first:
+      213: -7457720647874137607
+    second: vfx_knockout_4
+  - first:
+      213: -2549637390648517746
+    second: vfx_knockout_5
+  - first:
+      213: -4815970065630515341
+    second: vfx_knockout_6
+  - first:
+      213: -2347896275052491106
+    second: vfx_knockout_7
+  - first:
+      213: 4474374287836731061
+    second: vfx_knockout_8
+  - first:
+      213: -5149420594341559931
+    second: vfx_knockout_9
+  - first:
+      213: -3727080395825766212
+    second: vfx_knockout_10
+  - first:
+      213: 4294119149297255187
+    second: vfx_knockout_11
+  - first:
+      213: -5349922710691680483
+    second: vfx_knockout_12
+  - first:
+      213: 8593105501223972510
+    second: vfx_knockout_13
+  - first:
+      213: -4260497484536349408
+    second: vfx_knockout_14
+  - first:
+      213: 3552566566990382850
+    second: vfx_knockout_15
+  - first:
+      213: 9107728082800047596
+    second: vfx_knockout_16
+  - first:
+      213: -4092031714445100381
+    second: vfx_knockout_17
+  - first:
+      213: -2570690769826392765
+    second: vfx_knockout_18
+  - first:
+      213: 7651284749962274368
+    second: vfx_knockout_19
+  - first:
+      213: 3158676291629754413
+    second: vfx_knockout_20
+  - first:
+      213: 3031894396280710079
+    second: vfx_knockout_21
+  - first:
+      213: -2907348103153548626
+    second: vfx_knockout_22
+  - first:
+      213: 612907516567935406
+    second: vfx_knockout_23
+  - first:
+      213: -6249806681793887470
+    second: vfx_knockout_24
+  - first:
+      213: 3223624874619351829
+    second: vfx_knockout_25
+  - first:
+      213: -2264594042498562909
+    second: vfx_knockout_26
+  - first:
+      213: -4928925898743005014
+    second: vfx_knockout_27
+  - first:
+      213: -5736504649857030472
+    second: vfx_knockout_28
+  - first:
+      213: 3207977028836448605
+    second: vfx_knockout_29
+  - first:
+      213: -3209138408473827166
+    second: vfx_knockout_30
+  - first:
+      213: 4004768945389915866
+    second: vfx_knockout_31
+  - first:
+      213: 1080807689999403496
+    second: vfx_knockout_32
+  - first:
+      213: -3525957983149262932
+    second: vfx_knockout_33
+  - first:
+      213: 5417723686056881536
+    second: vfx_knockout_34
+  - first:
+      213: -338542962105247289
+    second: vfx_knockout_35
+  - first:
+      213: 1353161116359458057
+    second: vfx_knockout_36
+  - first:
+      213: 2035523525732162336
+    second: vfx_knockout_37
+  - first:
+      213: 4632380244015889493
+    second: vfx_knockout_38
+  - first:
+      213: -7963964838317177224
+    second: vfx_knockout_39
+  - first:
+      213: 7171183062914996986
+    second: vfx_knockout_40
+  - first:
+      213: -7116513082842475539
+    second: vfx_knockout_41
+  - first:
+      213: -3092432859316513341
+    second: vfx_knockout_42
+  - first:
+      213: 5353988830490391807
+    second: vfx_knockout_43
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 48
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: vfx_knockout_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 51cea3e2f75fe044bb96ced1335de7ef
+      internalID: -155463858847048393
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_1
+      rect:
+        serializedVersion: 2
+        x: 153
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c638f98aab1c1824fa4d75774ae7ee66
+      internalID: 591604191223272524
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_2
+      rect:
+        serializedVersion: 2
+        x: 306
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae335b8f47df2264b992085847b5adc4
+      internalID: -8944286684017242353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_3
+      rect:
+        serializedVersion: 2
+        x: 459
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80b91ae5c818064479ae2523cc5119c8
+      internalID: 1908701875998228263
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_4
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 02d744fb13fd7e74f83d3ce3fbbabb1c
+      internalID: -7457720647874137607
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_5
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9e674e5e54f74eb4f9e681f8b40954be
+      internalID: -2549637390648517746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_6
+      rect:
+        serializedVersion: 2
+        x: 918
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5bf331fd75ea73444bd193cab3914ac1
+      internalID: -4815970065630515341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: vfx_knockout_7
+      rect:
+        serializedVersion: 2
+        x: 1071
+        y: 0
+        width: 153
+        height: 142
+      alignment: 9
+      pivot: {x: 0.5033, y: 0.662}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bfaa283f7741d7a478f7e11966022b2e
+      internalID: -2347896275052491106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 629e7097d8b520b408bf6d47cab1ca0b
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      vfx_knockout_0: -155463858847048393
+      vfx_knockout_1: 591604191223272524
+      vfx_knockout_10: -3727080395825766212
+      vfx_knockout_11: 4294119149297255187
+      vfx_knockout_12: -5349922710691680483
+      vfx_knockout_13: 8593105501223972510
+      vfx_knockout_14: -4260497484536349408
+      vfx_knockout_15: 3552566566990382850
+      vfx_knockout_16: 9107728082800047596
+      vfx_knockout_17: -4092031714445100381
+      vfx_knockout_18: -2570690769826392765
+      vfx_knockout_19: 7651284749962274368
+      vfx_knockout_2: -8944286684017242353
+      vfx_knockout_20: 3158676291629754413
+      vfx_knockout_21: 3031894396280710079
+      vfx_knockout_22: -2907348103153548626
+      vfx_knockout_23: 612907516567935406
+      vfx_knockout_24: -6249806681793887470
+      vfx_knockout_25: 3223624874619351829
+      vfx_knockout_26: -2264594042498562909
+      vfx_knockout_27: -4928925898743005014
+      vfx_knockout_28: -5736504649857030472
+      vfx_knockout_29: 3207977028836448605
+      vfx_knockout_3: 1908701875998228263
+      vfx_knockout_30: -3209138408473827166
+      vfx_knockout_31: 4004768945389915866
+      vfx_knockout_32: 1080807689999403496
+      vfx_knockout_33: -3525957983149262932
+      vfx_knockout_34: 5417723686056881536
+      vfx_knockout_35: -338542962105247289
+      vfx_knockout_36: 1353161116359458057
+      vfx_knockout_37: 2035523525732162336
+      vfx_knockout_38: 4632380244015889493
+      vfx_knockout_39: -7963964838317177224
+      vfx_knockout_4: -7457720647874137607
+      vfx_knockout_40: 7171183062914996986
+      vfx_knockout_41: -7116513082842475539
+      vfx_knockout_42: -3092432859316513341
+      vfx_knockout_43: 5353988830490391807
+      vfx_knockout_5: -2549637390648517746
+      vfx_knockout_6: -4815970065630515341
+      vfx_knockout_7: -2347896275052491106
+      vfx_knockout_8: 4474374287836731061
+      vfx_knockout_9: -5149420594341559931
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

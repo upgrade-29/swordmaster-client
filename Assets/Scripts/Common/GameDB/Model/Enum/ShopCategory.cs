@@ -8,4 +8,6 @@ public enum ShopCategory
     Gacha,
     Profile,
     Item,
+    Artifact,
+    Diamond,
 }

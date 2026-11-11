@@ -40,4 +40,11 @@ public class UserCurrencies
             case CurrencyType.Diamond: diamond = result; break;
         }
     }
+
+    // 서버가 확정한 최종 값(구매 응답 등)으로 재화를 그대로 덮어쓴다. 클라이언트가 델타를 계산해 유추하지 않는다.
+    public void SyncFrom(UserCurrencies latest)
+    {
+        gold = latest.gold;
+        diamond = latest.diamond;
+    }
 }

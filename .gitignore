@@ -37,6 +37,7 @@
 
 # Visual Studio cache directory
 .vs/
+.vsconfig
 
 # Gradle cache directory
 .gradle/
@@ -108,3 +109,12 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# VS Code
+.vscode/
+
+# Claude Code skills installed by `unity skill install --local`
+/.claude/skills/
+# Claude Code 개인 설정
+/.claude/settings.local.json
+CLAUDE.md

@@ -4,7 +4,7 @@ public class ShopProductRewardData
 {
     public readonly string productCode;
     public readonly RewardType rewardType;
-    public readonly string rewardCode; // GOLD 보상에서는 null
+    public readonly string rewardCode;
     public readonly long amount;
 
     [JsonConstructor]
